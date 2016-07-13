@@ -11,6 +11,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_DB_Groups, SIGNAL(triggered()), this, SLOT(openGroupsManager()));
     connect(ui->action_DB_Subjects, SIGNAL(triggered()), this, SLOT(openSubjectsManager()));
     connect(ui->action_DB_Kholleurs, SIGNAL(triggered()), this, SLOT(openKholleursManager()));
+
+    // Connection with the DB
+    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
+    db.setHostName("localhost");
+    db.setDatabaseName("lataupe");
+    db.setUserName("root");
+    db.setPassword("");
+    db.open();
 }
 
 MainWindow::~MainWindow()
@@ -19,15 +27,10 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::openStudentsManager() {
-    // Connection with the DB
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
-    db.setDatabaseName("lataupe");
-    db.setUserName("root");
-    db.setPassword("");
-    bool ok = db.open();
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
 
-    if(ok) {
+    if(db.isOpen()) {
         // Open the manager
         StudentsManager manager(&db);
         manager.exec();
@@ -35,15 +38,10 @@ void MainWindow::openStudentsManager() {
 }
 
 void MainWindow::openGroupsManager() {
-    // Connection with the DB
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
-    db.setDatabaseName("lataupe");
-    db.setUserName("root");
-    db.setPassword("");
-    bool ok = db.open();
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
 
-    if(ok) {
+    if(db.isOpen()) {
         // Open the manager
         GroupsManager manager(&db);
         manager.exec();
@@ -51,15 +49,10 @@ void MainWindow::openGroupsManager() {
 }
 
 void MainWindow::openSubjectsManager() {
-    // Connection with the DB
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
-    db.setDatabaseName("lataupe");
-    db.setUserName("root");
-    db.setPassword("");
-    bool ok = db.open();
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
 
-    if(ok) {
+    if(db.isOpen()) {
         // Open the manager
         SubjectsManager manager(&db);
         manager.exec();
@@ -67,15 +60,10 @@ void MainWindow::openSubjectsManager() {
 }
 
 void MainWindow::openKholleursManager() {
-    // Connection with the DB
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
-    db.setDatabaseName("lataupe");
-    db.setUserName("root");
-    db.setPassword("");
-    bool ok = db.open();
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
 
-    if(ok) {
+    if(db.isOpen()) {
         // Open the manager
         KholleursManager manager(&db);
         manager.exec();
