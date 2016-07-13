@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_DB_Groups, SIGNAL(triggered()), this, SLOT(openGroupsManager()));
     connect(ui->action_DB_Subjects, SIGNAL(triggered()), this, SLOT(openSubjectsManager()));
     connect(ui->action_DB_Kholleurs, SIGNAL(triggered()), this, SLOT(openKholleursManager()));
+    connect(ui->action_Schedule_Students_Groups, SIGNAL(triggered()), this, SLOT(openUsersGroupsManager()));
 
     // Connection with the DB
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
@@ -35,6 +36,9 @@ void MainWindow::openStudentsManager() {
         StudentsManager manager(&db);
         manager.exec();
     }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+    }
 }
 
 void MainWindow::openGroupsManager() {
@@ -45,6 +49,9 @@ void MainWindow::openGroupsManager() {
         // Open the manager
         GroupsManager manager(&db);
         manager.exec();
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
     }
 }
 
@@ -57,6 +64,9 @@ void MainWindow::openSubjectsManager() {
         SubjectsManager manager(&db);
         manager.exec();
     }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+    }
 }
 
 void MainWindow::openKholleursManager() {
@@ -67,5 +77,22 @@ void MainWindow::openKholleursManager() {
         // Open the manager
         KholleursManager manager(&db);
         manager.exec();
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+    }
+}
+
+void MainWindow::openUsersGroupsManager() {
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if(db.isOpen()) {
+        // Open the manager
+        usersgroupsmanager manager(&db);
+        manager.exec();
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
     }
 }

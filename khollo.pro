@@ -6,7 +6,8 @@ FORMS += \
     managers/updatestudentdialog.ui \
     managers/groupsmanager.ui \
     managers/subjectsmanager.ui \
-    managers/kholleursmanager.ui
+    managers/kholleursmanager.ui \
+    managers/usersgroupsmanager.ui
 
 HEADERS += \
     mainwindow.h \
@@ -19,7 +20,8 @@ HEADERS += \
     storedData/subject.h \
     managers/kholleursmanager.h \
     storedData/kholleur.h \
-    storedData/teacher.h
+    storedData/teacher.h \
+    managers/usersgroupsmanager.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -33,4 +35,5 @@ SOURCES += \
     storedData/subject.cpp \
     managers/kholleursmanager.cpp \
     storedData/kholleur.cpp \
-    storedData/teacher.cpp
+    storedData/teacher.cpp \
+    managers/usersgroupsmanager.cpp
