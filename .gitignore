@@ -1,8 +1,7 @@
 *.stash
 debug/
+release/
 Makefile
-khollo.pro.user
-khollo.pro.user
 *.user
 khollo.pro.user
 *.a7d366c
