@@ -95,7 +95,7 @@ bool usersgroupsmanager::update_list_groups() {
 
     //Get all groups
     QSqlQuery groups(*m_db);
-    groups.exec("SELECT id, name FROM tau_groups WHERE is_deleted = 0");
+    groups.exec("SELECT id, name FROM tau_groups WHERE is_deleted = 0 ORDER BY name");
 
     //Put every group into the right place
     while(groups.next()) {
