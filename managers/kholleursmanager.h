@@ -5,6 +5,8 @@
 #include <QtSql>
 #include <QMessageBox>
 #include <QQueue>
+#include "managers/updateteacherdialog.h"
+#include "managers/updatekholleurdialog.h"
 #include "storedData/teacher.h"
 #include "storedData/kholleur.h"
 
@@ -19,8 +21,8 @@ class KholleursManager : public QDialog
 public:
     explicit KholleursManager(QSqlDatabase *db, QWidget *parent = 0);
     ~KholleursManager();
-    bool free_teachers();
-    bool free_kholleurs();
+    bool free_teachers(); // Free memories with the teachers
+    bool free_kholleurs(); // Free memories with the kholleurs
 
 public slots:
     // Teachers
@@ -37,8 +39,8 @@ public slots:
 private:
     Ui::KholleursManager *ui;
     QSqlDatabase *m_db;
-    QQueue<Teacher*> queue_displayedTeachers;
-    QQueue<Kholleur*> queue_displayedKholleurs;
+    QQueue<Teacher*> queue_displayedTeachers;  // Displayed teachers in the list "Teachers"
+    QQueue<Kholleur*> queue_displayedKholleurs; // Displayed teachers in the list "Kholleurs"
 };
 
 #endif // KHOLLEURSMANAGER_H
