@@ -17,6 +17,8 @@ usersgroupsmanager::usersgroupsmanager(QSqlDatabase *db, QWidget *parent) :
 usersgroupsmanager::~usersgroupsmanager()
 {
     delete ui;
+    free_students();
+    free_groups();
 }
 
 bool usersgroupsmanager::update_list_students() {
