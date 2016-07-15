@@ -86,7 +86,7 @@ bool StudentsManager::update_student() {
         return false;
     } else {
         Student* stdnt = (Student*) item->data(Qt::UserRole).toULongLong();
-        UpdateStudentDialog updateBox(m_db, stdnt);
+        UpdateStudentDialog updateBox(m_db, stdnt, this);
         if(updateBox.exec() == QDialog::Accepted) {
             update_list();
         }
