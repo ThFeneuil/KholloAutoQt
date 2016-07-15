@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_DB_Subjects, SIGNAL(triggered()), this, SLOT(openSubjectsManager()));
     connect(ui->action_DB_Kholleurs, SIGNAL(triggered()), this, SLOT(openKholleursManager()));
     connect(ui->action_Schedule_Students_Groups, SIGNAL(triggered()), this, SLOT(openUsersGroupsManager()));
+    connect(ui->action_Schedule_Timetable, SIGNAL(triggered()), this, SLOT(openCoursesManager()));
 
     // Connection with the DB
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
@@ -90,6 +91,20 @@ void MainWindow::openUsersGroupsManager() {
     if(db.isOpen()) {
         // Open the manager
         usersgroupsmanager manager(&db);
+        manager.exec();
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+    }
+}
+
+void MainWindow::openCoursesManager() {
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if(db.isOpen()) {
+        // Open the manager
+        CoursesManager manager(&db);
         manager.exec();
     }
     else {
