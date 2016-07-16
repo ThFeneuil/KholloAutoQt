@@ -14,8 +14,27 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
     m_db = db;
     isChanged = false;
     current = NULL;
-    begin_times << "08:15:00" << "09:15:00" << "10:30:00" << "11:30:00" << "14:00:00" << "15:00:00" << "16:00:00" << "17:00:00" << "18:00:00" << "19:00:00";
-    end_times << "09:15:00" << "10:15:00" << "11:30:00" << "12:30:00" << "15:00:00" << "16:00:00" << "17:00:00" << "18:00:00" << "19:00:00" << "20:00:00";
+    begin_times << QTime::fromString("08:15:00", "h:mm:ss")
+                << QTime::fromString("09:15:00", "h:mm:ss")
+                << QTime::fromString("10:30:00", "h:mm:ss")
+                << QTime::fromString("11:30:00", "h:mm:ss")
+                << QTime::fromString("14:00:00", "h:mm:ss")
+                << QTime::fromString("15:00:00", "h:mm:ss")
+                << QTime::fromString("16:00:00", "h:mm:ss")
+                << QTime::fromString("17:00:00", "h:mm:ss")
+                << QTime::fromString("18:00:00", "h:mm:ss")
+                << QTime::fromString("19:00:00", "h:mm:ss");
+
+    end_times   << QTime::fromString("09:15:00", "h:mm:ss")
+                << QTime::fromString("10:15:00", "h:mm:ss")
+                << QTime::fromString("11:30:00", "h:mm:ss")
+                << QTime::fromString("12:30:00", "h:mm:ss")
+                << QTime::fromString("15:00:00", "h:mm:ss")
+                << QTime::fromString("16:00:00", "h:mm:ss")
+                << QTime::fromString("17:00:00", "h:mm:ss")
+                << QTime::fromString("18:00:00", "h:mm:ss")
+                << QTime::fromString("19:00:00", "h:mm:ss")
+                << QTime::fromString("20:00:00", "h:mm:ss");
 
     //Get subjects and teachers
     get_subjects();
@@ -183,10 +202,10 @@ bool CoursesManager::update_courses(QGridLayout *grid, int week) {
     query.bindValue(":id_week", week);
     query.exec();
 
-    QList<QMap<QString,Course*>*> list;
+    QList<QMap<QTime,Course*>*> list;
     int i, j;
     for(i = 0; i < 6; i++) {
-        list.append(new QMap<QString, Course*>);
+        list.append(new QMap<QTime, Course*>);
     }
 
     while(query.next()) {
@@ -195,8 +214,8 @@ bool CoursesManager::update_courses(QGridLayout *grid, int week) {
         course->setId_subjects(query.value(1).toInt());
         course->setId_teachers(query.value(2).toInt());
         course->setId_day(query.value(3).toInt());
-        course->setTime_start(query.value(4).toString());
-        course->setTime_end(query.value(5).toString());
+        course->setTime_start(QTime::fromString(query.value(4).toString(), "h:mm:ss"));
+        course->setTime_end(QTime::fromString(query.value(5).toString(), "h:mm:ss"));
         course->setId_groups(current->getId());
         course->setId_week(week);
 
@@ -267,8 +286,8 @@ void CoursesManager::save(QGridLayout *grid, int week) {
             QSqlQuery query(*m_db);
             query.prepare("INSERT INTO tau_courses(id_subjects, time_start, time_end, id_groups, id_teachers, id_day, id_week) VALUES(:id_subjects, :time_start, :time_end, :id_groups, :id_teachers, :id_day, :id_week)");
             query.bindValue(":id_subjects", subject->currentData().toInt());
-            query.bindValue(":time_start", begin_times[j]);
-            query.bindValue(":time_end", end_times[j]);
+            query.bindValue(":time_start", begin_times[j].toString("hh:mm:ss"));
+            query.bindValue(":time_end", end_times[j].toString("hh:mm:ss"));
             query.bindValue(":id_groups", current->getId());
             query.bindValue(":id_teachers", teacher->currentData().toInt());
             query.bindValue(":id_day", i+1);

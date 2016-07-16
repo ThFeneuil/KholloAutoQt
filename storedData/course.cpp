@@ -4,8 +4,6 @@ Course::Course()
 {
     m_id = 0;
     m_id_subjects = 0;
-    m_time_start = "";
-    m_time_end = "";
     m_id_groups = 0;
     m_id_teachers = 0;
     m_id_day = 0;
@@ -25,11 +23,11 @@ int Course::getId_subjects() const {
     return m_id_subjects;
 }
 
-QString Course::getTime_start() const {
+QTime Course::getTime_start() const {
     return m_time_start;
 }
 
-QString Course::getTime_end() const {
+QTime Course::getTime_end() const {
     return m_time_end;
 }
 
@@ -59,11 +57,11 @@ void Course::setId_subjects(int id_subjects) {
     m_id_subjects = id_subjects;
 }
 
-void Course::setTime_start(QString time_start) {
+void Course::setTime_start(QTime time_start) {
     m_time_start = time_start;
 }
 
-void Course::setTime_end(QString time_end) {
+void Course::setTime_end(QTime time_end) {
     m_time_end = time_end;
 }
 

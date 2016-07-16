@@ -48,8 +48,8 @@ private:
     QList<Teacher*> list_teachers;
     bool isChanged;
     Group *current;
-    QStringList begin_times;
-    QStringList end_times;
+    QList<QTime> begin_times;
+    QList<QTime> end_times;
 };
 
 #endif // COURSESMANAGER_H

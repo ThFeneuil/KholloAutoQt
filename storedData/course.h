@@ -2,6 +2,7 @@
 #define COURSE_H
 
 #include <QString>
+#include <QTime>
 
 class Course
 {
@@ -12,8 +13,8 @@ public:
     //Getters
     int getId() const;
     int getId_subjects() const;
-    QString getTime_start() const;
-    QString getTime_end() const;
+    QTime getTime_start() const;
+    QTime getTime_end() const;
     int getId_groups() const;
     int getId_teachers() const;
     int getId_day() const;
@@ -22,8 +23,8 @@ public:
     //Setters
     void setId(int id);
     void setId_subjects(int id_subjects);
-    void setTime_start(QString time_start);
-    void setTime_end(QString time_end);
+    void setTime_start(QTime time_start);
+    void setTime_end(QTime time_end);
     void setId_groups(int id_groups);
     void setId_teachers(int id_teachers);
     void setId_day(int id_day);
@@ -32,8 +33,8 @@ public:
 private:
     int m_id;
     int m_id_subjects;
-    QString m_time_start;
-    QString m_time_end;
+    QTime m_time_start;
+    QTime m_time_end;
     int m_id_groups;
     int m_id_teachers;
     int m_id_day;
