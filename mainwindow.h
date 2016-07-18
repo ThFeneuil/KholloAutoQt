@@ -9,6 +9,7 @@
 #include "managers/kholleursmanager.h"
 #include "managers/usersgroupsmanager.h"
 #include "managers/coursesmanager.h"
+#include "managers/eventsmanager.h"
 
 namespace Ui {
 class MainWindow;
@@ -29,6 +30,7 @@ public slots:
     void openKholleursManager();
     void openUsersGroupsManager();
     void openCoursesManager();
+    void openEventsManager();
 
 private:
     Ui::MainWindow *ui;

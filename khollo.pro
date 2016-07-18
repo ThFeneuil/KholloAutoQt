@@ -10,7 +10,9 @@ FORMS += \
     managers/updateteacherdialog.ui \
     managers/updatekholleurdialog.ui \
     managers/usersgroupsmanager.ui \
-	managers/coursesmanager.ui
+	managers/coursesmanager.ui \
+    managers/eventsmanager.ui \
+    managers/updateeventdialog.ui
 
 HEADERS += \
     mainwindow.h \
@@ -28,7 +30,10 @@ HEADERS += \
     managers/updatekholleurdialog.h \
     managers/usersgroupsmanager.h \
 	managers/coursesmanager.h \
-    storedData/course.h
+    storedData/course.h \
+    managers/eventsmanager.h \
+    storedData/event.h \
+    managers/updateeventdialog.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -47,4 +52,7 @@ SOURCES += \
     managers/updatekholleurdialog.cpp \
     managers/usersgroupsmanager.cpp \
 	managers/coursesmanager.cpp \
-    storedData/course.cpp
+    storedData/course.cpp \
+    managers/eventsmanager.cpp \
+    storedData/event.cpp \
+    managers/updateeventdialog.cpp

@@ -112,7 +112,7 @@ bool StudentsManager::delete_student() {
             query.bindValue(":id", stdnt->getId());
             query.exec();
 
-            update_list();;
+            update_list();
         }
     }
 
