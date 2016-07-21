@@ -3,6 +3,8 @@
 
 #include <QString>
 #include <QTime>
+#include <QList>
+#include "storedData/group.h"
 
 class Event
 {
@@ -16,6 +18,7 @@ public:
     QString getComment() const;
     QDateTime getStart() const;
     QDateTime getEnd() const;
+    QList<Group*>* getGroups() const;
 
     //Setters
     void setId(int id);
@@ -23,6 +26,7 @@ public:
     void setComment(QString comment);
     void setStart(QDateTime start);
     void setEnd(QDateTime end);
+    void setGroups(QList<Group*>* groups);
 
 private:
     int m_id;
@@ -30,6 +34,7 @@ private:
     QString m_comment;
     QDateTime m_start;
     QDateTime m_end;
+    QList<Group*> *m_groups;
 };
 
 #endif // EVENT_H

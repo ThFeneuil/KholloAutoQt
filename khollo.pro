@@ -12,7 +12,8 @@ FORMS += \
     managers/usersgroupsmanager.ui \
 	managers/coursesmanager.ui \
     managers/eventsmanager.ui \
-    managers/updateeventdialog.ui
+    managers/updateeventdialog.ui \
+    managers/selectgroupsdialog.ui
 
 HEADERS += \
     mainwindow.h \
@@ -33,7 +34,8 @@ HEADERS += \
     storedData/course.h \
     managers/eventsmanager.h \
     storedData/event.h \
-    managers/updateeventdialog.h
+    managers/updateeventdialog.h \
+    managers/selectgroupsdialog.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -55,4 +57,5 @@ SOURCES += \
     storedData/course.cpp \
     managers/eventsmanager.cpp \
     storedData/event.cpp \
-    managers/updateeventdialog.cpp
+    managers/updateeventdialog.cpp \
+    managers/selectgroupsdialog.cpp
