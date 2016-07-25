@@ -126,3 +126,17 @@ void MainWindow::openEventsManager() {
         QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
     }
 }
+
+void MainWindow::openKholloscope() {
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if(db.isOpen()) {
+        // Open the manager
+        KholloscopeWizard manager(&db);
+        manager.exec();
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+    }
+}

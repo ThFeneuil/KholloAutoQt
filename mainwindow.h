@@ -10,6 +10,7 @@
 #include "managers/usersgroupsmanager.h"
 #include "managers/coursesmanager.h"
 #include "managers/eventsmanager.h"
+#include "managers/kholloscopewizard.h"
 
 namespace Ui {
 class MainWindow;
@@ -31,6 +32,7 @@ public slots:
     void openUsersGroupsManager();
     void openCoursesManager();
     void openEventsManager();
+	void openKholloscope();
 
 private:
     Ui::MainWindow *ui;

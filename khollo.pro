@@ -13,7 +13,11 @@ FORMS += \
 	managers/coursesmanager.ui \
     managers/eventsmanager.ui \
     managers/updateeventdialog.ui \
-    managers/selectgroupsdialog.ui
+    managers/selectgroupsdialog.ui \
+	managers/kholloscopewizard.ui \
+    managers/KholloscopeWizardPages/subjectspage.ui \
+    managers/KholloscopeWizardPages/userspage.ui \
+    managers/KholloscopeWizardPages/generatepage.ui
 
 HEADERS += \
     mainwindow.h \
@@ -35,7 +39,13 @@ HEADERS += \
     managers/eventsmanager.h \
     storedData/event.h \
     managers/updateeventdialog.h \
-    managers/selectgroupsdialog.h
+    managers/selectgroupsdialog.h \
+	managers/kholloscopewizard.h \
+    managers/KholloscopeWizardPages/subjectspage.h \
+    managers/KholloscopeWizardPages/userspage.h \
+    managers/KholloscopeWizardPages/generatepage.h \
+    storedData/timeslot.h \
+    storedData/kholle.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -58,4 +68,10 @@ SOURCES += \
     managers/eventsmanager.cpp \
     storedData/event.cpp \
     managers/updateeventdialog.cpp \
-    managers/selectgroupsdialog.cpp
+    managers/selectgroupsdialog.cpp \
+	managers/kholloscopewizard.cpp \
+    managers/KholloscopeWizardPages/subjectspage.cpp \
+    managers/KholloscopeWizardPages/userspage.cpp \
+    managers/KholloscopeWizardPages/generatepage.cpp \
+    storedData/timeslot.cpp \
+    storedData/kholle.cpp
