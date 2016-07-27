@@ -45,7 +45,7 @@ public:
     void calculateProba();
 
     bool compatible(int id_user, Timeslot* timeslot);
-    void quickSort(QList<Timeslot*> list, int i, int j, int id_user);
+    void quickSort(QList<Timeslot*> *list, int i, int j, int id_user);
     void constructPoss();
 
     QMap<int, QList<Timeslot*> > *updatePoss(int id_user, Timeslot *current);

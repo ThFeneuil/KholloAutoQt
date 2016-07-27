@@ -106,7 +106,47 @@ void GeneratePage::calculateProba() {
 
         int i;
         for(i = 0; i < users.length(); i++) {
-            float p = 1; //Calculate probability here
+            float p = 100; //Calculate probability here
+
+            QSqlQuery kholle_query(*m_db);
+            kholle_query.prepare("SELECT id, time_start, time, time_end, id_subjects, id_users, id_teachers FROM tau_kholles WHERE id_users = :id_student AND id_teachers = :id_teacher ORDER BY time DESC");
+            kholle_query.bindValue(":id_student", users[i]->getId());
+            kholle_query.bindValue(":id_teacher", k->getId());
+            kholle_query.exec();
+
+            if(kholle_query.size() != -1) {
+                p -= kholle_query.size() * 10;
+            }
+            else {
+                QSqlQuery count_query(*m_db);
+                count_query.prepare("SELECT COUNT(id) FROM tau_kholles WHERE id_users = :id_student AND id_teachers = :id_teacher");
+                count_query.bindValue(":id_student", users[i]->getId());
+                count_query.bindValue(":id_teacher", k->getId());
+                count_query.exec();
+
+                if(count_query.next()) {
+                    p -= count_query.value(0).toInt() * 10;
+                }
+                else {
+                    QMessageBox::critical(this, "Erreur", "Erreur avec la base de donnée");
+                }
+            }
+
+            if(kholle_query.next()) {
+                QDateTime last_time = QDateTime::fromString(kholle_query.value(2).toString(), "yyyy-MM-dd HH:mm:ss");
+                QDateTime monday_date = QDateTime(m_date);
+
+                if(last_time >= monday_date.addDays(-21))
+                    p -= 30;
+
+                if(last_time >= monday_date.addDays(-14))
+                    p -= 10;
+
+                if(last_time >= monday_date.addDays(-7))
+                    p -= 10;
+            }
+
+
             map.insert(users[i]->getId(), p);
         }
 
@@ -163,18 +203,18 @@ bool GeneratePage::compatible(int id_user, Timeslot *timeslot) {
     return true;
 }
 
-void GeneratePage::quickSort(QList<Timeslot *> list, int i, int j, int id_user) {
+void GeneratePage::quickSort(QList<Timeslot *> *list, int i, int j, int id_user) {
     if(i >= j)
         return;
 
     int pivot_index = i;
     int k;
     for(k = i+1; k <= j; k++) {
-        if((proba.value(list[k]->getId_kholleurs())).value(id_user) > (proba.value(list[pivot_index]->getId_kholleurs())).value(id_user)) {
-            Timeslot* pivot = list[pivot_index];
-            list[pivot_index] = list[k];
-            list[k] = list[pivot_index+1];
-            list[pivot_index+1] = pivot;
+        if((proba.value(list->at(k)->getId_kholleurs())).value(id_user) > (proba.value(list->at(pivot_index)->getId_kholleurs())).value(id_user)) {
+            Timeslot* pivot = list->at(pivot_index);
+            list->replace(pivot_index, list->at(k));
+            list->replace(k, list->at(pivot_index+1));
+            list->replace(pivot_index+1, pivot);
             pivot_index++;
         }
     }
@@ -205,7 +245,13 @@ void GeneratePage::constructPoss() {
                     new_list.append(timeslots[k]);
                 }
             }
-            quickSort(new_list, 0, new_list.length() - 1, users[j]->getId());
+            quickSort(&new_list, 0, new_list.length() - 1, users[j]->getId());
+
+            /*QString string;
+            for(k = 0; k < new_list.length(); k++) {
+                string += QString::number(new_list[k]->getId_kholleurs()) + "\n";
+            }
+            QMessageBox::information(this, QString::number(users[j]->getId()), string);*/
             map.insert(users[j]->getId(), new_list);
         }
 
