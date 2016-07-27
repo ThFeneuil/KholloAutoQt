@@ -204,6 +204,55 @@ void GeneratePage::constructPoss() {
     }
 }
 
+QMap<int, QList<Timeslot *> > *GeneratePage::updatePoss(int id_user, Timeslot* current) {
+    QMap<int, QList<Timeslot*> > *res = new QMap<int, QList<Timeslot*> >;
+
+    int i, j, k;
+    QList<int> keys_s = poss.keys();
+    for(i = 0; i < keys_s.length(); i++) {
+        QMap<int, QList<Timeslot*> > map = poss.value(keys_s[i]);
+        QList<int> keys_u = map.keys();
+        for(j = 0; j < keys_u.length(); j++) {
+            if(keys_u[j] == id_user) {
+                QList<Timeslot*> ts = map.value(keys_u[j]);
+
+                //Save the old possibilities
+                res->insert(keys_s[i], ts);
+
+                //Change the possibilities
+                for(k = 0; k < ts.length(); k++) {
+                    if(ts[i]->getId_day() == current->getId_day()) {
+                        if((ts[i]->getTime_start() <= current->getTime_start() && ts[i]->getTime_end() > current->getTime_start())
+                                || (ts[i]->getTime_start() < current->getTime_end() && ts[i]->getTime_end() >= current->getTime_end())
+                                || (ts[i]->getTime_start() >= current->getTime_start() && ts[i]->getTime_end() <= current->getTime_end())) {
+                                ts.removeAt(k);
+                        }
+                    }
+                }
+                map.insert(keys_u[j], ts);
+            }
+        }
+        poss.insert(keys_s[i], map);
+    }
+
+    return res;
+}
+
+void GeneratePage::resetPoss(int id_user, QMap<int, QList<Timeslot *> > *old) {
+    int i;
+    QList<int> keys_s = poss.keys();
+
+    //Put back the old
+    for(i = 0; i < keys_s.length(); i++) {
+        if(old->contains(keys_s[i])) {
+            QMap<int, QList<Timeslot*> > map = poss.value(keys_s[i]);
+
+            map.insert(id_user, old->value(keys_s[i]));
+            poss.insert(keys_s[i], map);
+        }
+    }
+}
+
 int GeneratePage::my_count(QList<Timeslot *> list) {
     int i;
     int counter = 0;
@@ -245,6 +294,7 @@ working_index *GeneratePage::findMin() {
 bool GeneratePage::generate() {
     profondeur++;
     working_index* index = findMin();
+    //QMessageBox::information(this, "OK", QString::number(profondeur));
     if(index->min == -1) {
         free(index);
         return true;
@@ -255,7 +305,8 @@ bool GeneratePage::generate() {
     map.remove(index->current_student);
     poss.insert(index->current_subject, map);
 
-    //QMessageBox::information(this, "OK", QString::number(profondeur));
+    //QMessageBox::information(this, "OK", QString::number(index->current_student));
+    //QMessageBox::information(this, "OK", QString::number(loop.length()));
     //msg_display();
 
     int i;
@@ -274,12 +325,15 @@ bool GeneratePage::generate() {
 
             kholloscope.append(k);
             loop[i]->setPupils(loop[i]->getPupils() - 1);
+            QMap<int, QList<Timeslot*> > *old = updatePoss(index->current_student, loop[i]);
 
             if(generate()) {
                 free(index);
                 return true;
             }
 
+            resetPoss(index->current_student, old);
+            delete old;
             delete kholloscope.takeLast();
             loop[i]->setPupils(loop[i]->getPupils() + 1);
         }

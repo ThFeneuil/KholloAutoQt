@@ -48,6 +48,9 @@ public:
     void quickSort(QList<Timeslot*> list, int i, int j, int id_user);
     void constructPoss();
 
+    QMap<int, QList<Timeslot*> > *updatePoss(int id_user, Timeslot *current);
+    void resetPoss(int id_user, QMap<int, QList<Timeslot*> > *old);
+
     int my_count(QList<Timeslot*>);
     working_index *findMin();
     bool generate();
