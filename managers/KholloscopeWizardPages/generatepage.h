@@ -58,6 +58,11 @@ public:
     void msg_display();
     void display();
 
+    void freeKholles();
+
+public slots:
+    void saveKholles();
+
 private:
     Ui::GeneratePage *ui;
     QSqlDatabase *m_db;

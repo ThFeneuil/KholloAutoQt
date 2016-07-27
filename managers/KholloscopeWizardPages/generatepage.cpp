@@ -17,9 +17,12 @@ GeneratePage::~GeneratePage()
     delete ui;
     freeTimeslots();
     freeKholleurs();
+    freeKholles();
 }
 
 void GeneratePage::initializePage() {
+    connect(wizard()->button(QWizard::FinishButton), SIGNAL(clicked()), this, SLOT(saveKholles()));
+
     getTimeslots();
     loadSubjects();
     getKholleurs();
@@ -415,4 +418,34 @@ void GeneratePage::msg_display() {
         msg = msg + QString::number(kholloscope[i]->getId_students()) + ", " + QString::number(kholloscope[i]->getId_teachers()) + ", " + kholloscope[i]->getTime_start().toString("dd/MM/yyyy hh:mm:ss") + "\n";
     }
     QMessageBox::information(this, "OK", msg);
+}
+
+void GeneratePage::saveKholles() {
+    /** To save the kholloscope that has been generated to the database **/
+    int i;
+
+    //Only if checkbox selected...
+    if(ui->checkBox->isChecked()) {
+        for(i = 0; i < kholloscope.length(); i++) {
+            //Get kholle
+            Kholle* k = kholloscope[i];
+
+            //Prepare query for insertion
+            QSqlQuery query(*m_db);
+            query.prepare("INSERT INTO tau_kholles(time_start, time, time_end, id_subjects, id_users, id_teachers) VALUES(:time_start, :time, :time_end, :id_subjects, :id_students, :id_teachers)");
+            query.bindValue(":time_start", k->getTime_start().toString("yyyy-MM-dd HH:mm:ss"));
+            query.bindValue(":time", k->getTime().toString("yyyy-MM-dd HH:mm:ss"));
+            query.bindValue(":time_end", k->getTime_end().toString("yyyy-MM-dd HH:mm:ss"));
+            query.bindValue(":id_subjects", k->getId_subjects());
+            query.bindValue(":id_students", k->getId_students());
+            query.bindValue(":id_teachers", k->getId_teachers());
+            query.exec();
+        }
+    }
+}
+
+void GeneratePage::freeKholles() {
+    while(!kholloscope.isEmpty()) {
+        delete kholloscope.takeFirst();
+    }
 }
