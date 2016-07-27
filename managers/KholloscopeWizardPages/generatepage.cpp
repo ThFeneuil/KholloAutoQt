@@ -129,8 +129,12 @@ bool GeneratePage::compatible(int id_user, Timeslot *timeslot) {
         }
 
         QSqlQuery courses_query(*m_db);
-        courses_query.prepare("SELECT * FROM tau_courses WHERE (" + request + ") AND time_start <= :time AND time_end > :time AND id_day=:id_day AND id_week=:id_week");
-        courses_query.bindValue(":time", timeslot->getTime_start());
+        courses_query.prepare("SELECT * FROM tau_courses WHERE (" + request + ") AND id_day=:id_day AND id_week=:id_week AND ("
+                                                                              "(time_start <= :time_start AND time_end > :time_start) OR"
+                                                                              "(time_start < :time_end AND time_end >= :time_end) OR"
+                                                                              "(time_start >= :time_start AND time_end <= :time_end) )");
+        courses_query.bindValue(":time_start", timeslot->getTime_start());
+        courses_query.bindValue(":time_end", timeslot->getTime_end());
         courses_query.bindValue(":id_day", timeslot->getId_day());
         courses_query.bindValue(":id_week", m_week);
         courses_query.exec();
@@ -139,14 +143,19 @@ bool GeneratePage::compatible(int id_user, Timeslot *timeslot) {
             return false;
         }
 
-        QSqlQuery courses_query2(*m_db);
-        courses_query2.prepare("SELECT * FROM tau_courses WHERE (" + request + ") AND time_start < :time AND time_end >= :time AND id_day=:id_day AND id_week=:id_week");
-        courses_query2.bindValue(":time", timeslot->getTime_end());
-        courses_query2.bindValue(":id_day", timeslot->getId_day());
-        courses_query2.bindValue(":id_week", m_week);
-        courses_query2.exec();
+        //Get all events that can interfere with this timeslot
+        QSqlQuery event_query(*m_db);
+        event_query.prepare("SELECT * FROM tau_events AS E JOIN tau_events_groups AS G ON E.`id` = G.`id_events` WHERE (" + request + ") AND ("
+                                      "(E.`start` <= :start_time AND E.`end` > :start_time) OR"
+                                      "(E.`start` < :end_time AND E.`end` >= :end_time) OR"
+                                      "(E.`start` >= :start_time AND E.`end` <= :end_time))");
+        QDate new_date = m_date.addDays(timeslot->getId_day() - 1);
 
-        if(courses_query2.next()) {
+        event_query.bindValue(":start_time", QDateTime(new_date, timeslot->getTime_start()).toString("yyyy-MM-dd HH:mm:ss"));
+        event_query.bindValue(":end_time", QDateTime(new_date, timeslot->getTime_end()).toString("yyyy-MM-dd HH:mm:ss"));
+        event_query.exec();
+
+        if(event_query.next()) {
             return false;
         }
     }
