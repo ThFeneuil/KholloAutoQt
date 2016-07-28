@@ -18,7 +18,8 @@ FORMS += \
     managers/KholloscopeWizardPages/subjectspage.ui \
     managers/KholloscopeWizardPages/userspage.ui \
     managers/KholloscopeWizardPages/generatepage.ui \
-    interface/interfacedialog.ui
+    interface/interfacedialog.ui \
+    managers/timeslotsmanager.ui
 
 HEADERS += \
     mainwindow.h \
@@ -47,7 +48,8 @@ HEADERS += \
     managers/KholloscopeWizardPages/generatepage.h \
     storedData/timeslot.h \
     storedData/kholle.h \
-    interface/interfacedialog.h
+    interface/interfacedialog.h \
+    managers/timeslotsmanager.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -77,4 +79,5 @@ SOURCES += \
     managers/KholloscopeWizardPages/generatepage.cpp \
     storedData/timeslot.cpp \
     storedData/kholle.cpp \
-    interface/interfacedialog.cpp
+    interface/interfacedialog.cpp \
+    managers/timeslotsmanager.cpp

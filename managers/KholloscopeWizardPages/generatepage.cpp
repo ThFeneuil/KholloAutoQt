@@ -23,9 +23,9 @@ GeneratePage::~GeneratePage()
 void GeneratePage::initializePage() {
     connect(wizard()->button(QWizard::FinishButton), SIGNAL(clicked()), this, SLOT(saveKholles()));
 
+    getKholleurs();
     getTimeslots();
     loadSubjects();
-    getKholleurs();
 
     m_week = field("current_week").toInt() + 1;
     m_date = field("monday_date").toDateTime().date();
@@ -41,7 +41,7 @@ void GeneratePage::getTimeslots() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, time, time_start, time_end, id_kholleurs, id_day, pupils FROM tau_timeslots");
+    query.exec("SELECT id, time, time_start, time_end, id_kholleurs, id_day FROM tau_timeslots");
 
     //Treat
     while(query.next()) {
@@ -52,7 +52,7 @@ void GeneratePage::getTimeslots() {
         ts->setTime_end(QTime::fromString(query.value(3).toString(), "h:mm:ss"));
         ts->setId_kholleurs(query.value(4).toInt());
         ts->setId_day(query.value(5).toInt());
-        ts->setPupils(query.value(6).toInt());
+        ts->setPupils(kholleurs.value(ts->getId_kholleurs())->getPupils());
         timeslots.append(ts);
     }
 }
