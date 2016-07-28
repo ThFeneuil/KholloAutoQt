@@ -69,7 +69,7 @@ bool EventsManager::update_list() {
         }
 
         // Display the event
-        QListWidgetItem *item = new QListWidgetItem(event->getName() + " : " + event->getStart().toString("dd.MM.yyyy hh:mm") + " >> " + event->getEnd().toString("dd.MM.yyyy hh:mm"), ui->list_events);
+        QListWidgetItem *item = new QListWidgetItem(event->getName() + " : " + event->getStart().toString("dd/MM/yyyy hh:mm") + " >> " + event->getEnd().toString("dd/MM/yyyy hh:mm"), ui->list_events);
         item->setData(Qt::UserRole, (qulonglong) event);
         queue_displayedEvents.enqueue(event);
     }
