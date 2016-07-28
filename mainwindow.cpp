@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_Schedule_Students_Groups, SIGNAL(triggered()), this, SLOT(openUsersGroupsManager()));
     connect(ui->action_Schedule_Timetable, SIGNAL(triggered()), this, SLOT(openCoursesManager()));
     connect(ui->action_Schedule_Events, SIGNAL(triggered()), this, SLOT(openEventsManager()));
+    connect(ui->action_Kholles_Interface, SIGNAL(triggered()), this, SLOT(openInterface()));
     connect(ui->action_Kholles_Generate, SIGNAL(triggered(bool)), this, SLOT(openKholloscope()));
 
     // Connection with the DB
@@ -121,6 +122,20 @@ void MainWindow::openEventsManager() {
     if(db.isOpen()) {
         // Open the manager
         EventsManager manager(&db);
+        manager.exec();
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+    }
+}
+
+void MainWindow::openInterface() {
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if(db.isOpen()) {
+        // Open the manager
+        InterfaceDialog manager(&db);
         manager.exec();
     }
     else {
