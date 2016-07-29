@@ -46,7 +46,7 @@ UpdateTeacherDialog::~UpdateTeacherDialog() {
     delete ui;
     // Free the subjects of the comboBox
     while (!queue_subjects.isEmpty())
-        free(queue_subjects.dequeue());
+        delete queue_subjects.dequeue();
 }
 
 bool UpdateTeacherDialog::update_teacher() {
