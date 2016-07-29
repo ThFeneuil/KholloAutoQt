@@ -29,7 +29,7 @@ EventsManager::~EventsManager() {
 bool EventsManager::free_events() {
     /** To free memories with events **/
     while (!queue_displayedEvents.isEmpty())
-        free(queue_displayedEvents.dequeue());
+        delete queue_displayedEvents.dequeue();
     return true;
 }
 

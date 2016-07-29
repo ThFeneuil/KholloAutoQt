@@ -111,21 +111,21 @@ CoursesManager::~CoursesManager()
 
 bool CoursesManager::free_subjects() {
     while(!list_subjects.isEmpty()) {
-        free(list_subjects.takeFirst());
+        delete list_subjects.takeFirst();
     }
     return true;
 }
 
 bool CoursesManager::free_teachers() {
     while(!list_teachers.isEmpty()) {
-        free(list_teachers.takeFirst());
+        delete list_teachers.takeFirst();
     }
     return true;
 }
 
 bool CoursesManager::free_groups() {
     while(!queue_displayedGroups.isEmpty()) {
-        free(queue_displayedGroups.dequeue());
+        delete queue_displayedGroups.dequeue();
     }
     return true;
 }

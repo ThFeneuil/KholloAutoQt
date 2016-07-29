@@ -46,14 +46,14 @@ bool usersgroupsmanager::update_list_students() {
 
 bool usersgroupsmanager::free_students() {
     while(!queue_displayedStudents.isEmpty()) {
-        free(queue_displayedStudents.dequeue());
+        delete queue_displayedStudents.dequeue();
     }
     return true;
 }
 
 bool usersgroupsmanager::free_groups() {
     while(!queue_displayedGroups.isEmpty()) {
-        free(queue_displayedGroups.dequeue());
+        delete queue_displayedGroups.dequeue();
     }
     return true;
 }

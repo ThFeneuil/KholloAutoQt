@@ -55,7 +55,7 @@ void TimeslotsManager::getKholleurs() {
 
 void TimeslotsManager::freeKholleurs() {
     while(!queue_displayedKholleurs.isEmpty()) {
-        free(queue_displayedKholleurs.dequeue());
+        delete queue_displayedKholleurs.dequeue();
     }
 }
 
