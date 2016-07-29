@@ -10,7 +10,9 @@ Event::Event() {
 }
 
 Event::~Event() {
-
+    for(int i=0; i<m_groups->count(); i++)
+        delete m_groups->at(i);
+    delete m_groups;
 }
 
 //Getters
