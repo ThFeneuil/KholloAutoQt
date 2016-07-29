@@ -35,14 +35,14 @@ KholleursManager::~KholleursManager() {
 bool KholleursManager::free_teachers() {
     /** To free memories with teachers **/
     while (!queue_displayedTeachers.isEmpty())
-        free(queue_displayedTeachers.dequeue());
+        delete queue_displayedTeachers.dequeue();
     return true;
 }
 
 bool KholleursManager::free_kholleurs() {
     /** To free memories with kholleurs **/
     while (!queue_displayedKholleurs.isEmpty())
-        free(queue_displayedKholleurs.dequeue());
+        delete queue_displayedKholleurs.dequeue();
     return true;
 }
 

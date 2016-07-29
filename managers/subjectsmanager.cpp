@@ -25,7 +25,7 @@ SubjectsManager::~SubjectsManager()
 
 bool SubjectsManager::free_subjects() {
     while (!queue_displayedSubjects.isEmpty())
-        free(queue_displayedSubjects.dequeue());
+        delete queue_displayedSubjects.dequeue();
     return true;
 }
 

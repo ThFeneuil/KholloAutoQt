@@ -24,7 +24,7 @@ StudentsManager::~StudentsManager() {
 
 bool StudentsManager::free_students() {
     while (!queue_displayedStudents.isEmpty())
-        free(queue_displayedStudents.dequeue());
+        delete queue_displayedStudents.dequeue();
     return true;
 }
 

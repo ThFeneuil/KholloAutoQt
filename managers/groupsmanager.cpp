@@ -22,7 +22,7 @@ GroupsManager::~GroupsManager() {
 
 bool GroupsManager::free_groups() {
     while (!queue_displayedGroups.isEmpty())
-        free(queue_displayedGroups.dequeue());
+        delete queue_displayedGroups.dequeue();
     return true;
 }
 
