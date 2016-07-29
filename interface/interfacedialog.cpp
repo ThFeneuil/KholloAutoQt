@@ -1,17 +1,15 @@
 #include "interfacedialog.h"
 #include "ui_interfacedialog.h"
 
-InterfaceDialog::InterfaceDialog(QSqlDatabase *db, QWidget *parent) :
+InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::InterfaceDialog)
 {
     ui->setupUi(this);
     m_db = db;
     m_students = new QList<Student*>();
-
-    IntroInterface intro(&m_id_week, &m_monday, this);
-    if(intro.exec() == IntroInterface::Rejected)
-        reject();
+    m_id_week = id_week;
+    m_monday = monday;
 
     // Get the list of all the students
     QSqlQuery query(*m_db);
@@ -38,7 +36,7 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, QWidget *parent) :
         subj->setShortName(query.value(2).toString());
         subj->setColor(query.value(3).toString());
 
-        InterfaceTab* tab = new InterfaceTab(subj, m_db);
+        InterfaceTab* tab = new InterfaceTab(subj, m_id_week, m_db);
         ui->tabWidget->addTab(tab, subj->getShortName());
     }
 }
