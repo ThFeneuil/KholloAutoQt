@@ -24,7 +24,7 @@ StudentsManager::~StudentsManager() {
 
 bool StudentsManager::free_students() {
     while (!queue_displayedStudents.isEmpty())
-        free(queue_displayedStudents.dequeue());
+        delete queue_displayedStudents.dequeue();
     return true;
 }
 
@@ -86,7 +86,7 @@ bool StudentsManager::update_student() {
         return false;
     } else {
         Student* stdnt = (Student*) item->data(Qt::UserRole).toULongLong();
-        UpdateStudentDialog updateBox(m_db, stdnt);
+        UpdateStudentDialog updateBox(m_db, stdnt, this);
         if(updateBox.exec() == QDialog::Accepted) {
             update_list();
         }
@@ -112,7 +112,7 @@ bool StudentsManager::delete_student() {
             query.bindValue(":id", stdnt->getId());
             query.exec();
 
-            update_list();;
+            update_list();
         }
     }
 

@@ -140,7 +140,7 @@
   </action>
   <action name="action_Schedule_Events">
    <property name="text">
-    <string>Evènement &amp;spéciaux</string>
+    <string>Evènements &amp;spéciaux</string>
    </property>
   </action>
   <action name="action_Kholles_Interface">

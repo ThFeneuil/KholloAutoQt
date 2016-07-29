@@ -6,7 +6,22 @@ FORMS += \
     managers/updatestudentdialog.ui \
     managers/groupsmanager.ui \
     managers/subjectsmanager.ui \
-    managers/kholleursmanager.ui
+    managers/kholleursmanager.ui \
+    managers/updateteacherdialog.ui \
+    managers/updatekholleurdialog.ui \
+    managers/usersgroupsmanager.ui \
+	managers/coursesmanager.ui \
+    managers/eventsmanager.ui \
+    managers/updateeventdialog.ui \
+    managers/selectgroupsdialog.ui \
+	managers/kholloscopewizard.ui \
+    managers/KholloscopeWizardPages/subjectspage.ui \
+    managers/KholloscopeWizardPages/userspage.ui \
+    managers/KholloscopeWizardPages/generatepage.ui \
+    interface/interfacedialog.ui \
+    interface/interfacetab.ui \
+    interface/introinterface.ui \
+    managers/timeslotsmanager.ui
 
 HEADERS += \
     mainwindow.h \
@@ -19,7 +34,28 @@ HEADERS += \
     storedData/subject.h \
     managers/kholleursmanager.h \
     storedData/kholleur.h \
-    storedData/teacher.h
+    storedData/teacher.h \
+    managers/updateteacherdialog.h \
+    managers/updatekholleurdialog.h \
+    managers/usersgroupsmanager.h \
+	managers/coursesmanager.h \
+    storedData/course.h \
+    managers/eventsmanager.h \
+    storedData/event.h \
+    managers/updateeventdialog.h \
+    managers/selectgroupsdialog.h \
+	managers/kholloscopewizard.h \
+    managers/KholloscopeWizardPages/subjectspage.h \
+    managers/KholloscopeWizardPages/userspage.h \
+    managers/KholloscopeWizardPages/generatepage.h \
+    storedData/timeslot.h \
+    storedData/kholle.h \
+    interface/interfacedialog.h \
+    interface/table.h \
+    interface/khollotable.h \
+    interface/interfacetab.h \
+    interface/introinterface.h \
+    managers/timeslotsmanager.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -33,4 +69,30 @@ SOURCES += \
     storedData/subject.cpp \
     managers/kholleursmanager.cpp \
     storedData/kholleur.cpp \
-    storedData/teacher.cpp
+    storedData/teacher.cpp \
+    managers/updateteacherdialog.cpp \
+    managers/updatekholleurdialog.cpp \
+    managers/usersgroupsmanager.cpp \
+	managers/coursesmanager.cpp \
+    storedData/course.cpp \
+    managers/eventsmanager.cpp \
+    storedData/event.cpp \
+    managers/updateeventdialog.cpp \
+    managers/selectgroupsdialog.cpp \
+	managers/kholloscopewizard.cpp \
+    managers/KholloscopeWizardPages/subjectspage.cpp \
+    managers/KholloscopeWizardPages/userspage.cpp \
+    managers/KholloscopeWizardPages/generatepage.cpp \
+    storedData/timeslot.cpp \
+    storedData/kholle.cpp \
+    interface/interfacedialog.cpp \
+    interface/table.cpp \
+    interface/khollotable.cpp \
+    interface/interfacetab.cpp \
+    interface/introinterface.cpp \
+	managers/timeslotsmanager.cpp
+DISTFILES +=
+
+RESOURCES += \
+    khollo.qrc
+
