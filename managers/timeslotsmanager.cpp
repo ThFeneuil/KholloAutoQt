@@ -148,6 +148,7 @@ void TimeslotsManager::addTimeslot() {
     query.bindValue(":id_day", ts->getId_day());
     query.exec();
 
+    delete ts;
     update_list_timeslots(k->getId());
 }
 

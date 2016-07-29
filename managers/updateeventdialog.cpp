@@ -41,7 +41,7 @@ UpdateEventDialog::~UpdateEventDialog() {
     delete ui;
     // Free the groups
     for(int i=0; i<m_list_groups->size(); ++i)
-        free((*m_list_groups)[i]);
+        delete (*m_list_groups)[i];
     free(m_list_groups);
 }
 

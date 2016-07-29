@@ -242,6 +242,15 @@ bool CoursesManager::update_courses(QGridLayout *grid, int week) {
         }
     }
 
+    //Free everything
+    while(!list.isEmpty()) {
+        QMap<QTime, Course*> *map = list.takeFirst();
+        foreach(Course* c, *map) {
+            delete c;
+        }
+        delete map;
+    }
+
     return true;
 }
 

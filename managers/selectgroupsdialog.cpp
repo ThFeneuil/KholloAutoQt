@@ -44,7 +44,7 @@ SelectGroupsDialog::~SelectGroupsDialog() {
     // Free memories
     if(result() == QDialog::Rejected) {
         for (int i = 0; i < m_listAllGroups->size(); ++i)
-            free((*m_listAllGroups)[i]);
+            delete (*m_listAllGroups)[i];
     }
     free(m_listAllGroups);
     free(m_isSelected);
@@ -113,7 +113,7 @@ bool SelectGroupsDialog::return_groups() {
     /** Save the selected groups in the list of selected groups **/
     // Remove the old groups
     for(int i=0; i<m_list->size(); ++i)
-        free((*m_list)[i]);
+        delete (*m_list)[i];
     m_list->clear();
 
     // Add the new groups
@@ -123,7 +123,7 @@ bool SelectGroupsDialog::return_groups() {
         // If selected, then insert in the list
         if( m_isSelected->contains(id) && (*m_isSelected)[id] == true)
                 m_list->append(m_listAllGroups->at(i));
-        else    free((*m_listAllGroups)[i]); // Else free memory
+        else    delete (*m_listAllGroups)[i]; // Else free memory
     }
 
     // Close the window
