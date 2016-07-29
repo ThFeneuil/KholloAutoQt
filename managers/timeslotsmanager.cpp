@@ -33,7 +33,7 @@ void TimeslotsManager::getKholleurs() {
     freeKholleurs();
 
     //Prepare query
-    QSqlQuery query(QSqlDatabase::database());
+    QSqlQuery query(*m_db);
     query.exec("SELECT id, name, id_subjects, duration, preparation, pupils FROM tau_kholleurs ORDER BY name");
 
 
@@ -65,7 +65,7 @@ void TimeslotsManager::update_list_timeslots(int id_kholleur) {
     ui->listTimeslots->clear();
 
     //Prepare query
-    QSqlQuery query(QSqlDatabase::database());
+    QSqlQuery query(*m_db);
     query.prepare("SELECT id, time_start, time, time_end, id_kholleurs, id_day FROM tau_timeslots WHERE id_kholleurs=:id_kholleurs ORDER BY id_day, time");
     query.bindValue(":id_kholleurs", id_kholleur);
     query.exec();
@@ -139,7 +139,7 @@ void TimeslotsManager::addTimeslot() {
     ts->setTime_end(time.addSecs(60*k->getDuration()));
 
     //Add to DB
-    QSqlQuery query(QSqlDatabase::database());
+    QSqlQuery query(*m_db);
     query.prepare("INSERT INTO tau_timeslots(time_start, time, time_end, id_kholleurs, id_day) VALUES(:time_start, :time, :time_end, :id_kholleurs, :id_day)");
     query.bindValue(":time_start", ts->getTime_start().toString("HH:mm:ss"));
     query.bindValue(":time", ts->getTime().toString("HH:mm:ss"));
@@ -164,7 +164,7 @@ void TimeslotsManager::deleteTimeslot() {
     //No confirmation needed, I think
 
     //Query
-    QSqlQuery query(QSqlDatabase::database());
+    QSqlQuery query(*m_db);
     query.prepare("DELETE FROM tau_timeslots WHERE id=:id");
     query.bindValue(":id", ts->getId());
     query.exec();

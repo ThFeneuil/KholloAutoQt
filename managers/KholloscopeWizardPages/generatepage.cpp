@@ -23,6 +23,7 @@ GeneratePage::~GeneratePage()
 void GeneratePage::initializePage() {
     connect(wizard()->button(QWizard::FinishButton), SIGNAL(clicked()), this, SLOT(saveKholles()));
 
+    freeKholles();
     getKholleurs();
     getTimeslots();
     loadSubjects();
@@ -405,6 +406,7 @@ bool GeneratePage::generate() {
 }
 
 void GeneratePage::display() {
+    ui->listWidget->clear();
     int i;
     for(i = 0; i < kholloscope.length(); i++) {
         ui->listWidget->addItem(QString::number(kholloscope[i]->getId_students()) + ", " + QString::number(kholloscope[i]->getId_teachers()) + ", " + kholloscope[i]->getTime_start().toString("dd/MM/yyyy hh:mm:ss"));
