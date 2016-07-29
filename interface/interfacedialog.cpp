@@ -36,7 +36,7 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
         subj->setShortName(query.value(2).toString());
         subj->setColor(query.value(3).toString());
 
-        InterfaceTab* tab = new InterfaceTab(subj, m_id_week, m_db);
+        InterfaceTab* tab = new InterfaceTab(subj, m_id_week, m_monday, m_db);
         ui->tabWidget->addTab(tab, subj->getShortName());
     }
 }

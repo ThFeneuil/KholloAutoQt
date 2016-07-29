@@ -21,7 +21,7 @@ class KholloTable : public QGraphicsScene
     enum DataImg { BeginDays, BeginHours, BetweenDays, BetweenHours };
 
 public:
-    KholloTable(QSqlDatabase* db, int id_week);
+    KholloTable(QSqlDatabase* db, int id_week, QDate monday);
     ~KholloTable();
     bool compatible(Student* stdnt, Timeslot *timeslot);
 
@@ -36,7 +36,7 @@ private:
     Kholleur* m_kholleur;
     Student* m_student;
     int m_id_week;
-    QDate* m_monday;
+    QDate m_monday;
 };
 
 #endif // KHOLLOTABLE_H

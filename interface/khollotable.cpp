@@ -1,9 +1,10 @@
 #include "interface/khollotable.h"
 #include <QPixmap>
 
-KholloTable::KholloTable(QSqlDatabase* db, int id_week) : QGraphicsScene() {
+KholloTable::KholloTable(QSqlDatabase* db, int id_week, QDate monday) : QGraphicsScene() {
     m_db = db;
     m_id_week = id_week;
+    m_monday = monday;
 
     sizeImg.insert(BeginDays, 42);
     sizeImg.insert(BetweenDays, 100);
@@ -195,7 +196,7 @@ void KholloTable::displayKholleurAndStudent(Kholleur* kll, Student* stud) {
         if(compatible(stud, slot))
             addRect(rect, QPen(Qt::black, 0), QBrush(Qt::green));
         else
-            addRect(rect, QPen(Qt::black, 0), QBrush(Qt::red));
+            addRect(rect, QPen(Qt::black, 0), QBrush(Qt::red, Qt::DiagCrossPattern));
         areaKholles.append(rect);
     }
 
@@ -246,7 +247,7 @@ bool KholloTable::compatible(Student* stdnt, Timeslot *timeslot) {
                                       "(E.`start` <= :start_time AND E.`end` > :start_time) OR"
                                       "(E.`start` < :end_time AND E.`end` >= :end_time) OR"
                                       "(E.`start` >= :start_time AND E.`end` <= :end_time))");
-        QDate new_date = m_monday->addDays(timeslot->getId_day() - 1);
+        QDate new_date = m_monday.addDays(timeslot->getId_day() - 1);
 
         event_query.bindValue(":start_time", QDateTime(new_date, timeslot->getTime_start()).toString("yyyy-MM-dd HH:mm:ss"));
         event_query.bindValue(":end_time", QDateTime(new_date, timeslot->getTime_end()).toString("yyyy-MM-dd HH:mm:ss"));
