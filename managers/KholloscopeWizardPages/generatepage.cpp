@@ -133,6 +133,7 @@ void GeneratePage::calculateProba() {
                 }
                 else {
                     QMessageBox::critical(this, "Erreur", "Erreur avec la base de donnée");
+                    exit(42);
                 }
             }
 
@@ -140,13 +141,13 @@ void GeneratePage::calculateProba() {
                 QDateTime last_time = QDateTime::fromString(kholle_query.value(2).toString(), "yyyy-MM-dd HH:mm:ss");
                 QDateTime monday_date = QDateTime(m_date);
 
-                if(last_time >= monday_date.addDays(-21))
+                if(last_time >= monday_date.addDays(-21) && last_time <= monday_date.addDays(21))
                     p -= 30;
 
-                if(last_time >= monday_date.addDays(-14))
+                if(last_time >= monday_date.addDays(-14) && last_time <= monday_date.addDays(14))
                     p -= 10;
 
-                if(last_time >= monday_date.addDays(-7))
+                if(last_time >= monday_date.addDays(-7) && last_time <= monday_date.addDays(7))
                     p -= 10;
             }
 

@@ -33,6 +33,12 @@ void UsersPage::initializePage() {
         connect(list, SIGNAL(itemSelectionChanged()), this, SLOT(selection_changed()));
     }
     ((KholloscopeWizard*) wizard())->set_assoc_subjects(list_selected_subjects);
+
+    QDate nextMonday = QDate::currentDate();
+    while(nextMonday.dayOfWeek() != 1)
+        nextMonday = nextMonday.addDays(1);
+    ui->dateEdit->setDate(nextMonday);
+
     registerField("current_week", ui->comboBox);
     registerField("monday_date", ui->dateEdit);
 }
