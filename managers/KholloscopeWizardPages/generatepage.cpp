@@ -60,7 +60,7 @@ void GeneratePage::getTimeslots() {
 
 void GeneratePage::freeTimeslots() {
     while(!timeslots.isEmpty()) {
-        free(timeslots.takeFirst());
+        delete timeslots.takeFirst();
     }
 }
 
@@ -97,7 +97,7 @@ void GeneratePage::freeKholleurs() {
     QList<int> keys = kholleurs.keys();
     int i;
     for(i = 0; i < keys.length(); i++) {
-        free(kholleurs.take(keys[i]));
+        delete kholleurs.take(keys[i]);
     }
 }
 

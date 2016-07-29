@@ -68,7 +68,7 @@ void KholloscopeWizard::load_students() {
 
 void KholloscopeWizard::free_students() {
     while(!m_students->isEmpty()) {
-        free(m_students->takeFirst());
+        delete m_students->takeFirst();
     }
 }
 
@@ -97,7 +97,7 @@ void KholloscopeWizard::load_subjects() {
 
 void KholloscopeWizard::free_subjects() {
     while(!m_subjects->isEmpty()) {
-        free(m_subjects->takeFirst());
+        delete m_subjects->takeFirst();
     }
 }
 
