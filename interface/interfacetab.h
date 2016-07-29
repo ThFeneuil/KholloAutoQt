@@ -19,7 +19,7 @@ class InterfaceTab : public QWidget
     Q_OBJECT
 
 public:
-    explicit InterfaceTab(Subject* subj, QSqlDatabase* db, QWidget *parent = 0);
+    explicit InterfaceTab(Subject* subj, int id_week, QSqlDatabase* db, QWidget *parent = 0);
     ~InterfaceTab();
 
 public slots:
@@ -30,6 +30,7 @@ private:
     Ui::InterfaceTab *ui;
     QSqlDatabase* m_db;
     Subject* m_subject;
+    int m_id_week;
 };
 
 #endif // INTERFACETAB_H

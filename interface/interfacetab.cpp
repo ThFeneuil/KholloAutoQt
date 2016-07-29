@@ -1,15 +1,16 @@
 #include "interfacetab.h"
 #include "ui_interfacetab.h"
 
-InterfaceTab::InterfaceTab(Subject* subj, QSqlDatabase *db, QWidget *parent) :
+InterfaceTab::InterfaceTab(Subject* subj, int id_week, QSqlDatabase *db, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::InterfaceTab)
 {
     ui->setupUi(this);
     m_subject = subj;
     m_db = db;
+    m_id_week = id_week;
 
-    KholloTable* scene = new KholloTable(m_db);
+    KholloTable* scene = new KholloTable(m_db, id_week);
     ui->viewTable->setScene(scene);
 
     QSqlQuery query(*m_db);

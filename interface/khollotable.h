@@ -21,7 +21,7 @@ class KholloTable : public QGraphicsScene
     enum DataImg { BeginDays, BeginHours, BetweenDays, BetweenHours };
 
 public:
-    KholloTable(QSqlDatabase* db);
+    KholloTable(QSqlDatabase* db, int id_week);
     ~KholloTable();
 
 public slots:
@@ -33,6 +33,7 @@ private:
     QMap<DataImg, int> sizeImg;
     Kholleur* m_kholleur;
     Student* m_student;
+    int m_id_week;
 };
 
 #endif // KHOLLOTABLE_H

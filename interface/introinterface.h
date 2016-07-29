@@ -16,6 +16,9 @@ public:
     explicit IntroInterface(int* id_week, QDate* monday, QWidget *parent = 0);
     ~IntroInterface();
 
+public slots:
+    void save();
+
 private:
     Ui::IntroInterface *ui;
     int* m_id_week;

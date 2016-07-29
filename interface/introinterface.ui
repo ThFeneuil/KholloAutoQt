@@ -30,18 +30,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QComboBox" name="week">
-          <item>
-           <property name="text">
-            <string>Semaine paire</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Semaine impaire</string>
-           </property>
-          </item>
-         </widget>
+         <widget class="QComboBox" name="week"/>
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="label_2">

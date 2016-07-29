@@ -149,9 +149,15 @@ void MainWindow::openInterface() {
     QSqlDatabase db = QSqlDatabase::database();
 
     if(db.isOpen()) {
-        // Open the manager
-        InterfaceDialog manager(&db);
-        manager.exec();
+        // Open the intro of the interface
+        int id_week = -1;
+        QDate monday;
+        IntroInterface intro(&id_week, &monday, this);
+        if(intro.exec() == IntroInterface::Accepted) {
+            // If intro valided, open the interface
+            InterfaceDialog manager(&db, id_week, monday, this);
+            manager.exec();
+        }
     }
     else {
         QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");

@@ -28,7 +28,7 @@ class InterfaceDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit InterfaceDialog(QSqlDatabase *db, QWidget *parent = 0);
+    explicit InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QWidget *parent = 0);
     ~InterfaceDialog();
 
 public slots:

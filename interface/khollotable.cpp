@@ -1,8 +1,9 @@
 #include "interface/khollotable.h"
 #include <QPixmap>
 
-KholloTable::KholloTable(QSqlDatabase* db) : QGraphicsScene() {
+KholloTable::KholloTable(QSqlDatabase* db, int id_week) : QGraphicsScene() {
     m_db = db;
+    m_id_week = id_week;
 
     sizeImg.insert(BeginDays, 42);
     sizeImg.insert(BetweenDays, 100);
@@ -83,9 +84,10 @@ void KholloTable::displayStudent(Student* stud) {
                       "(SELECT `id_groups` "
                        "FROM `tau_groups_users` AS L "
                        "WHERE L.`id_users` = :id_users "
-                        "AND id_week = 1 "
+                        "AND id_week = :id_week "
                                 ")");
     query.bindValue(":id_users", stud->getId());
+    query.bindValue(":id_week", m_id_week);
     query.exec();
     while (query.next()) {
         Course* course = new Course();

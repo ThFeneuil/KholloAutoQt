@@ -13,6 +13,7 @@
 #include "managers/eventsmanager.h"
 #include "managers/kholloscopewizard.h"
 #include "interface/interfacedialog.h"
+#include "interface/introinterface.h"
 
 namespace Ui {
 class MainWindow;
