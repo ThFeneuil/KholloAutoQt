@@ -11,6 +11,13 @@
 #include <QMessageBox>
 #include <QTableView>
 #include <QTableWidget>
+#include <QPainter>
+#include "interface/table.h"
+//#include "interface/khollotable.h"
+#include "interface/interfacetab.h"
+#include "interface/introinterface.h"
+#include <QGraphicsView>
+#include <QListWidget>
 
 namespace Ui {
 class InterfaceDialog;
@@ -25,12 +32,14 @@ public:
     ~InterfaceDialog();
 
 public slots:
-
+    bool selectStudent();
 
 private:
     Ui::InterfaceDialog *ui;
     QSqlDatabase *m_db;
     QList<Student*> *m_students;
+    int m_id_week;
+    QDate m_monday;
 };
 
 #endif // INTERFACEDIALOG_H

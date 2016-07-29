@@ -18,7 +18,9 @@ FORMS += \
     managers/KholloscopeWizardPages/subjectspage.ui \
     managers/KholloscopeWizardPages/userspage.ui \
     managers/KholloscopeWizardPages/generatepage.ui \
-    interface/interfacedialog.ui
+    interface/interfacedialog.ui \
+    interface/interfacetab.ui \
+    interface/introinterface.ui
 
 HEADERS += \
     mainwindow.h \
@@ -47,7 +49,11 @@ HEADERS += \
     managers/KholloscopeWizardPages/generatepage.h \
     storedData/timeslot.h \
     storedData/kholle.h \
-    interface/interfacedialog.h
+    interface/interfacedialog.h \
+    interface/table.h \
+    interface/khollotable.h \
+    interface/interfacetab.h \
+    interface/introinterface.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -77,4 +83,13 @@ SOURCES += \
     managers/KholloscopeWizardPages/generatepage.cpp \
     storedData/timeslot.cpp \
     storedData/kholle.cpp \
-    interface/interfacedialog.cpp
+    interface/interfacedialog.cpp \
+    interface/table.cpp \
+    interface/khollotable.cpp \
+    interface/interfacetab.cpp \
+    interface/introinterface.cpp
+
+DISTFILES +=
+
+RESOURCES += \
+    khollo.qrc
