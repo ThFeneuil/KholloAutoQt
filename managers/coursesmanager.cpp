@@ -247,7 +247,7 @@ bool CoursesManager::update_courses(QGridLayout *grid, int week) {
 
 bool CoursesManager::save_changes() {
     if(current == NULL) {
-        QMessageBox::critical(this, "Erreur", "Veuillez sélectionner un groupe!");
+        QMessageBox::critical(this, "Erreur", "Veuillez sélectionner un groupe.");
         return false;
     }
 

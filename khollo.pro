@@ -20,7 +20,8 @@ FORMS += \
     managers/KholloscopeWizardPages/generatepage.ui \
     interface/interfacedialog.ui \
     interface/interfacetab.ui \
-    interface/introinterface.ui
+    interface/introinterface.ui \
+    managers/timeslotsmanager.ui
 
 HEADERS += \
     mainwindow.h \
@@ -53,7 +54,8 @@ HEADERS += \
     interface/table.h \
     interface/khollotable.h \
     interface/interfacetab.h \
-    interface/introinterface.h
+    interface/introinterface.h \
+    managers/timeslotsmanager.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -87,9 +89,10 @@ SOURCES += \
     interface/table.cpp \
     interface/khollotable.cpp \
     interface/interfacetab.cpp \
-    interface/introinterface.cpp
-
+    interface/introinterface.cpp \
+	managers/timeslotsmanager.cpp
 DISTFILES +=
 
 RESOURCES += \
     khollo.qrc
+
