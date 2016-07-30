@@ -39,6 +39,8 @@ void CopyTimeslots::copy() {
         QMessageBox::information(this, "Information", "La date n'étant pas à un lundi, la date utilisée sera le lundi de la même semaine.");
     }
 
+    bool changed = false;
+
     //2 possibilities depending on bool
     if(m_all) {
         //Display warning
@@ -47,13 +49,6 @@ void CopyTimeslots::copy() {
                                        QMessageBox::Yes | QMessageBox::Cancel);
 
         if(res == QMessageBox::Yes) {
-            //Delete all timeslots for this week
-            QSqlQuery delete_query(*m_db);
-            delete_query.prepare("DELETE FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date");
-            delete_query.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
-            delete_query.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
-            delete_query.exec();
-
             //Get all timeslots from the other week
             QSqlQuery get_query(*m_db);
             get_query.prepare("SELECT date, time_start, time, time_end, id_kholleurs, pupils FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date");
@@ -61,8 +56,38 @@ void CopyTimeslots::copy() {
             get_query.bindValue(":sunday_date", old_date.addDays(6).toString("yyyy-MM-dd"));
             get_query.exec();
 
+            //Delete all timeslots for this week
+            QSqlQuery delete_query(*m_db);
+            delete_query.prepare("DELETE FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date");
+            delete_query.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
+            delete_query.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
+            delete_query.exec();
+
             //And insert them for the new week
             while(get_query.next()) {
+                //Check for a change
+                QTime time_start = QTime::fromString(get_query.value(1).toString(), "h:mm:ss");
+                QTime time = QTime::fromString(get_query.value(2).toString(), "h:mm:ss");
+                QTime time_end = QTime::fromString(get_query.value(3).toString(), "h:mm:ss");
+
+                QSqlQuery kholleur(*m_db);
+                kholleur.prepare("SELECT preparation, duration, pupils FROM tau_kholleurs WHERE id=:id");
+                kholleur.bindValue(":id", get_query.value(4).toInt());
+                kholleur.exec();
+
+                if(kholleur.next()) {
+                    //QMessageBox::information(this, "OK", QString::number(time_start.secsTo(time)) + "\n" + QString::number(time.secsTo(time_end)) + "\n" + get_query.value(5).toString());
+                    //QMessageBox::information(this, "OK", kholleur.value(0).toString() + "\n" + kholleur.value(1).toString() + "\n" + kholleur.value(2).toString());
+                    if(time_start.secsTo(time) != kholleur.value(0).toInt()*60
+                            || time.secsTo(time_end) != kholleur.value(1).toInt()*60
+                            || get_query.value(5).toInt() != kholleur.value(2).toInt())
+                        changed = true;
+                }
+                else {
+                    QMessageBox::warning(this, "Attention", "Ce kholleur a déjà été supprimé... Comment est-ce possible ?");
+                }
+
+
                 QSqlQuery insert_query(*m_db);
                 insert_query.prepare("INSERT INTO tau_timeslots(date, time_start, time, time_end, id_kholleurs, pupils) VALUES(:date, :time_start, :time, :time_end, :id_kholleurs, :pupils)");
                 insert_query.bindValue(":date", m_date.addDays(QDate::fromString(get_query.value(0).toString(), "yyyy-M-d").dayOfWeek() - 1).toString("yyyy-MM-dd"));
@@ -78,14 +103,6 @@ void CopyTimeslots::copy() {
     }
 
     else {
-        //Delete all timeslots for this week for this kholleur
-        QSqlQuery delete_query(*m_db);
-        delete_query.prepare("DELETE FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date AND id_kholleurs=:id_kholleurs");
-        delete_query.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
-        delete_query.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
-        delete_query.bindValue(":id_kholleurs", m_id_kholleur);
-        delete_query.exec();
-
         //Get all timeslots from the other week for this kholleur
         QSqlQuery get_query(*m_db);
         get_query.prepare("SELECT date, time_start, time, time_end, id_kholleurs, pupils FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date AND id_kholleurs=:id_kholleurs");
@@ -94,8 +111,36 @@ void CopyTimeslots::copy() {
         get_query.bindValue(":id_kholleurs", m_id_kholleur);
         get_query.exec();
 
+        //Delete all timeslots for this week for this kholleur
+        QSqlQuery delete_query(*m_db);
+        delete_query.prepare("DELETE FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date AND id_kholleurs=:id_kholleurs");
+        delete_query.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
+        delete_query.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
+        delete_query.bindValue(":id_kholleurs", m_id_kholleur);
+        delete_query.exec();
+
         //And insert them for the new week
         while(get_query.next()) {
+            //Check for a change
+            QTime time_start = QTime::fromString(get_query.value(1).toString(), "h:mm:ss");
+            QTime time = QTime::fromString(get_query.value(2).toString(), "h:mm:ss");
+            QTime time_end = QTime::fromString(get_query.value(3).toString(), "h:mm:ss");
+
+            QSqlQuery kholleur(*m_db);
+            kholleur.prepare("SELECT preparation, duration, pupils FROM tau_kholleurs WHERE id=:id");
+            kholleur.bindValue(":id", get_query.value(4).toInt());
+            kholleur.exec();
+
+            if(kholleur.next()) {
+                if(time_start.secsTo(time) != kholleur.value(0).toInt()*60
+                        || time.secsTo(time_end) != kholleur.value(1).toInt()*60
+                        || get_query.value(5).toInt() != kholleur.value(2).toInt())
+                    changed = true;
+            }
+            else {
+                QMessageBox::warning(this, "Attention", "Ce kholleur a déjà été supprimé... Comment est-ce possible ?");
+            }
+
             QSqlQuery insert_query(*m_db);
             insert_query.prepare("INSERT INTO tau_timeslots(date, time_start, time, time_end, id_kholleurs, pupils) VALUES(:date, :time_start, :time, :time_end, :id_kholleurs, :pupils)");
             insert_query.bindValue(":date", m_date.addDays(QDate::fromString(get_query.value(0).toString(), "yyyy-M-d").dayOfWeek() - 1).toString("yyyy-MM-dd"));
@@ -107,5 +152,11 @@ void CopyTimeslots::copy() {
             insert_query.exec();
         }
         accept();
+    }
+
+    if(changed) {
+        QMessageBox::warning(this, "Attention", "Les paramètres de certains kholleurs ont changé.\n"
+                                                "Les horaires de kholles sont simplement copiés et ne sont pas automatiquement mis à jour.\n"
+                                                "Pour que ces changements se répercutent sur les horaires, il faut les rentrer à nouveau.");
     }
 }
