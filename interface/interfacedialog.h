@@ -16,6 +16,7 @@
 //#include "interface/khollotable.h"
 #include "interface/interfacetab.h"
 #include "interface/introinterface.h"
+#include "interface/database.h"
 #include <QGraphicsView>
 #include <QListWidget>
 

@@ -6,10 +6,13 @@ Timeslot::Timeslot()
     m_id_kholleurs = 0;
     m_date = QDate::currentDate();
     m_pupils = 0;
-    m_kholles = new QList<Kholle>();
+    m_kholles2 = new QList<Kholle>();
+    m_kholles = new QList<Kholle*>();
+    m_kholleur = NULL;
 }
 
 Timeslot::~Timeslot() {
+    delete m_kholles2;
     delete m_kholles;
 }
 
@@ -33,7 +36,6 @@ QTime Timeslot::getTime_end() const {
 int Timeslot::getId_kholleurs() const {
     return m_id_kholleurs;
 }
-
 QDate Timeslot::getDate() const {
     return m_date;
 }
@@ -41,13 +43,17 @@ QDate Timeslot::getDate() const {
 int Timeslot::getPupils() const {
     return m_pupils;
 }
-
 QRect* Timeslot::getArea() const {
     return m_area;
 }
-
 QList<Kholle>* Timeslot::getKholles() const {
+    return m_kholles2;
+}
+QList<Kholle*>* Timeslot::kholles() const {
     return m_kholles;
+}
+Kholleur* Timeslot::kholleur() const {
+    return m_kholleur;
 }
 
 
@@ -82,4 +88,7 @@ void Timeslot::setPupils(int pupils) {
 
 void Timeslot::setArea(QRect* area) {
     m_area = area;
+}
+void Timeslot::setKholleur(Kholleur* kll) {
+    m_kholleur = kll;
 }

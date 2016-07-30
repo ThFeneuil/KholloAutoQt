@@ -11,6 +11,12 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
     m_id_week = id_week;
     m_monday = monday;
 
+    QMessageBox::information(this, "DataBase", "START !");
+    DataBase* database = new DataBase(m_db);
+    database->load();
+    QMessageBox::information(this, "DataBase", "STOP !");
+    delete database;
+
     // Get the list of all the students
     QSqlQuery query(*m_db);
     query.exec("SELECT id, name, first_name, email FROM tau_users ORDER BY name, first_name");

@@ -59,7 +59,9 @@ HEADERS += \
     interface/introinterface.h \
     managers/timeslotsmanager.h \
     managers/introtimeslots.h \
-    managers/copytimeslots.h
+    managers/copytimeslots.h \
+    storedData/storeddatum.h \
+    interface/database.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -96,7 +98,9 @@ SOURCES += \
     interface/introinterface.cpp \
 	managers/timeslotsmanager.cpp \
     managers/introtimeslots.cpp \
-    managers/copytimeslots.cpp
+    managers/copytimeslots.cpp \
+    storedData/storeddatum.cpp \
+    interface/database.cpp
 DISTFILES +=
 
 RESOURCES += \

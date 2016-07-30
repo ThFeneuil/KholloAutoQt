@@ -2,6 +2,12 @@
 #define KHOLLEUR_H
 
 #include <QString>
+#include <QList>
+#include "storedData/subject.h"
+#include "storedData/timeslot.h"
+
+class Subject;
+class Timeslot;
 
 class Kholleur
 {
@@ -16,6 +22,8 @@ class Kholleur
         int getDuration() const;
         int getPreparation() const;
         int getPupils() const;
+        Subject* subject() const; // Interface
+        QList<Timeslot*>* timeslots() const; // Interface
 
         //Setters
         void setId(int id);
@@ -24,6 +32,7 @@ class Kholleur
         void setDuration(int duration);
         void setPreparation(int preparation);
         void setPupils(int pupils);
+        void setSubject(Subject* subj);
 
     private:
         int m_id;
@@ -32,6 +41,10 @@ class Kholleur
         int m_duration;
         int m_preparation;
         int m_pupils;
+
+        // Interface
+        Subject* m_subject;
+        QList<Timeslot*>* m_timeslots;
 };
 
 #endif // KHOLLEUR_H

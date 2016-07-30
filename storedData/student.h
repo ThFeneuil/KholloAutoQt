@@ -2,6 +2,12 @@
 #define STUDENT_H
 
 #include <QString>
+#include <QList>
+#include "storedData/group.h"
+#include "storedData/kholle.h"
+
+class Group;
+class Kholle;
 
 class Student
 {
@@ -14,6 +20,8 @@ class Student
         QString getName() const;
         QString getFirst_name() const;
         QString getEmail() const;
+        QList<Group*>* groups() const; // Interface
+        QList<Kholle*>* kholles() const; // Interface
 
         //Setters
         void setId(int id);
@@ -26,6 +34,10 @@ class Student
         QString m_name;
         QString m_first_name;
         QString m_email;
+
+        // Interface
+        QList<Group*>* m_groups;
+        QList<Kholle*>* m_kholles;
 };
 
 

@@ -57,13 +57,19 @@ void KholloTable::displayKholleur(Kholleur* kll) {
         slot->setTime_start(query.value(5).toTime());
 
         QSqlQuery queryKholles(*m_db);
-        queryKholles.prepare("SELECT * "
-                      "FROM `tau_kholles` AS K "
-                      "JOIN `tau_users` AS U "
-                          "ON U.`id` = K.`id_users` "
-                      "WHERE K.`id_timeslots` = :id_timeslots");
-        queryKholles.bindValue(":id_timeslots", m_selectedTimeslot->getId());
+        queryKholles.prepare("SELECT `id`, `id_users`, `id_timeslots` "
+                      "FROM `tau_kholles` "
+                      "WHERE `id_timeslots` = :id_timeslots");
+        queryKholles.bindValue(":id_timeslots", slot->getId());
         queryKholles.exec();
+        while(queryKholles.next()) {
+            Kholle* klle = new Kholle();
+            klle->setId(query.value(0).toInt());
+            klle->setId_students(query.value(1).toInt());
+            klle->setId_timeslots(query.value(2).toInt());
+
+            slot->getKholles()->append(*klle);
+        }
 
         // Display the kholle
         int x = m_sizeImg[BeginDays]+m_sizeImg[BetweenDays]*m_monday.daysTo(slot->getDate());
@@ -175,6 +181,12 @@ void KholloTable::displayKholleurAndStudent(Kholleur* kll, Student* stud) {
         course->setId_day(query.value(6).toInt());
         course->setId_week(query.value(7).toInt());
 
+
+/*        QSqlRecord rec = query.record();
+        for (int i=0; i<rec.count(); i++) {
+            QMessageBox::information(NULL, "INFO", rec.fieldName(i) + "/" + rec.value(i).toString());
+        }
+*/
         // Display the course
         int x = m_sizeImg[BeginDays]+m_sizeImg[BetweenDays]*(course->getId_day()-1);
         int y = m_sizeImg[BeginHours]+m_sizeImg[BetweenHours]*(course->getTime_start().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
@@ -203,6 +215,21 @@ void KholloTable::displayKholleurAndStudent(Kholleur* kll, Student* stud) {
         slot->setId_kholleurs(query2.value(3).toInt());
         slot->setDate(query2.value(4).toDate());
         slot->setTime_start(query2.value(5).toTime());
+
+        QSqlQuery queryKholles(*m_db);
+        queryKholles.prepare("SELECT `id`, `id_users`, `id_timeslots` "
+                      "FROM `tau_kholles` "
+                      "WHERE `id_timeslots` = :id_timeslots");
+        queryKholles.bindValue(":id_timeslots", slot->getId());
+        queryKholles.exec();
+        while(queryKholles.next()) {
+            Kholle* klle = new Kholle();
+            klle->setId(query.value(0).toInt());
+            klle->setId_students(query.value(1).toInt());
+            klle->setId_timeslots(query.value(2).toInt());
+
+            slot->getKholles()->append(*klle);
+        }
 
         // Display the kholle
         int x = m_sizeImg[BeginDays]+m_sizeImg[BetweenDays]*m_monday.daysTo(slot->getDate());
@@ -281,17 +308,15 @@ bool KholloTable::compatible(Student* stdnt, Timeslot *timeslot) {
 void KholloTable::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
     QPoint pos = mouseEvent->scenePos().toPoint();
 
-    Timeslot* selectedTimeslot = NULL;
-
     for(int i=0; i<m_timeslots.count(); i++) {
         Timeslot * slot = m_timeslots.at(i);
         if(slot->getArea()->contains(pos)) {
-            selectedTimeslot = slot;
+            m_selectedTimeslot = slot;
             break;
         }
     }
 
-    if(selectedTimeslot) {
+    if(m_selectedTimeslot) {
         add_selection();
 
         if(m_areaKholles->layout()) {
@@ -306,28 +331,33 @@ void KholloTable::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
             text += "<strong> ATTENTION préparation :</strong> Début à " + m_selectedTimeslot->getTime_start().toString("hh:mm");
         QLabel* title = new QLabel(text);
         layout->addWidget(title);
+        for(int i=0; i<m_selectedTimeslot->getKholles()->count(); i++) {
+            Kholle klle = m_selectedTimeslot->getKholles()->at(i);
+
+            //QLabel* info = new QLabel()
+        }
         m_areaKholles->setLayout(layout);
     }
 }
 
 bool KholloTable::add_selection() {
-    if(m_selectedTimeslot) {
+    /*if(m_selectedTimeslot) {
         Timeslot* selectedTimeslot = m_selectedTimeslot;
         remove_selection();
         m_selectedTimeslot = selectedTimeslot;
 
         m_selectedFrame = addRect(*(m_selectedTimeslot->getArea()), QPen(Qt::yellow, 3));
-    }
+    }*/
     return true;
 }
 
 bool KholloTable::remove_selection() {
-    QMessageBox::information(NULL, "INFO", "42");
+    //QMessageBox::information(NULL, "INFO", "42");
     m_selectedTimeslot = NULL;
-    if(m_selectedFrame) {
+    /*if(m_selectedFrame) {
         removeItem(m_selectedFrame);
-        delete m_selectedFrame;
+        //delete m_selectedFrame;
         m_selectedFrame = NULL;
-    }
+    }*/
     return true;
 }

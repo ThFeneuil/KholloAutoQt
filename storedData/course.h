@@ -3,9 +3,15 @@
 
 #include <QString>
 #include <QTime>
+#include "storedData/subject.h"
+#include "storedData/group.h"
+#include "storedData/teacher.h"
 
-class Course
-{
+class Subject;
+class Group;
+class Teacher;
+
+class Course {
 public:
     Course();
     ~Course();
@@ -19,6 +25,9 @@ public:
     int getId_teachers() const;
     int getId_day() const;
     int getId_week() const;
+    Subject* subject() const;  // Interface
+    Group* group() const;  // Interface
+    Teacher* teacher() const;  // Interface
 
     //Setters
     void setId(int id);
@@ -29,6 +38,9 @@ public:
     void setId_teachers(int id_teachers);
     void setId_day(int id_day);
     void setId_week(int id_week);
+    void setSubject(Subject* subj);  // Interface
+    void setGroup(Group* grp);  // Interface
+    void setTeacher(Teacher* tcher);  // Interface
 
 private:
     int m_id;
@@ -39,6 +51,11 @@ private:
     int m_id_teachers;
     int m_id_day;
     int m_id_week;
+
+    // Interface
+    Subject* m_subject;
+    Group* m_group;
+    Teacher* m_teacher;
 };
 
 #endif // COURSE_H

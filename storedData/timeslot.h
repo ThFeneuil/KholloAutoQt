@@ -5,6 +5,10 @@
 #include <QRect>
 #include <QList>
 #include "storedData/kholle.h"
+#include "storedData/kholleur.h"
+
+class Kholleur;
+class Kholle;
 
 class Timeslot
 {
@@ -22,6 +26,8 @@ public:
     int getPupils() const;
     QRect* getArea() const;
     QList<Kholle>* getKholles() const;
+    QList<Kholle*>* kholles() const;
+    Kholleur* kholleur() const;
 
     //Setters
     void setId(int id);
@@ -32,6 +38,7 @@ public:
     void setDate(QDate date);
     void setPupils(int pupils);
     void setArea(QRect* area);
+    void setKholleur(Kholleur* kll);
 
 private:
     int m_id;
@@ -44,7 +51,9 @@ private:
 
     // Interface
     QRect* m_area;
-    QList<Kholle>* m_kholles;
+    QList<Kholle>* m_kholles2;
+    QList<Kholle*>* m_kholles;
+    Kholleur* m_kholleur;
 };
 
 #endif // TIMESLOT_H

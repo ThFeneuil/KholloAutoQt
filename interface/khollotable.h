@@ -15,6 +15,7 @@
 #include <QVBoxLayout>
 #include <QGraphicsRectItem>
 #include <QLabel>
+#include <QSqlRecord>
 #include "storedData/kholleur.h"
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
