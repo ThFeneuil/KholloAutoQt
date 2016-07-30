@@ -9,7 +9,7 @@
 #include "managers/kholleursmanager.h"
 #include "managers/usersgroupsmanager.h"
 #include "managers/coursesmanager.h"
-#include "managers/timeslotsmanager.h"
+#include "managers/introtimeslots.h"
 #include "managers/eventsmanager.h"
 #include "managers/kholloscopewizard.h"
 #include "interface/interfacedialog.h"

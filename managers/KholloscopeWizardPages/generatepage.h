@@ -74,9 +74,6 @@ private:
 
     QMap<int, QMap<int, float> > proba;
     QMap<int, QMap<int, QList<Timeslot*> > > poss;
-    int current_student;
-    int current_subject;
-    int current_min;
     int profondeur;
     QList<Kholle*> kholloscope;
 };

@@ -122,7 +122,7 @@ void MainWindow::openTimeslotsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        TimeslotsManager manager(&db);
+        IntroTimeslots manager(&db);
         manager.exec();
     }
     else {

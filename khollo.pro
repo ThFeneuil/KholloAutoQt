@@ -21,7 +21,9 @@ FORMS += \
     interface/interfacedialog.ui \
     interface/interfacetab.ui \
     interface/introinterface.ui \
-    managers/timeslotsmanager.ui
+    managers/timeslotsmanager.ui \
+    managers/introtimeslots.ui \
+    managers/copytimeslots.ui
 
 HEADERS += \
     mainwindow.h \
@@ -55,7 +57,9 @@ HEADERS += \
     interface/khollotable.h \
     interface/interfacetab.h \
     interface/introinterface.h \
-    managers/timeslotsmanager.h
+    managers/timeslotsmanager.h \
+    managers/introtimeslots.h \
+    managers/copytimeslots.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -90,7 +94,9 @@ SOURCES += \
     interface/khollotable.cpp \
     interface/interfacetab.cpp \
     interface/introinterface.cpp \
-	managers/timeslotsmanager.cpp
+	managers/timeslotsmanager.cpp \
+    managers/introtimeslots.cpp \
+    managers/copytimeslots.cpp
 DISTFILES +=
 
 RESOURCES += \
