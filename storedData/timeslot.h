@@ -15,7 +15,7 @@ public:
     QTime getTime() const;
     QTime getTime_end() const;
     int getId_kholleurs() const;
-    int getId_day() const;
+    QDate getDate() const;
     int getPupils() const;
 
     //Setters
@@ -24,7 +24,7 @@ public:
     void setTime(QTime time);
     void setTime_end(QTime time_end);
     void setId_kholleurs(int id_kholleurs);
-    void setId_day(int id_day);
+    void setDate(QDate date);
     void setPupils(int pupils);
 
 private:
@@ -33,7 +33,7 @@ private:
     QTime m_time;
     QTime m_time_end;
     int m_id_kholleurs;
-    int m_id_day;
+    QDate m_date;
     int m_pupils;
 };
 

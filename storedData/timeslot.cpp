@@ -4,7 +4,7 @@ Timeslot::Timeslot()
 {
     m_id = 0;
     m_id_kholleurs = 0;
-    m_id_day = 0;
+    m_date = QDate::currentDate();
     m_pupils = 0;
 }
 
@@ -33,8 +33,8 @@ int Timeslot::getId_kholleurs() const {
     return m_id_kholleurs;
 }
 
-int Timeslot::getId_day() const {
-    return m_id_day;
+QDate Timeslot::getDate() const {
+    return m_date;
 }
 
 int Timeslot::getPupils() const {
@@ -63,8 +63,8 @@ void Timeslot::setId_kholleurs(int id_kholleurs) {
     m_id_kholleurs = id_kholleurs;
 }
 
-void Timeslot::setId_day(int id_day) {
-    m_id_day = id_day;
+void Timeslot::setDate(QDate date) {
+    m_date = date;
 }
 
 void Timeslot::setPupils(int pupils) {

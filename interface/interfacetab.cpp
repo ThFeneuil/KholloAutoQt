@@ -13,7 +13,7 @@ InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabas
 
     KholloTable* scene = new KholloTable(m_db, id_week, m_monday);
     ui->viewTable->setScene(scene);
-
+    //connect(ui->viewTable, SIGNAL())
     QSqlQuery query(*m_db);
     query.prepare("SELECT `id`, `name`, `id_subjects`, `duration`, `preparation`, `pupils` FROM `tau_kholleurs` WHERE `id_subjects`=:id_subjects");
     query.bindValue(":id_subjects", m_subject->getId());

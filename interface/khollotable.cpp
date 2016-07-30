@@ -14,16 +14,6 @@ KholloTable::KholloTable(QSqlDatabase* db, int id_week, QDate monday) : QGraphic
     m_student = NULL;
     m_kholleur = NULL;
 
-    /*
-     * addRect(310,50,100, 150,QPen(QColor(255,0,0)), QBrush(Qt::red));
-    QPixmap monPixmap(":/images/emptyTimeTable.png");
-    addPixmap(monPixmap);
-    addRect(110,70,100,150,QPen(QColor(255,0,0)), QBrush(Qt::green));
-    */
-/*
-    Kholleur* lafitte = new Kholleur();
-    lafitte->setId(13);
-    displayKholleur(lafitte);*/
     QPixmap monPixmap(":/images/emptyTimeTable.png");
     addPixmap(monPixmap);
 }
@@ -43,10 +33,13 @@ void KholloTable::displayKholleur(Kholleur* kll) {
 
     QQueue<QRect> areaKholles;
 
-    // Get the list of all the students
+    // Get the list of all the timeslots
     QSqlQuery query(*m_db);
-    query.prepare("SELECT id, time, time_end, id_kholleurs, id_day, time_start FROM `tau_timeslots` WHERE `id_kholleurs` = :id_kholleur");
+    query.prepare("SELECT id, time, time_end, id_kholleurs, date, time_start FROM `tau_timeslots` "
+                    "WHERE `id_kholleurs` = :id_kholleur AND (date >= :start AND date < :end)");
     query.bindValue(":id_kholleur", kll->getId());
+    query.bindValue(":start", m_monday.toString("yyyy-MM-dd"));
+    query.bindValue(":end", m_monday.addDays(7).toString("yyyy-MM-dd"));
     query.exec();
     while (query.next()) {
         Timeslot* slot = new Timeslot();
@@ -54,11 +47,11 @@ void KholloTable::displayKholleur(Kholleur* kll) {
         slot->setTime(query.value(1).toTime());
         slot->setTime_end(query.value(2).toTime());
         slot->setId_kholleurs(query.value(3).toInt());
-        slot->setId_day(query.value(4).toInt());
+        slot->setDate(query.value(4).toDate());
         slot->setTime_start(query.value(5).toTime());
 
         // Display the kholle
-        int x = sizeImg[BeginDays]+sizeImg[BetweenDays]*(slot->getId_day()-1);
+        int x = sizeImg[BeginDays]+sizeImg[BetweenDays]*m_monday.daysTo(slot->getDate());
         int y = sizeImg[BeginHours]+sizeImg[BetweenHours]*(slot->getTime().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
         int w = sizeImg[BetweenDays];
         int h = sizeImg[BetweenHours]*(slot->getTime_end().msecsSinceStartOfDay() - slot->getTime().msecsSinceStartOfDay())/3600000;
@@ -175,8 +168,11 @@ void KholloTable::displayKholleurAndStudent(Kholleur* kll, Student* stud) {
 
     // Get the list of all the students
     QSqlQuery query2(*m_db);
-    query2.prepare("SELECT id, time, time_end, id_kholleurs, id_day, time_start FROM `tau_timeslots` WHERE `id_kholleurs` = :id_kholleur");
+    query2.prepare("SELECT id, time, time_end, id_kholleurs, date, time_start FROM `tau_timeslots` "
+                    "WHERE `id_kholleurs` = :id_kholleur AND (date >= :start AND date < :end)");
     query2.bindValue(":id_kholleur", kll->getId());
+    query2.bindValue(":start", m_monday.toString("yyyy-MM-dd"));
+    query2.bindValue(":end", m_monday.addDays(7).toString("yyyy-MM-dd"));
     query2.exec();
     while (query2.next()) {
         Timeslot* slot = new Timeslot();
@@ -184,11 +180,11 @@ void KholloTable::displayKholleurAndStudent(Kholleur* kll, Student* stud) {
         slot->setTime(query2.value(1).toTime());
         slot->setTime_end(query2.value(2).toTime());
         slot->setId_kholleurs(query2.value(3).toInt());
-        slot->setId_day(query2.value(4).toInt());
+        slot->setDate(query2.value(4).toDate());
         slot->setTime_start(query2.value(5).toTime());
 
         // Display the kholle
-        int x = sizeImg[BeginDays]+sizeImg[BetweenDays]*(slot->getId_day()-1);
+        int x = sizeImg[BeginDays]+sizeImg[BetweenDays]*m_monday.daysTo(slot->getDate());
         int y = sizeImg[BeginHours]+sizeImg[BetweenHours]*(slot->getTime().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
         int w = sizeImg[BetweenDays];
         int h = sizeImg[BetweenHours]*(slot->getTime_end().msecsSinceStartOfDay() - slot->getTime().msecsSinceStartOfDay())/3600000;
@@ -214,7 +210,6 @@ void KholloTable::displayKholleurAndStudent(Kholleur* kll, Student* stud) {
 }
 
 bool KholloTable::compatible(Student* stdnt, Timeslot *timeslot) {
-    //return false;
     //Get all groups of user (the ids)
     QSqlQuery query(*m_db);
     query.prepare("SELECT id_groups FROM tau_groups_users WHERE id_users=:id_users");
@@ -234,7 +229,7 @@ bool KholloTable::compatible(Student* stdnt, Timeslot *timeslot) {
                                                                               "(time_start >= :time_start AND time_end <= :time_end) )");
         courses_query.bindValue(":time_start", timeslot->getTime_start());
         courses_query.bindValue(":time_end", timeslot->getTime_end());
-        courses_query.bindValue(":id_day", timeslot->getId_day());
+        courses_query.bindValue(":id_day", timeslot->getDate().dayOfWeek());
         courses_query.bindValue(":id_week", m_id_week);
         courses_query.exec();
 
@@ -247,10 +242,9 @@ bool KholloTable::compatible(Student* stdnt, Timeslot *timeslot) {
                                       "(E.`start` <= :start_time AND E.`end` > :start_time) OR"
                                       "(E.`start` < :end_time AND E.`end` >= :end_time) OR"
                                       "(E.`start` >= :start_time AND E.`end` <= :end_time))");
-        QDate new_date = m_monday.addDays(timeslot->getId_day() - 1);
 
-        event_query.bindValue(":start_time", QDateTime(new_date, timeslot->getTime_start()).toString("yyyy-MM-dd HH:mm:ss"));
-        event_query.bindValue(":end_time", QDateTime(new_date, timeslot->getTime_end()).toString("yyyy-MM-dd HH:mm:ss"));
+        event_query.bindValue(":start_time", QDateTime(timeslot->getDate(), timeslot->getTime_start()).toString("yyyy-MM-dd HH:mm:ss"));
+        event_query.bindValue(":end_time", QDateTime(timeslot->getDate(), timeslot->getTime_end()).toString("yyyy-MM-dd HH:mm:ss"));
         event_query.exec();
 
         if(event_query.next())
@@ -258,4 +252,11 @@ bool KholloTable::compatible(Student* stdnt, Timeslot *timeslot) {
     }
 
     return true;
+}
+
+void KholloTable::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent) {
+    QPointF point = mouseEvent->scenePos();
+    long x = (long) point.x();
+    long y = (long) point.y();
+    QMessageBox::information(NULL, "INFO", QString::number(x) + "/" + QString::number(y));
 }

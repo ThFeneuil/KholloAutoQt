@@ -10,6 +10,7 @@
 #include <QMap>
 #include <QVariant>
 #include <QQueue>
+#include <QGraphicsSceneMouseEvent>
 #include "storedData/kholleur.h"
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
@@ -29,6 +30,9 @@ public slots:
     void displayKholleur(Kholleur* kll);
     void displayStudent(Student* stud);
     void displayKholleurAndStudent(Kholleur* kll, Student* stud);
+
+protected:
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
 
 private:
     QSqlDatabase* m_db;
