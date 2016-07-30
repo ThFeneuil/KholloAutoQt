@@ -42,7 +42,7 @@ void MainWindow::openStudentsManager() {
         manager.exec();
     }
     else {
-        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
     }
 }
 
@@ -56,7 +56,7 @@ void MainWindow::openGroupsManager() {
         manager.exec();
     }
     else {
-        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
     }
 }
 
@@ -70,7 +70,7 @@ void MainWindow::openSubjectsManager() {
         manager.exec();
     }
     else {
-        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
     }
 }
 
@@ -84,7 +84,7 @@ void MainWindow::openKholleursManager() {
         manager.exec();
     }
     else {
-        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
     }
 }
 
@@ -98,7 +98,7 @@ void MainWindow::openUsersGroupsManager() {
         manager.exec();
     }
     else {
-        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
     }
 }
 
@@ -112,7 +112,7 @@ void MainWindow::openCoursesManager() {
         manager.exec();
     }
     else {
-        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
     }
 }
 
@@ -126,7 +126,7 @@ void MainWindow::openTimeslotsManager() {
         manager.exec();
     }
     else {
-        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
     }
 }
 
@@ -140,7 +140,7 @@ void MainWindow::openEventsManager() {
         manager.exec();
     }
     else {
-        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
     }
 }
 
@@ -160,7 +160,7 @@ void MainWindow::openInterface() {
         }
     }
     else {
-        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
     }
 }
 
@@ -174,6 +174,6 @@ void MainWindow::openKholloscope() {
         manager.exec();
     }
     else {
-        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échouée");
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
     }
 }

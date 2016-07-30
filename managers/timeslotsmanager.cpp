@@ -205,10 +205,21 @@ void TimeslotsManager::copyTimeslots() {
     //Open dialog
     CopyTimeslots dialog(m_db, m_date, false, k->getId());
     dialog.exec();
+
+    //Update
+    update_list_timeslots(k->getId());
 }
 
 void TimeslotsManager::copyAllTimeslots() {
     //Open dialog with all = true
     CopyTimeslots dialog(m_db, m_date);
     dialog.exec();
+
+    //Get selection
+    QList<QListWidgetItem*> selection = ui->listKholleurs->selectedItems();
+
+    //Update if necessary
+    if(selection.length() > 0) {
+        update_list_timeslots(((Kholleur*) selection[0]->data(Qt::UserRole).toULongLong())->getId());
+    }
 }

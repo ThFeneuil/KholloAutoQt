@@ -24,6 +24,9 @@ void GeneratePage::initializePage() {
     //Connect the finish button to save on finish
     connect(wizard()->button(QWizard::FinishButton), SIGNAL(clicked()), this, SLOT(saveKholles()));
 
+    //Initialise random number
+    qsrand((uint)QTime::currentTime().msec());
+
     m_week = field("current_week").toInt() + 1;
     m_date = field("monday_date").toDateTime().date();
     if(m_date.dayOfWeek() != 1) {
@@ -128,7 +131,7 @@ void GeneratePage::calculateProba() {
             //Get all past (and future) kholles for the same student with same kholleur
             QSqlQuery kholle_query(*m_db);
             kholle_query.prepare("SELECT K.`id`, K.`id_users`, K.`id_timeslots`, T.`date` "
-                                 "FROM tau_kholles AS K JOIN tau_timeslots AS T ON K.`id_timslots` = T.`id`"
+                                 "FROM tau_kholles AS K JOIN tau_timeslots AS T ON K.`id_timeslots` = T.`id`"
                                  "WHERE K.`id_users` = :id_student AND T.`id_kholleurs` = :id_kholleurs ORDER BY T.`date` DESC");
             kholle_query.bindValue(":id_student", users[i]->getId());
             kholle_query.bindValue(":id_kholleurs", k->getId());
@@ -334,7 +337,8 @@ int GeneratePage::my_count(QList<Timeslot *> list) {
 working_index *GeneratePage::findMin() {
     /** To find the place with least possibilities **/
     int min = -1;
-    int s_min = 0, u_min = 0;
+    QList<int> s_mins;
+    QList<int> u_mins;
 
     QList<int> s_keys = poss.keys();
     int i, j;
@@ -345,16 +349,31 @@ working_index *GeneratePage::findMin() {
             int count = my_count(poss.value(s_keys[i]).value(u_keys[j]));
             if(min == -1 || count < min) {
                 min = count;
-                s_min = s_keys[i];
-                u_min = u_keys[j];
+                s_mins.clear();
+                u_mins.clear();
+                s_mins.append(s_keys[i]);
+                u_mins.append(u_keys[j]);
+            }
+            if(count == min) {
+                s_mins.append(s_keys[i]);
+                u_mins.append(u_keys[j]);
             }
         }
     }
 
     working_index *res = (working_index*) malloc(sizeof(working_index));
     res->min = min;
-    res->current_student = u_min;
-    res->current_subject = s_min;
+
+    //Get random number
+    if(s_mins.length() > 0) {
+        int random_int = qrand() % s_mins.length();
+        res->current_student = u_mins[random_int];
+        res->current_subject = s_mins[random_int];
+    }
+    else {
+        res->current_student = 0;
+        res->current_subject = 0;
+    }
     return res;
 }
 
