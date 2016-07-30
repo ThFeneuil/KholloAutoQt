@@ -11,7 +11,7 @@ InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabas
     m_id_week = id_week;
     m_monday = monday;
 
-    KholloTable* scene = new KholloTable(m_db, id_week, m_monday);
+    KholloTable* scene = new KholloTable(m_db, id_week, m_monday, ui->areaKholles);
     ui->viewTable->setScene(scene);
     //connect(ui->viewTable, SIGNAL())
     QSqlQuery query(*m_db);
@@ -30,7 +30,7 @@ InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabas
         QListWidgetItem *item = new QListWidgetItem(khll->getName(), ui->list_kholleurs);
         item->setData(Qt::UserRole, (qulonglong) khll);
     }
-    connect(ui->list_kholleurs, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(displayTeacher(QListWidgetItem*)));
+    connect(ui->list_kholleurs, SIGNAL(itemSelectionChanged()), this, SLOT(displayTeacher()));
 }
 
 InterfaceTab::~InterfaceTab()
@@ -38,7 +38,9 @@ InterfaceTab::~InterfaceTab()
     delete ui;
 }
 
-bool InterfaceTab::displayTeacher(QListWidgetItem *item) {
+bool InterfaceTab::displayTeacher() {
+    QListWidgetItem* item = ui->list_kholleurs->currentItem();
+
     if(item == NULL) {
         QMessageBox::critical(this, "Erreur", "Veuillez sélectionner un kholleur.");
         return false;

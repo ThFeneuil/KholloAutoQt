@@ -23,7 +23,7 @@ public:
     ~InterfaceTab();
 
 public slots:
-    bool displayTeacher(QListWidgetItem *item);
+    bool displayTeacher();
     bool selectStudent(Student* stud);
 
 private:

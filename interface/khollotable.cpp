@@ -1,18 +1,21 @@
 #include "interface/khollotable.h"
 #include <QPixmap>
 
-KholloTable::KholloTable(QSqlDatabase* db, int id_week, QDate monday) : QGraphicsScene() {
+KholloTable::KholloTable(QSqlDatabase* db, int id_week, QDate monday, QWidget *areaKholles) : QGraphicsScene() {
     m_db = db;
     m_id_week = id_week;
     m_monday = monday;
+    m_areaKholles = areaKholles;
 
-    sizeImg.insert(BeginDays, 42);
-    sizeImg.insert(BetweenDays, 100);
-    sizeImg.insert(BeginHours, 33);
-    sizeImg.insert(BetweenHours, 30);
+    m_sizeImg.insert(BeginDays, 42);
+    m_sizeImg.insert(BetweenDays, 100);
+    m_sizeImg.insert(BeginHours, 33);
+    m_sizeImg.insert(BetweenHours, 30);
 
     m_student = NULL;
     m_kholleur = NULL;
+    m_selectedTimeslot = NULL;
+    m_selectedFrame = NULL;
 
     QPixmap monPixmap(":/images/emptyTimeTable.png");
     addPixmap(monPixmap);
@@ -28,8 +31,11 @@ void KholloTable::displayKholleur(Kholleur* kll) {
         return;
     }
 
+    if(!m_kholleur || m_kholleur->getId() != kll->getId())
+        remove_selection();
     m_kholleur = kll;
     clear();
+    m_timeslots.clear();
 
     QQueue<QRect> areaKholles;
 
@@ -50,14 +56,24 @@ void KholloTable::displayKholleur(Kholleur* kll) {
         slot->setDate(query.value(4).toDate());
         slot->setTime_start(query.value(5).toTime());
 
+        QSqlQuery queryKholles(*m_db);
+        queryKholles.prepare("SELECT * "
+                      "FROM `tau_kholles` AS K "
+                      "JOIN `tau_users` AS U "
+                          "ON U.`id` = K.`id_users` "
+                      "WHERE K.`id_timeslots` = :id_timeslots");
+        queryKholles.bindValue(":id_timeslots", m_selectedTimeslot->getId());
+        queryKholles.exec();
+
         // Display the kholle
-        int x = sizeImg[BeginDays]+sizeImg[BetweenDays]*m_monday.daysTo(slot->getDate());
-        int y = sizeImg[BeginHours]+sizeImg[BetweenHours]*(slot->getTime().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
-        int w = sizeImg[BetweenDays];
-        int h = sizeImg[BetweenHours]*(slot->getTime_end().msecsSinceStartOfDay() - slot->getTime().msecsSinceStartOfDay())/3600000;
-        QRect rect(x,y,w,h);
-        addRect(rect, QPen(Qt::black, 0), QBrush(Qt::green));
-        areaKholles.append(rect);
+        int x = m_sizeImg[BeginDays]+m_sizeImg[BetweenDays]*m_monday.daysTo(slot->getDate());
+        int y = m_sizeImg[BeginHours]+m_sizeImg[BetweenHours]*(slot->getTime().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
+        int w = m_sizeImg[BetweenDays];
+        int h = m_sizeImg[BetweenHours]*(slot->getTime_end().msecsSinceStartOfDay() - slot->getTime().msecsSinceStartOfDay())/3600000;
+        slot->setArea(new QRect(x,y,w,h));
+        addRect(*slot->getArea(), QPen(Qt::black, 0), QBrush(Qt::green));
+        areaKholles.append(*slot->getArea());
+        m_timeslots.append(slot);
     }
 
     QPixmap monPixmap(":/images/emptyTimeTable.png");
@@ -105,10 +121,10 @@ void KholloTable::displayStudent(Student* stud) {
         course->setId_week(query.value(7).toInt());
 
         // Display the course
-        int x = sizeImg[BeginDays]+sizeImg[BetweenDays]*(course->getId_day()-1);
-        int y = sizeImg[BeginHours]+sizeImg[BetweenHours]*(course->getTime_start().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
-        int w = sizeImg[BetweenDays];
-        int h = sizeImg[BetweenHours]*(course->getTime_end().msecsSinceStartOfDay() - course->getTime_start().msecsSinceStartOfDay())/3600000;
+        int x = m_sizeImg[BeginDays]+m_sizeImg[BetweenDays]*(course->getId_day()-1);
+        int y = m_sizeImg[BeginHours]+m_sizeImg[BetweenHours]*(course->getTime_start().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
+        int w = m_sizeImg[BetweenDays];
+        int h = m_sizeImg[BetweenHours]*(course->getTime_end().msecsSinceStartOfDay() - course->getTime_start().msecsSinceStartOfDay())/3600000;
         QRect rect(x,y,w,h);
         addRect(rect, QPen(Qt::black, 0), QBrush(Qt::gray));
         areaCourses.append(rect);
@@ -121,12 +137,17 @@ void KholloTable::displayStudent(Student* stud) {
         QRect rect = areaCourses.dequeue();
         addRect(rect, QPen(Qt::blue, 1));
     }
+
+    add_selection();
 }
 
 void KholloTable::displayKholleurAndStudent(Kholleur* kll, Student* stud) {
     m_student = stud;
+    if(!m_kholleur || m_kholleur->getId() != kll->getId())
+        remove_selection();
     m_kholleur = kll;
     clear();
+    m_timeslots.clear();
 
     QQueue<QRect> areaCourses;
 
@@ -155,10 +176,10 @@ void KholloTable::displayKholleurAndStudent(Kholleur* kll, Student* stud) {
         course->setId_week(query.value(7).toInt());
 
         // Display the course
-        int x = sizeImg[BeginDays]+sizeImg[BetweenDays]*(course->getId_day()-1);
-        int y = sizeImg[BeginHours]+sizeImg[BetweenHours]*(course->getTime_start().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
-        int w = sizeImg[BetweenDays];
-        int h = sizeImg[BetweenHours]*(course->getTime_end().msecsSinceStartOfDay() - course->getTime_start().msecsSinceStartOfDay())/3600000;
+        int x = m_sizeImg[BeginDays]+m_sizeImg[BetweenDays]*(course->getId_day()-1);
+        int y = m_sizeImg[BeginHours]+m_sizeImg[BetweenHours]*(course->getTime_start().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
+        int w = m_sizeImg[BetweenDays];
+        int h = m_sizeImg[BetweenHours]*(course->getTime_end().msecsSinceStartOfDay() - course->getTime_start().msecsSinceStartOfDay())/3600000;
         QRect rect(x,y,w,h);
         addRect(rect, QPen(Qt::black, 0), QBrush(Qt::gray));
         areaCourses.append(rect);
@@ -184,16 +205,17 @@ void KholloTable::displayKholleurAndStudent(Kholleur* kll, Student* stud) {
         slot->setTime_start(query2.value(5).toTime());
 
         // Display the kholle
-        int x = sizeImg[BeginDays]+sizeImg[BetweenDays]*m_monday.daysTo(slot->getDate());
-        int y = sizeImg[BeginHours]+sizeImg[BetweenHours]*(slot->getTime().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
-        int w = sizeImg[BetweenDays];
-        int h = sizeImg[BetweenHours]*(slot->getTime_end().msecsSinceStartOfDay() - slot->getTime().msecsSinceStartOfDay())/3600000;
-        QRect rect(x,y,w,h);
+        int x = m_sizeImg[BeginDays]+m_sizeImg[BetweenDays]*m_monday.daysTo(slot->getDate());
+        int y = m_sizeImg[BeginHours]+m_sizeImg[BetweenHours]*(slot->getTime().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
+        int w = m_sizeImg[BetweenDays];
+        int h = m_sizeImg[BetweenHours]*(slot->getTime_end().msecsSinceStartOfDay() - slot->getTime().msecsSinceStartOfDay())/3600000;
+        slot->setArea(new QRect(x,y,w,h));
         if(compatible(stud, slot))
-            addRect(rect, QPen(Qt::black, 0), QBrush(Qt::green));
+            addRect(*slot->getArea(), QPen(Qt::black, 0), QBrush(Qt::green));
         else
-            addRect(rect, QPen(Qt::black, 0), QBrush(Qt::red, Qt::DiagCrossPattern));
-        areaKholles.append(rect);
+            addRect(*slot->getArea(), QPen(Qt::black, 0), QBrush(Qt::red, Qt::DiagCrossPattern));
+        areaKholles.append(*slot->getArea());
+        m_timeslots.append(slot);
     }
 
     QPixmap monPixmap(":/images/emptyTimeTable.png");
@@ -207,6 +229,8 @@ void KholloTable::displayKholleurAndStudent(Kholleur* kll, Student* stud) {
         QRect rect = areaCourses.dequeue();
         addRect(rect, QPen(Qt::blue, 1));
     }
+
+    add_selection();
 }
 
 bool KholloTable::compatible(Student* stdnt, Timeslot *timeslot) {
@@ -254,9 +278,56 @@ bool KholloTable::compatible(Student* stdnt, Timeslot *timeslot) {
     return true;
 }
 
-void KholloTable::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent) {
-    QPointF point = mouseEvent->scenePos();
-    long x = (long) point.x();
-    long y = (long) point.y();
-    QMessageBox::information(NULL, "INFO", QString::number(x) + "/" + QString::number(y));
+void KholloTable::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
+    QPoint pos = mouseEvent->scenePos().toPoint();
+
+    Timeslot* selectedTimeslot = NULL;
+
+    for(int i=0; i<m_timeslots.count(); i++) {
+        Timeslot * slot = m_timeslots.at(i);
+        if(slot->getArea()->contains(pos)) {
+            selectedTimeslot = slot;
+            break;
+        }
+    }
+
+    if(selectedTimeslot) {
+        add_selection();
+
+        if(m_areaKholles->layout()) {
+            for(int i=0; i<m_areaKholles->layout()->count(); i++)
+                delete m_areaKholles->layout()->itemAt(i)->widget();
+            delete m_areaKholles->layout();
+        }
+        QVBoxLayout* layout = new QVBoxLayout();
+        QString text = "<strong>Date :</strong> " + m_selectedTimeslot->getDate().toString("dd/MM/yyyy") + "<br />" +
+                       "<strong>Horaire :</strong> " + m_selectedTimeslot->getTime().toString("hh:mm") + " >> " + m_selectedTimeslot->getTime_end().toString("hh:mm") + "<br />";
+        if(m_selectedTimeslot->getTime_start() != m_selectedTimeslot->getTime())
+            text += "<strong> ATTENTION préparation :</strong> Début à " + m_selectedTimeslot->getTime_start().toString("hh:mm");
+        QLabel* title = new QLabel(text);
+        layout->addWidget(title);
+        m_areaKholles->setLayout(layout);
+    }
+}
+
+bool KholloTable::add_selection() {
+    if(m_selectedTimeslot) {
+        Timeslot* selectedTimeslot = m_selectedTimeslot;
+        remove_selection();
+        m_selectedTimeslot = selectedTimeslot;
+
+        m_selectedFrame = addRect(*(m_selectedTimeslot->getArea()), QPen(Qt::yellow, 3));
+    }
+    return true;
+}
+
+bool KholloTable::remove_selection() {
+    QMessageBox::information(NULL, "INFO", "42");
+    m_selectedTimeslot = NULL;
+    if(m_selectedFrame) {
+        removeItem(m_selectedFrame);
+        delete m_selectedFrame;
+        m_selectedFrame = NULL;
+    }
+    return true;
 }
