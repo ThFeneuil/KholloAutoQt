@@ -29,7 +29,6 @@ public:
 
     QList<Subject *> *get_assoc_subjects();
     void set_assoc_subjects(QList<Subject*> *list);
-    void free_assoc_subjects();
 
     void load_students();
     void free_students();
@@ -40,14 +39,7 @@ public:
     QList<Subject*> *get_subjects();
 
     void set_input(QMap<int, QList<Student*> > *input);
-    void free_input();
     QMap<int, QList<Student*> > *get_input();
-
-    /*int get_week();
-    void set_week(int week);
-
-    QDate get_date();
-    void set_date(QDate date);*/
 
 private:
     Ui::KholloscopeWizard *ui;
@@ -56,8 +48,6 @@ private:
     QList<Student*> *m_students;
     QList<Subject*> *m_subjects;
     QMap<int, QList<Student*> > *m_input;
-    /*int m_week;
-    QDate m_date;*/
 };
 
 #endif // KHOLLOSCOPEWIZARD_H
