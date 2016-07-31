@@ -8,6 +8,10 @@
 #include <QMap>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QFileDialog>
+#include <QStandardPaths>
+#include <QPdfWriter>
+#include <QPainter>
 #include "storedData/subject.h"
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
@@ -60,13 +64,17 @@ public:
 
     void freeKholles();
 
+    int longestUser(QFontMetrics font);
+    int longestKholleur(QFontMetrics font);
+    void printKholles();
+
 public slots:
     void saveKholles();
 
 private:
     Ui::GeneratePage *ui;
     QSqlDatabase *m_db;
-    QList<Timeslot*> timeslots;
+    QMap<int, Timeslot*> timeslots;
     QMap<int, Subject*> subjects;
     QMap<int, Kholleur*> kholleurs;
     int m_week;
