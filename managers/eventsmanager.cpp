@@ -171,6 +171,9 @@ bool EventsManager::delete_event() {
             query.prepare("DELETE FROM tau_events WHERE id=:id");
             query.bindValue(":id", event->getId());
             query.exec();
+            query.prepare("DELETE FROM tau_events_groups WHERE id_events=:id_events");
+            query.bindValue(":id_events", event->getId());
+            query.exec();
 
             // Update the widgets
             update_list();
