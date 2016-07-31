@@ -17,11 +17,15 @@
 #include <QLabel>
 #include <QSqlRecord>
 #include <QPushButton>
+#include <QListWidget>
 #include "storedData/kholleur.h"
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
 #include "storedData/course.h"
 #include "interface/database.h"
+#include "interface/interfacedialog.h"
+
+class InterfaceDialog;
 
 class KholloTable : public QGraphicsScene
 {
@@ -29,7 +33,7 @@ class KholloTable : public QGraphicsScene
     enum DataImg { BeginDays, BeginHours, BetweenDays, BetweenHours };
 
 public:
-    KholloTable(QSqlDatabase* db, int id_week, QDate monday, QWidget* areaKholles, DataBase* dbase);
+    KholloTable(QSqlDatabase* db, int id_week, QDate monday, QWidget* areaKholles, DataBase* dbase, InterfaceDialog* interface = NULL);
     ~KholloTable();
     bool compatible(Student* stdnt, Timeslot *timeslot);
 
@@ -42,6 +46,8 @@ public slots:
     bool updateInfoArea();
     bool addKholle();
     bool removeKholle(Student *stud = NULL);
+    bool removeKholleFromInfoArea();
+    bool selectStudentInInterface();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
@@ -59,6 +65,7 @@ private:
     QGraphicsRectItem* m_selectedFrame;
     QWidget* m_areaKholles;
     DataBase* m_dbase;
+    InterfaceDialog* m_interface;
 };
 
 #endif // KHOLLOTABLE_H

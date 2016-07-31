@@ -18,6 +18,8 @@
 #include <QGraphicsView>
 #include <QListWidget>
 
+class InterfaceTab;
+
 namespace Ui {
 class InterfaceDialog;
 }
@@ -31,7 +33,7 @@ public:
     ~InterfaceDialog();
 
 public slots:
-    bool selectStudent();
+    bool selectStudent(Student* stud = NULL);
 
 private:
     Ui::InterfaceDialog *ui;

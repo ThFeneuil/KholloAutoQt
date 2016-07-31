@@ -41,7 +41,7 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
         subj->setShortName(query.value(2).toString());
         subj->setColor(query.value(3).toString());
 
-        InterfaceTab* tab = new InterfaceTab(subj, m_id_week, m_monday, m_db, m_dbase);
+        InterfaceTab* tab = new InterfaceTab(subj, m_id_week, m_monday, m_db, m_dbase, NULL, this);
         ui->tabWidget->addTab(tab, subj->getShortName());
     }
 }
@@ -52,16 +52,29 @@ InterfaceDialog::~InterfaceDialog()
     delete m_dbase;
 }
 
-bool InterfaceDialog::selectStudent() {
-    QListWidgetItem *item = ui->list_students->currentItem();
+bool InterfaceDialog::selectStudent(Student *stud) {
+    if(stud == NULL) {
+        QListWidgetItem *item = ui->list_students->currentItem();
 
-    if(item == NULL) {
-        QMessageBox::critical(this, "Erreur", "Veuillez sélectionner un étudiant.");
-        return false;
+        if(item == NULL) {
+            QMessageBox::critical(this, "Erreur", "Veuillez sélectionner un étudiant.");
+            return false;
+        } else {
+            Student* stud = (Student*) item->data(Qt::UserRole).toULongLong();
+            for(int i=0; i<ui->tabWidget->count(); i++)
+                ((InterfaceTab*) ui->tabWidget->widget(i))->selectStudent(stud);
+        }
     } else {
-        Student* stud = (Student*) item->data(Qt::UserRole).toULongLong();
-        for(int i=0; i<ui->tabWidget->count(); i++)
-            ((InterfaceTab*) ui->tabWidget->widget(i))->selectStudent(stud);
+       for(int i=0; i<ui->list_students->count(); i++) {
+            QListWidgetItem *item = ui->list_students->item(i);
+            Student* stdnt = (Student*) item->data(Qt::UserRole).toULongLong();
+            if(stdnt->getId() == stud->getId()) {
+                ui->list_students->setCurrentItem(item);
+                for(int j=0; j<ui->tabWidget->count(); j++)
+                    ((InterfaceTab*) ui->tabWidget->widget(j))->selectStudent(stdnt);
+                return true;
+            }
+       }
     }
 
     return true;

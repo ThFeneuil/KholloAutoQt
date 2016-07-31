@@ -1,12 +1,13 @@
 #include "interface/khollotable.h"
 #include <QPixmap>
 
-KholloTable::KholloTable(QSqlDatabase* db, int id_week, QDate monday, QWidget *areaKholles, DataBase *dbase) : QGraphicsScene() {
+KholloTable::KholloTable(QSqlDatabase* db, int id_week, QDate monday, QWidget *areaKholles, DataBase *dbase, InterfaceDialog* interface) : QGraphicsScene() {
     m_db = db;
     m_id_week = id_week;
     m_monday = monday;
     m_areaKholles = areaKholles;
     m_dbase = dbase;
+    m_interface = interface;
 
     m_sizeImg.insert(BeginDays, 42);
     m_sizeImg.insert(BetweenDays, 100);
@@ -20,6 +21,10 @@ KholloTable::KholloTable(QSqlDatabase* db, int id_week, QDate monday, QWidget *a
 
     QPixmap monPixmap(":/images/emptyTimeTable.png");
     addPixmap(monPixmap);
+
+    connect(m_areaKholles->findChild<QPushButton*>("pushButton_addStudent"), SIGNAL(clicked()), this, SLOT(addKholle()));
+    connect(m_areaKholles->findChild<QPushButton*>("pushButton_removeStudent"), SIGNAL(clicked()), this, SLOT(removeKholleFromInfoArea()));
+    connect(m_areaKholles->findChild<QListWidget*>("list_students"), SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(selectStudentInInterface()));
 }
 
 KholloTable::~KholloTable() {
@@ -48,6 +53,7 @@ void KholloTable::displayTable() {
 
     QQueue<QRect> areaCourses;
     QQueue<QRect> areaKholles;
+    QQueue<QRect> KhollesWhereHeisIn;
 
     if(m_student) {
         // Display the timetable of the student selected
@@ -89,6 +95,16 @@ void KholloTable::displayTable() {
             if(wLoading > m_sizeImg[BetweenDays])
                 wLoading = m_sizeImg[BetweenDays];
             addRect(QRect(x,y,wLoading,h), QPen(Qt::blue, 1), QBrush(Qt::blue, Qt::Dense5Pattern));
+            bool isInKholle = false;
+            for(int j=0; j<slot->kholles()->count(); j++)
+                if(m_student && slot->kholles()->at(j)->getId_students() == m_student->getId())
+                    isInKholle = true;
+            if(isInKholle) {
+                int radius = 8;
+                int xCenter = x+w/2;
+                int yCenter = y+h/2;
+                KhollesWhereHeisIn.append(QRect(xCenter-radius,yCenter-radius,radius*2,radius*2));
+            }
             areaKholles.append(*slot->getArea());
         }
     }
@@ -108,6 +124,11 @@ void KholloTable::displayTable() {
     // Display the "selected" frame around the selected timeslot
     if(m_selectedTimeslot)
         addRect(*(m_selectedTimeslot->getArea()), QPen(Qt::yellow, 3));
+
+    while (!KhollesWhereHeisIn.isEmpty()) {
+        QRect rect = KhollesWhereHeisIn.dequeue();
+        addEllipse(rect, QPen(Qt::red, 1), QBrush(Qt::red));
+    }
 
     updateInfoArea();
 }
@@ -163,6 +184,7 @@ void KholloTable::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) {
 
 bool KholloTable::selection(QGraphicsSceneMouseEvent *mouseEvent) {
     QPoint pos = mouseEvent->scenePos().toPoint();
+    m_selectedTimeslot = NULL;
 
     if(!m_kholleur)
         return false;
@@ -177,43 +199,51 @@ bool KholloTable::selection(QGraphicsSceneMouseEvent *mouseEvent) {
         }
     }
 
-    if(m_selectedTimeslot) {
-        displayTable();
-        updateInfoArea();
-    }
+    displayTable();
+    updateInfoArea();
 
     return true;
 }
 
 bool KholloTable::updateInfoArea() {
-    if(m_areaKholles->layout()) {
-        for(int i=m_areaKholles->layout()->count()-1; i>=0; i--)
-            delete m_areaKholles->layout()->itemAt(i)->widget();
-        delete m_areaKholles->layout();
-    }
+    QLabel* label_info = m_areaKholles->findChild<QLabel*>("label_info");
+    QListWidget* list_students = m_areaKholles->findChild<QListWidget*>("list_students");
+    QPushButton* pushButton_add = m_areaKholles->findChild<QPushButton*>("pushButton_addStudent");
+    QPushButton* pushButton_remove = m_areaKholles->findChild<QPushButton*>("pushButton_removeStudent");
+
     if(m_selectedTimeslot) {
-        QVBoxLayout* layout = new QVBoxLayout();
+        // Information label
         QString text = "<strong>Date :</strong> " + m_selectedTimeslot->getDate().toString("dd/MM/yyyy") + "<br />" +
                        "<strong>Horaire :</strong> " + m_selectedTimeslot->getTime().toString("hh:mm") + " >> " + m_selectedTimeslot->getTime_end().toString("hh:mm") + "<br />";
         if(m_selectedTimeslot->getTime_start() != m_selectedTimeslot->getTime())
             text += "<strong> ATTENTION préparation :</strong> Début à " + m_selectedTimeslot->getTime_start().toString("hh:mm");
-        QLabel* title = new QLabel(text);
-        layout->addWidget(title);
+        label_info->setText(text);
+        label_info->setDisabled(false);
+
+        // Students in the kholle
+        list_students->clear();
         bool isInKholle = false;
         for(int i=0; i<m_selectedTimeslot->kholles()->count(); i++) {
             Kholle* klle = m_selectedTimeslot->kholles()->at(i);
-            QLabel* info = new QLabel("#" + klle->student()->getName() + " " + klle->student()->getFirst_name() + "<br />");
-            layout->addWidget(info);
+            QListWidgetItem *item = new QListWidgetItem(klle->student()->getName() + " " + klle->student()->getFirst_name(), list_students);
+            item->setData(Qt::UserRole, (qulonglong) klle->student());
             if(m_student && klle->getId_students() == m_student->getId())
                 isInKholle = true;
         }
-        QPushButton* addButton = new QPushButton("Ajouter à cette kholle...");
-        addButton->setDisabled(isInKholle);
+        list_students->setDisabled(false);
+
+        // Buttons
+        pushButton_add->setDisabled(isInKholle);
         if(!m_student)
-            addButton->setDisabled(true);
-        connect(addButton, SIGNAL(clicked()), this, SLOT(addKholle()));
-        layout->addWidget(addButton);
-        m_areaKholles->setLayout(layout);
+            pushButton_add->setDisabled(true);
+        pushButton_remove->setDisabled(m_selectedTimeslot->kholles()->count() == 0);
+    } else {
+        label_info->setText("");
+        label_info->setDisabled(true);
+        list_students->clear();
+        list_students->setDisabled(true);
+        pushButton_add->setDisabled(true);
+        pushButton_remove->setDisabled(true);
     }
     return true;
 }
@@ -308,5 +338,34 @@ bool KholloTable::removeKholle(Student* stud) {
         return false;
     }
 
+    return true;
+}
+
+bool KholloTable::removeKholleFromInfoArea() {
+    QListWidget* list_students = m_areaKholles->findChild<QListWidget*>("list_students");
+    QListWidgetItem *item = list_students->currentItem();
+    if(item) {
+        Student* stud = (Student*) item->data(Qt::UserRole).toULongLong();
+        return removeKholle(stud);
+    } else {
+        QMessageBox::critical(NULL, "Erreur", "Veuillez sélectionner un étudiant...");
+        return false;
+    }
+    return true;
+}
+
+
+bool KholloTable::selectStudentInInterface() {
+    if(m_interface) {
+        QListWidget* list_students = m_areaKholles->findChild<QListWidget*>("list_students");
+        QListWidgetItem *item = list_students->currentItem();
+        if(item) {
+            Student* stud = (Student*) item->data(Qt::UserRole).toULongLong();
+            m_interface->selectStudent(stud);
+        } else {
+            QMessageBox::critical(NULL, "Erreur", "Veuillez sélectionner un étudiant...");
+            return false;
+        }
+    }
     return true;
 }

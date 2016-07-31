@@ -1,7 +1,7 @@
 #include "interfacetab.h"
 #include "ui_interfacetab.h"
 
-InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabase *db, DataBase *dbase, QWidget *parent) :
+InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabase *db, DataBase *dbase, QWidget *parent, InterfaceDialog* interface) :
     QWidget(parent),
     ui(new Ui::InterfaceTab)
 {
@@ -11,8 +11,9 @@ InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabas
     m_id_week = id_week;
     m_monday = monday;
     m_dbase = dbase;
+    m_interface = interface;
 
-    KholloTable* scene = new KholloTable(m_db, id_week, m_monday, ui->areaKholles, m_dbase);
+    KholloTable* scene = new KholloTable(m_db, id_week, m_monday, ui->areaKholles, m_dbase, m_interface);
     ui->viewTable->setScene(scene);
     //connect(ui->viewTable, SIGNAL())
     QSqlQuery query(*m_db);
