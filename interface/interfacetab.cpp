@@ -1,7 +1,7 @@
 #include "interfacetab.h"
 #include "ui_interfacetab.h"
 
-InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabase *db, QWidget *parent) :
+InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabase *db, DataBase *dbase, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::InterfaceTab)
 {
@@ -10,8 +10,9 @@ InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabas
     m_db = db;
     m_id_week = id_week;
     m_monday = monday;
+    m_dbase = dbase;
 
-    KholloTable* scene = new KholloTable(m_db, id_week, m_monday, ui->areaKholles);
+    KholloTable* scene = new KholloTable(m_db, id_week, m_monday, ui->areaKholles, m_dbase);
     ui->viewTable->setScene(scene);
     //connect(ui->viewTable, SIGNAL())
     QSqlQuery query(*m_db);
@@ -54,6 +55,28 @@ bool InterfaceTab::displayTeacher() {
 }
 
 bool InterfaceTab::selectStudent(Student* stud) {
+    for(int i=0; i<ui->list_kholleurs->count(); i++) {
+        QListWidgetItem* item =  ui->list_kholleurs->item(i);
+        Kholleur* kll = (Kholleur*) item->data(Qt::UserRole).toULongLong();
+        if(stud) {
+            QSqlQuery query(*m_db);
+            query.prepare("SELECT COUNT(*) "
+                          "FROM `tau_kholles` "
+                          "WHERE `id_users` = :id_users AND `id_timeslots` IN "
+                            "(SELECT `id` FROM `tau_timeslots` WHERE `id_kholleurs` = :id_kholleurs)");
+            query.bindValue(":id_users", stud->getId());
+            query.bindValue(":id_kholleurs", kll->getId());
+            query.exec();
+            if(query.next()) {
+                QString nb = query.value(0).toString();
+                item->setText(kll->getName() + " (" + nb+ ")");
+            } else {
+                QMessageBox::critical(NULL, "Erreur", "Erreur base de données. Code: 4253");
+                exit(4253);
+            }
+        } else
+            item->setText(kll->getName());
+    }
     ((KholloTable*) ui->viewTable->scene())->displayStudent(stud);
     return true;
 }

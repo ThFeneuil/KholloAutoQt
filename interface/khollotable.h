@@ -16,10 +16,12 @@
 #include <QGraphicsRectItem>
 #include <QLabel>
 #include <QSqlRecord>
+#include <QPushButton>
 #include "storedData/kholleur.h"
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
 #include "storedData/course.h"
+#include "interface/database.h"
 
 class KholloTable : public QGraphicsScene
 {
@@ -27,19 +29,23 @@ class KholloTable : public QGraphicsScene
     enum DataImg { BeginDays, BeginHours, BetweenDays, BetweenHours };
 
 public:
-    KholloTable(QSqlDatabase* db, int id_week, QDate monday, QWidget* areaKholles);
+    KholloTable(QSqlDatabase* db, int id_week, QDate monday, QWidget* areaKholles, DataBase* dbase);
     ~KholloTable();
     bool compatible(Student* stdnt, Timeslot *timeslot);
 
 public slots:
     void displayKholleur(Kholleur* kll);
     void displayStudent(Student* stud);
-    void displayKholleurAndStudent(Kholleur* kll, Student* stud);
-    bool add_selection();
-    bool remove_selection();
+    void displayTable();
+    bool removeSelection();
+    bool selection(QGraphicsSceneMouseEvent *mouseEvent);
+    bool updateInfoArea();
+    bool addKholle();
+    bool removeKholle(Student *stud = NULL);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
 
 private:
     QSqlDatabase* m_db;
@@ -52,6 +58,7 @@ private:
     Timeslot *m_selectedTimeslot;
     QGraphicsRectItem* m_selectedFrame;
     QWidget* m_areaKholles;
+    DataBase* m_dbase;
 };
 
 #endif // KHOLLOTABLE_H

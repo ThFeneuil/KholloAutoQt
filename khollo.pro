@@ -53,7 +53,6 @@ HEADERS += \
     storedData/timeslot.h \
     storedData/kholle.h \
     interface/interfacedialog.h \
-    interface/table.h \
     interface/khollotable.h \
     interface/interfacetab.h \
     interface/introinterface.h \
@@ -92,7 +91,6 @@ SOURCES += \
     storedData/timeslot.cpp \
     storedData/kholle.cpp \
     interface/interfacedialog.cpp \
-    interface/table.cpp \
     interface/khollotable.cpp \
     interface/interfacetab.cpp \
     interface/introinterface.cpp \

@@ -11,11 +11,10 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
     m_id_week = id_week;
     m_monday = monday;
 
-    QMessageBox::information(this, "DataBase", "START !");
-    DataBase* database = new DataBase(m_db);
-    database->load();
-    QMessageBox::information(this, "DataBase", "STOP !");
-    delete database;
+    m_dbase = new DataBase(m_db);
+    m_dbase->setConditionCourses("id_week = " + QString::number(m_id_week));
+    m_dbase->setConditionTimeslots("date >= '"+ m_monday.toString("yyyy-MM-dd") +"' AND date < '" + m_monday.addDays(7).toString("yyyy-MM-dd") + "'");
+    m_dbase->load();
 
     // Get the list of all the students
     QSqlQuery query(*m_db);
@@ -42,7 +41,7 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
         subj->setShortName(query.value(2).toString());
         subj->setColor(query.value(3).toString());
 
-        InterfaceTab* tab = new InterfaceTab(subj, m_id_week, m_monday, m_db);
+        InterfaceTab* tab = new InterfaceTab(subj, m_id_week, m_monday, m_db, m_dbase);
         ui->tabWidget->addTab(tab, subj->getShortName());
     }
 }
@@ -50,6 +49,7 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
 InterfaceDialog::~InterfaceDialog()
 {
     delete ui;
+    delete m_dbase;
 }
 
 bool InterfaceDialog::selectStudent() {

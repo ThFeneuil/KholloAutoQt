@@ -9,6 +9,7 @@
 #include "storedData/kholleur.h"
 #include "storedData/student.h"
 #include "interface/khollotable.h"
+#include "interface/database.h"
 
 namespace Ui {
 class InterfaceTab;
@@ -19,7 +20,7 @@ class InterfaceTab : public QWidget
     Q_OBJECT
 
 public:
-    explicit InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabase* db, QWidget *parent = 0);
+    explicit InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabase* db, DataBase* dbase, QWidget *parent = 0);
     ~InterfaceTab();
 
 public slots:
@@ -32,6 +33,7 @@ private:
     Subject* m_subject;
     int m_id_week;
     QDate m_monday;
+    DataBase* m_dbase;
 };
 
 #endif // INTERFACETAB_H

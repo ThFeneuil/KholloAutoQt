@@ -11,13 +11,53 @@ DataBase::DataBase(QSqlDatabase *db) {
     m_listTimeslots = new QMap<int, Timeslot*>();
     m_listEvents = new QMap<int, Event*>();
     m_listKholles = new QMap<int, Kholle*>();
+
+    m_conditionCourses = "";
+    m_conditionTimeslots = "";
 }
 
 DataBase::~DataBase() {
     // Il faudra libérer la mémoire !!!!
 }
 
+QMap<int, Student*>* DataBase::listStudents() const {
+    return m_listStudents;
+}
+QMap<int, Group*>* DataBase::listGroups() const {
+    return m_listGroups;
+}
+QMap<int, Subject*>* DataBase::listSubjects() const {
+    return m_listSubjects;
+}
+QMap<int, Teacher*>* DataBase::listTeachers() const {
+    return m_listTeachers;
+}
+QMap<int, Kholleur*>* DataBase::listKholleurs() const {
+    return m_listKholleurs;
+}
+QMap<int, Course*>* DataBase::listCourses() const {
+    return m_listCourses;
+}
+QMap<int, Timeslot*>* DataBase::listTimeslots() const {
+    return m_listTimeslots;
+}
+QMap<int, Event*>* DataBase::listEvents() const {
+    return m_listEvents;
+}
+QMap<int, Kholle*>* DataBase::listKholles() const {
+    return m_listKholles;
+}
+
+void DataBase::setConditionCourses(QString condition) {
+    m_conditionCourses = condition;
+}
+void DataBase::setConditionTimeslots(QString condition) {
+    m_conditionTimeslots = condition;
+}
+
 bool DataBase::load(QProgressBar* progressBar) {
+    if(progressBar) progressBar->setValue(0); // Indicator
+
     QSqlQuery qStudents(*m_db);
     qStudents.exec("SELECT id, name, first_name, email FROM tau_users");
     while (qStudents.next()) {
@@ -40,6 +80,8 @@ bool DataBase::load(QProgressBar* progressBar) {
         m_listGroups->insert(grp->getId(), grp);
     }
 
+    if(progressBar) progressBar->setValue(10); // Indicator
+
     QSqlQuery qStudentsGroups(*m_db);
     qStudentsGroups.exec("SELECT id, id_groups, id_users FROM tau_groups_users");
     while (qStudentsGroups.next()) {
@@ -48,6 +90,8 @@ bool DataBase::load(QProgressBar* progressBar) {
         m_listStudents->value(idStudent)->groups()->append(m_listGroups->value(idGroup));
         m_listGroups->value(idGroup)->students()->append(m_listStudents->value(idStudent));
     }
+
+    if(progressBar) progressBar->setValue(20); // Indicator
 
     QSqlQuery qSubjects(*m_db);
     qSubjects.exec("SELECT id, name, shortName, color FROM tau_subjects");
@@ -60,6 +104,8 @@ bool DataBase::load(QProgressBar* progressBar) {
 
         m_listSubjects->insert(subj->getId(), subj);
     }
+
+    if(progressBar) progressBar->setValue(30); // Indicator
 
     QSqlQuery qTeachers(*m_db);
     qTeachers.exec("SELECT id, name, id_subjects FROM tau_teachers");
@@ -75,6 +121,8 @@ bool DataBase::load(QProgressBar* progressBar) {
         if(tcher->getId_subjects())
             m_listSubjects->value(tcher->getId_subjects())->teachers()->append(tcher);
     }
+
+    if(progressBar) progressBar->setValue(40); // Indicator
 
     QSqlQuery qKholleurs(*m_db);
     qKholleurs.exec("SELECT id, name, id_subjects, duration, preparation, pupils FROM tau_kholleurs");
@@ -93,8 +141,12 @@ bool DataBase::load(QProgressBar* progressBar) {
         m_listSubjects->value(khll->getId_subjects())->kholleurs()->append(khll);
     }
 
+    if(progressBar) progressBar->setValue(50); // Indicator
+
     QSqlQuery qCourses(*m_db);
-    qCourses.exec("SELECT id, id_subjects, time_start, time_end, id_groups, id_teachers, id_day, id_week FROM tau_courses");
+    if(m_conditionCourses != "")
+            qCourses.exec("SELECT id, id_subjects, time_start, time_end, id_groups, id_teachers, id_day, id_week FROM tau_courses WHERE " + m_conditionCourses);
+    else    qCourses.exec("SELECT id, id_subjects, time_start, time_end, id_groups, id_teachers, id_day, id_week FROM tau_courses");
     while (qCourses.next()) {
         Course* course = new Course();
         course->setId(qCourses.value(0).toInt());
@@ -116,8 +168,12 @@ bool DataBase::load(QProgressBar* progressBar) {
         m_listTeachers->value(course->getId_teachers())->courses()->append(course);
     }
 
+    if(progressBar) progressBar->setValue(60); // Indicator
+
     QSqlQuery qTimeslots(*m_db);
-    qTimeslots.exec("SELECT id, time, time_end, id_kholleurs, date, time_start, pupils FROM tau_courses");
+    if(m_conditionTimeslots != "")
+            qTimeslots.exec("SELECT id, time, time_end, id_kholleurs, date, time_start, pupils FROM tau_timeslots WHERE " + m_conditionTimeslots);
+    else    qTimeslots.exec("SELECT id, time, time_end, id_kholleurs, date, time_start, pupils FROM tau_timeslots");
     while (qTimeslots.next()) {
         Timeslot* slot = new Timeslot();
         slot->setId(qTimeslots.value(0).toInt());
@@ -134,6 +190,8 @@ bool DataBase::load(QProgressBar* progressBar) {
         m_listKholleurs->value(slot->getId_kholleurs())->timeslots()->append(slot);
     }
 
+    if(progressBar) progressBar->setValue(70); // Indicator
+
     QSqlQuery qEvents(*m_db);
     qEvents.exec("SELECT id, name, comment, start, end FROM tau_events");
     while (qEvents.next()) {
@@ -147,14 +205,20 @@ bool DataBase::load(QProgressBar* progressBar) {
         m_listEvents->insert(event->getId(), event);
     }
 
+    if(progressBar) progressBar->setValue(80); // Indicator
+
     QSqlQuery qEventsGroups(*m_db);
     qEventsGroups.exec("SELECT id, id_groups, id_events FROM tau_events_groups");
     while (qEventsGroups.next()) {
         int idGroup = qEventsGroups.value(1).toInt();
         int idEvent = qEventsGroups.value(2).toInt();
-        m_listEvents->value(idEvent)->groups()->append(m_listGroups->value(idGroup));
-        m_listGroups->value(idGroup)->events()->append(m_listEvents->value(idEvent));
+        if(m_listEvents->value(idEvent)) {
+            m_listEvents->value(idEvent)->groups()->append(m_listGroups->value(idGroup));
+            m_listGroups->value(idGroup)->events()->append(m_listEvents->value(idEvent));
+        }
     }
+
+    if(progressBar) progressBar->setValue(90); // Indicator
 
     QSqlQuery qKholles(*m_db);
     qKholles.exec("SELECT id, id_users, id_timeslots FROM tau_kholles");
@@ -164,11 +228,17 @@ bool DataBase::load(QProgressBar* progressBar) {
         klle->setId_students(qKholles.value(1).toInt());
         klle->setId_timeslots(qKholles.value(2).toInt());
 
-        klle->setStudent(m_listStudents->value(klle->getId_students()));
-        klle->setTimeslot(m_listTimeslots->value(klle->getId_timeslots()));
-        m_listStudents->value(klle->getId_students())->kholles()->append(klle);
-        m_listTimeslots->value(klle->getId_timeslots())->kholles()->append(klle);
+        if(m_listTimeslots->value(klle->getId_timeslots())) {
+            m_listKholles->insert(klle->getId(), klle);
+
+            klle->setStudent(m_listStudents->value(klle->getId_students()));
+            klle->setTimeslot(m_listTimeslots->value(klle->getId_timeslots()));
+            m_listStudents->value(klle->getId_students())->kholles()->append(klle);
+            m_listTimeslots->value(klle->getId_timeslots())->kholles()->append(klle);
+        }
     }
+
+    if(progressBar) progressBar->setValue(100); // Indicator
 
     return true;
 }

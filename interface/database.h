@@ -6,6 +6,8 @@
 #include <QProgressBar>
 #include <QMap>
 #include <QVariant>
+#include <QString>
+#include <QMessageBox>
 #include "storedData/student.h"
 #include "storedData/group.h"
 #include "storedData/subject.h"
@@ -21,6 +23,19 @@ class DataBase
 public:
     DataBase(QSqlDatabase* db);
     ~DataBase();
+    QMap<int, Student*>* listStudents() const;
+    QMap<int, Group*>* listGroups() const;
+    QMap<int, Subject*>* listSubjects() const;
+    QMap<int, Teacher*>* listTeachers() const;
+    QMap<int, Kholleur*>* listKholleurs() const;
+    QMap<int, Course*>* listCourses() const;
+    QMap<int, Timeslot*>* listTimeslots() const;
+    QMap<int, Event*>* listEvents() const;
+    QMap<int, Kholle*>* listKholles() const;
+
+    void setConditionCourses(QString condition);
+    void setConditionTimeslots(QString condition);
+
 public slots:
     bool load(QProgressBar* progressBar = NULL);
 private:
@@ -34,6 +49,9 @@ private:
     QMap<int, Timeslot*>* m_listTimeslots;
     QMap<int, Event*>* m_listEvents;
     QMap<int, Kholle*>* m_listKholles;
+
+    QString m_conditionCourses;
+    QString m_conditionTimeslots;
 };
 
 #endif // DATABASE_H

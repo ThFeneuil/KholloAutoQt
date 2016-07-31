@@ -25,7 +25,6 @@ public:
     QDate getDate() const;
     int getPupils() const;
     QRect* getArea() const;
-    QList<Kholle>* getKholles() const;
     QList<Kholle*>* kholles() const;
     Kholleur* kholleur() const;
 
@@ -51,7 +50,6 @@ private:
 
     // Interface
     QRect* m_area;
-    QList<Kholle>* m_kholles2;
     QList<Kholle*>* m_kholles;
     Kholleur* m_kholleur;
 };

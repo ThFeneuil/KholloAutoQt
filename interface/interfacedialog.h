@@ -12,8 +12,6 @@
 #include <QTableView>
 #include <QTableWidget>
 #include <QPainter>
-#include "interface/table.h"
-//#include "interface/khollotable.h"
 #include "interface/interfacetab.h"
 #include "interface/introinterface.h"
 #include "interface/database.h"
@@ -41,6 +39,7 @@ private:
     QList<Student*> *m_students;
     int m_id_week;
     QDate m_monday;
+    DataBase* m_dbase;
 };
 
 #endif // INTERFACEDIALOG_H
