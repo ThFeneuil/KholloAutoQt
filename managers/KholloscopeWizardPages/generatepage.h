@@ -64,9 +64,9 @@ public:
 
     void freeKholles();
 
-    int longestUser(QFontMetrics font);
-    int longestKholleur(QFontMetrics font);
-    void printKholles();
+    int longestUser(QFontMetrics font, QList<Student *> *students);
+    int longestKholleur(QFontMetrics font, QMap<int, Kholleur*> *kholleurs);
+    void printKholles(QList<Student*> *students, QMap<int, Kholleur*> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QList<Kholle *> *kholloscope);
 
 public slots:
     void saveKholles();
