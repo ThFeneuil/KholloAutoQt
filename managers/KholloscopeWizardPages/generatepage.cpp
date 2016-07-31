@@ -516,12 +516,32 @@ int GeneratePage::longestKholleur(QFontMetrics font, QMap<int, Kholleur*> *kholl
 }
 
 void GeneratePage::printKholles(QList<Student *> *students, QMap<int, Kholleur *> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QList<Kholle *> *kholloscope) {
+    //Try to load directory preferences
+    QString pref_path;
+    QFile read(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
+    if(read.exists() && read.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&read);
+        pref_path = in.readLine();
+    }
+
+    if(pref_path == "" || !QDir(pref_path).exists())
+        pref_path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+
     //Get file name
-    QString filename = QFileDialog::getSaveFileName(this, "Enregistrer sous...", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),  "PDF (*.pdf)");
+    QString filename = QFileDialog::getSaveFileName(this, "Enregistrer sous...",
+                                                    pref_path + QDir::separator() + "Kholloscope_" + monday_date.toString("yyyyMMdd"),  "PDF (*.pdf)");
     //QMessageBox::information(this, "OK", filename);
 
     if(filename == "")
         return;
+
+    //Save directory in preferences
+    QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
+    QFile pref_file(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
+    if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text)){
+        QTextStream out(&pref_file);
+        out << dirpath;
+    }
 
     //Create the PDF Writer
     QPdfWriter writer(filename);
