@@ -23,7 +23,8 @@ FORMS += \
     interface/introinterface.ui \
     managers/timeslotsmanager.ui \
     managers/introtimeslots.ui \
-    managers/copytimeslots.ui
+    managers/copytimeslots.ui \
+    aboutitdialog.ui
 
 HEADERS += \
     mainwindow.h \
@@ -60,7 +61,8 @@ HEADERS += \
     managers/introtimeslots.h \
     managers/copytimeslots.h \
     storedData/storeddatum.h \
-    interface/database.h
+    interface/database.h \
+    aboutitdialog.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -98,7 +100,8 @@ SOURCES += \
     managers/introtimeslots.cpp \
     managers/copytimeslots.cpp \
     storedData/storeddatum.cpp \
-    interface/database.cpp
+    interface/database.cpp \
+    aboutitdialog.cpp
 DISTFILES +=
 
 RESOURCES += \

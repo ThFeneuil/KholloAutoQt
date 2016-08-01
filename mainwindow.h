@@ -14,6 +14,7 @@
 #include "managers/kholloscopewizard.h"
 #include "interface/interfacedialog.h"
 #include "interface/introinterface.h"
+#include "aboutitdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -26,6 +27,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    QString addSlashes(QString str);
 
 public slots:
     void openStudentsManager();
@@ -38,6 +40,10 @@ public slots:
     void openEventsManager();
     void openInterface();
 	void openKholloscope();
+    void openAboutIt();
+
+    void saveDB();
+    void loadDB();
 
 private:
     Ui::MainWindow *ui;
