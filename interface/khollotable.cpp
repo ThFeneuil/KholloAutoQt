@@ -1,13 +1,14 @@
 #include "interface/khollotable.h"
 #include <QPixmap>
 
-KholloTable::KholloTable(QSqlDatabase* db, int id_week, QDate monday, QWidget *areaKholles, DataBase *dbase, InterfaceDialog* interface) : QGraphicsScene() {
+KholloTable::KholloTable(QSqlDatabase* db, int id_week, QDate monday, QWidget *areaKholles, DataBase *dbase, InterfaceDialog* interface, InterfaceTab* tab) : QGraphicsScene() {
     m_db = db;
     m_id_week = id_week;
     m_monday = monday;
     m_areaKholles = areaKholles;
     m_dbase = dbase;
     m_interface = interface;
+    m_tab = tab;
 
     m_sizeImg.insert(BeginDays, 42);
     m_sizeImg.insert(BetweenDays, 100);
@@ -214,9 +215,12 @@ bool KholloTable::updateInfoArea() {
     if(m_selectedTimeslot) {
         // Information label
         QString text = "<strong>Date :</strong> " + m_selectedTimeslot->getDate().toString("dd/MM/yyyy") + "<br />" +
+                       "<strong>Kholleur :</strong> " + m_selectedTimeslot->kholleur()->getName() + "<br />" +
                        "<strong>Horaire :</strong> " + m_selectedTimeslot->getTime().toString("hh:mm") + " >> " + m_selectedTimeslot->getTime_end().toString("hh:mm") + "<br />";
         if(m_selectedTimeslot->getTime_start() != m_selectedTimeslot->getTime())
-            text += "<strong> ATTENTION préparation :</strong> Début à " + m_selectedTimeslot->getTime_start().toString("hh:mm");
+            text += "<strong> ATTENTION préparation :</strong> Début à " + m_selectedTimeslot->getTime_start().toString("hh:mm") + "<br />";
+        text += "<strong>Nombre d'étudiants attendus :</strong> " + QString::number(m_selectedTimeslot->getPupils()) + "<br />";
+        text += "<strong>Nombre d'étudiants présents :</strong> " + QString::number(m_selectedTimeslot->kholles()->count()) + "<br />";
         label_info->setText(text);
         label_info->setDisabled(false);
 
@@ -233,6 +237,8 @@ bool KholloTable::updateInfoArea() {
         list_students->setDisabled(false);
 
         // Buttons
+        if(m_student)   pushButton_add->setText("Ajouter " + m_student->getFirst_name() + " " + m_student->getName() + " à cette kholle");
+        else            pushButton_add->setText("Ajouter à cette kholle");
         pushButton_add->setDisabled(isInKholle);
         if(!m_student)
             pushButton_add->setDisabled(true);
@@ -292,6 +298,8 @@ bool KholloTable::addKholle() {
         m_student->kholles()->append(klle);
         m_selectedTimeslot->kholles()->append(klle);
 
+        updateListKholleurs();
+
         displayTable();
         updateInfoArea();
     } else {
@@ -328,6 +336,8 @@ bool KholloTable::removeKholle(Student* stud) {
         stud->kholles()->removeOne(klle);
         m_selectedTimeslot->kholles()->removeOne(klle);
         m_dbase->listKholles()->remove(klle->getId());
+
+        updateListKholleurs();
 
         displayTable();
         updateInfoArea();
@@ -367,5 +377,11 @@ bool KholloTable::selectStudentInInterface() {
             return false;
         }
     }
+    return true;
+}
+
+bool KholloTable::updateListKholleurs() {
+    if(m_tab)
+        m_tab->selectStudent(m_student);
     return true;
 }

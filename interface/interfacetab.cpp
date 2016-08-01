@@ -13,7 +13,7 @@ InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabas
     m_dbase = dbase;
     m_interface = interface;
 
-    KholloTable* scene = new KholloTable(m_db, id_week, m_monday, ui->areaKholles, m_dbase, m_interface);
+    KholloTable* scene = new KholloTable(m_db, id_week, m_monday, ui->areaKholles, m_dbase, m_interface, this);
     ui->viewTable->setScene(scene);
     //connect(ui->viewTable, SIGNAL())
     QSqlQuery query(*m_db);

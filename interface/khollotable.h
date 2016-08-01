@@ -24,8 +24,10 @@
 #include "storedData/course.h"
 #include "interface/database.h"
 #include "interface/interfacedialog.h"
+#include "interface/interfacetab.h"
 
 class InterfaceDialog;
+class InterfaceTab;
 
 class KholloTable : public QGraphicsScene
 {
@@ -33,7 +35,7 @@ class KholloTable : public QGraphicsScene
     enum DataImg { BeginDays, BeginHours, BetweenDays, BetweenHours };
 
 public:
-    KholloTable(QSqlDatabase* db, int id_week, QDate monday, QWidget* areaKholles, DataBase* dbase, InterfaceDialog* interface = NULL);
+    KholloTable(QSqlDatabase* db, int id_week, QDate monday, QWidget* areaKholles, DataBase* dbase, InterfaceDialog* interface = NULL, InterfaceTab* tab = NULL);
     ~KholloTable();
     bool compatible(Student* stdnt, Timeslot *timeslot);
 
@@ -48,6 +50,7 @@ public slots:
     bool removeKholle(Student *stud = NULL);
     bool removeKholleFromInfoArea();
     bool selectStudentInInterface();
+    bool updateListKholleurs();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
@@ -66,6 +69,7 @@ private:
     QWidget* m_areaKholles;
     DataBase* m_dbase;
     InterfaceDialog* m_interface;
+    InterfaceTab* m_tab;
 };
 
 #endif // KHOLLOTABLE_H
