@@ -25,7 +25,8 @@ FORMS += \
     managers/introtimeslots.ui \
     managers/copytimeslots.ui \
     aboutitdialog.ui \
-    contactdialog.ui
+    contactdialog.ui \
+    reviewdialog.ui
 
 HEADERS += \
     mainwindow.h \
@@ -64,7 +65,8 @@ HEADERS += \
     storedData/storeddatum.h \
     interface/database.h \
     aboutitdialog.h \
-    contactdialog.h
+    contactdialog.h \
+    reviewdialog.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -104,7 +106,8 @@ SOURCES += \
     storedData/storeddatum.cpp \
     interface/database.cpp \
     aboutitdialog.cpp \
-    contactdialog.cpp
+    contactdialog.cpp \
+    reviewdialog.cpp
 DISTFILES +=
 
 RESOURCES += \

@@ -17,7 +17,61 @@ DataBase::DataBase(QSqlDatabase *db) {
 }
 
 DataBase::~DataBase() {
-    // Il faudra libérer la mémoire !!!!
+    QMapIterator<int, Student*> iStudents(*m_listStudents);
+    while (iStudents.hasNext()) {
+        iStudents.next();
+        delete iStudents.value();
+    }
+    QMapIterator<int, Group*> iGroups(*m_listGroups);
+    while (iGroups.hasNext()) {
+        iGroups.next();
+        delete iGroups.value();
+    }
+    QMapIterator<int, Subject*> iSubjects(*m_listSubjects);
+    while (iSubjects.hasNext()) {
+        iSubjects.next();
+        delete iSubjects.value();
+    }
+    QMapIterator<int, Teacher*> iTeachers(*m_listTeachers);
+    while (iTeachers.hasNext()) {
+        iTeachers.next();
+        delete iTeachers.value();
+    }
+    QMapIterator<int, Kholleur*> iKholleurs(*m_listKholleurs);
+    while (iKholleurs.hasNext()) {
+        iKholleurs.next();
+        delete iKholleurs.value();
+    }
+    QMapIterator<int, Course*> iCourses(*m_listCourses);
+    while (iCourses.hasNext()) {
+        iCourses.next();
+        delete iCourses.value();
+    }
+    QMapIterator<int, Timeslot*> iTimeslots(*m_listTimeslots);
+    while (iTimeslots.hasNext()) {
+        iTimeslots.next();
+        delete iTimeslots.value();
+    }
+    QMapIterator<int, Event*> iEvents(*m_listEvents);
+    while (iEvents.hasNext()) {
+        iEvents.next();
+        delete iEvents.value();
+    }
+    QMapIterator<int, Kholle*> iKholles(*m_listKholles);
+    while (iKholles.hasNext()) {
+        iKholles.next();
+        delete iKholles.value();
+    }
+
+    delete m_listStudents;
+    delete m_listGroups ;
+    delete m_listSubjects;
+    delete m_listTeachers;
+    delete m_listKholleurs;
+    delete m_listCourses;
+    delete m_listTimeslots;
+    delete m_listEvents;
+    delete m_listKholles;
 }
 
 QMap<int, Student*>* DataBase::listStudents() const {

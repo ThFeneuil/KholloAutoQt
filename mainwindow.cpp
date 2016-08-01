@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_Schedule_Events, SIGNAL(triggered()), this, SLOT(openEventsManager()));
     connect(ui->action_Kholles_Interface, SIGNAL(triggered()), this, SLOT(openInterface()));
     connect(ui->action_Kholles_Generate, SIGNAL(triggered()), this, SLOT(openKholloscope()));
+    connect(ui->action_Kholles_Historic, SIGNAL(triggered()), this, SLOT(openReview()));
     connect(ui->action_Help, SIGNAL(triggered()), this, SLOT(openHelp()));
     connect(ui->action_AboutIt, SIGNAL(triggered()), this, SLOT(openAboutIt()));
 
@@ -25,10 +26,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Connection with the DB
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("mysql:host=tfeneuilunadmin.mysql.db");
-    db.setDatabaseName("tfeneuilunadmin");
-    db.setUserName("tfeneuilunadmin");
-    db.setPassword("G1ERi5Ps");
+    db.setHostName("localhost");
+    db.setDatabaseName("lataupe");
+    db.setUserName("root");
+    db.setPassword("");
     db.open();
 }
 
@@ -177,6 +178,20 @@ void MainWindow::openKholloscope() {
         // Open the manager
         KholloscopeWizard manager(&db);
         manager.exec();
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
+    }
+}
+
+void MainWindow::openReview() {
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if(db.isOpen()) {
+        // Open the manager
+        ReviewDialog dialog(&db);
+        dialog.exec();
     }
     else {
         QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
