@@ -15,6 +15,7 @@
 #include "interface/interfacedialog.h"
 #include "interface/introinterface.h"
 #include "aboutitdialog.h"
+#include "contactdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -40,6 +41,7 @@ public slots:
     void openEventsManager();
     void openInterface();
 	void openKholloscope();
+    void openHelp();
     void openAboutIt();
 
     void saveDB();

@@ -16,15 +16,16 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_Schedule_Kholles, SIGNAL(triggered()), this, SLOT(openTimeslotsManager()));
     connect(ui->action_Schedule_Events, SIGNAL(triggered()), this, SLOT(openEventsManager()));
     connect(ui->action_Kholles_Interface, SIGNAL(triggered()), this, SLOT(openInterface()));
-    connect(ui->action_Kholles_Generate, SIGNAL(triggered(bool)), this, SLOT(openKholloscope()));
-    connect(ui->action_AboutIt, SIGNAL(triggered(bool)), this, SLOT(openAboutIt()));
+    connect(ui->action_Kholles_Generate, SIGNAL(triggered()), this, SLOT(openKholloscope()));
+    connect(ui->action_Help, SIGNAL(triggered()), this, SLOT(openHelp()));
+    connect(ui->action_AboutIt, SIGNAL(triggered()), this, SLOT(openAboutIt()));
 
-    connect(ui->action_File_Create, SIGNAL(triggered(bool)), this, SLOT(saveDB()));
-    connect(ui->action_File_Select, SIGNAL(triggered(bool)), this, SLOT(loadDB()));
+    connect(ui->action_File_Create, SIGNAL(triggered()), this, SLOT(saveDB()));
+    connect(ui->action_File_Select, SIGNAL(triggered()), this, SLOT(loadDB()));
 
     // Connection with the DB
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("tfeneuilunadmin.mysql.db");
+    db.setHostName("mysql:host=tfeneuilunadmin.mysql.db");
     db.setDatabaseName("tfeneuilunadmin");
     db.setUserName("tfeneuilunadmin");
     db.setPassword("G1ERi5Ps");
@@ -183,7 +184,13 @@ void MainWindow::openKholloscope() {
 }
 
 void MainWindow::openAboutIt() {
+    AboutItDialog dialog;
+    dialog.exec();
+}
 
+void MainWindow::openHelp(){
+    ContactDialog dialog;
+    dialog.exec();
 }
 
 

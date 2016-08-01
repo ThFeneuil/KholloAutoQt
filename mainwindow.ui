@@ -160,7 +160,7 @@
   </action>
   <action name="action_Help">
    <property name="text">
-    <string>&amp;Débrouillez-vous !</string>
+    <string>&amp;Contacts</string>
    </property>
   </action>
   <action name="action_AboutIt">
