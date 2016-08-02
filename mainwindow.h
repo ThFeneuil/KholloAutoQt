@@ -46,7 +46,8 @@ public slots:
     void openHelp();
     void openAboutIt();
 
-    void saveDB();
+    void createKhollo();
+
     void loadDB();
 
 private:

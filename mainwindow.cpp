@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_Help, SIGNAL(triggered()), this, SLOT(openHelp()));
     connect(ui->action_AboutIt, SIGNAL(triggered()), this, SLOT(openAboutIt()));
 
-    connect(ui->action_File_Create, SIGNAL(triggered()), this, SLOT(saveDB()));
+    connect(ui->action_File_Create, SIGNAL(triggered()), this, SLOT(createKhollo()));
     connect(ui->action_File_Select, SIGNAL(triggered()), this, SLOT(loadDB()));
 
     // Connection with the DB
@@ -210,7 +210,7 @@ void MainWindow::openHelp(){
 
 
 
-void MainWindow::saveDB() {
+void MainWindow::createKhollo() {
     //Try to load directory preferences
     QString pref_path;
     QFile read(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
@@ -224,7 +224,7 @@ void MainWindow::saveDB() {
 
     //Get file name
     QString filename = QFileDialog::getSaveFileName(this, "Enregistrer sous...",
-                                                    pref_path + QDir::separator() + "DBsave",  "KSCOPE (*.kscope)");
+                                                    pref_path + QDir::separator() + "kholloscope",  "KSCOPE (*.kscope)");
 
     if(filename == "")
         return;
@@ -237,57 +237,97 @@ void MainWindow::saveDB() {
         out << dirpath;
     }
 
-    QFile fileBackup(filename);
-    if (!fileBackup.open(QIODevice::WriteOnly | QIODevice::Text))
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(filename);
+    if (!db.open()) {
+        QMessageBox::critical(NULL, "Echec", "Impossible d'ouvrir la base de données générée...");
         return;
-
-    QTextStream out(&fileBackup);
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery query(db);
-
-    // Get the list of tables
-    query.exec("SHOW TABLES");
-    QStringList tables;
-    while(query.next())
-        tables << query.value(0).toString();
-
-    for(int i=0; i<tables.count(); i++) { // For each table
-        // Get the number of field
-        int nbFields = -1;
-        QSqlQuery result(db);
-        result.exec("SELECT * FROM `" + tables.at(i) + "`");
-        QSqlRecord record = result.record();
-        if(result.next())
-            nbFields = record.count();
-
-        // Request to create the table
-        query.exec("SHOW CREATE TABLE `" + tables.at(i) + "`");
-        if(query.next())
-            out << "\n\n" + query.value(1).toString() + ";\n\n";
-        else
-            return;
-
-
-        // Request to insert the data
-        int num = 0;
-        while(result.next()) {
-            if(num) {
-                out << ", ";
-            } else {
-                out << "INSERT INTO `" + tables.at(i) + "` VALUES";
-            }
-            out << "(";
-            for(int j=0; j<nbFields; j++) {
-                if(j)   out << ", ";
-                out << "'" + addSlashes(result.value(j).toString()) + "'";
-            }
-            out << ")";
-            num++;
-        }
-        if(num)
-            out << ";";
-
     }
+
+    QSqlQuery qCreate(db);
+    // TABLE USERS
+    qCreate.exec("CREATE TABLE `tau_users` ( "
+                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                    "`name`	TEXT NOT NULL, "
+                    "`first_name`	TEXT NOT NULL, "
+                    "`email`	TEXT NOT NULL "
+                ");");
+    // TABLE GROUPS
+    qCreate.exec("CREATE TABLE `tau_groups` ( "
+                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                    "`name`	TEXT NOT NULL, "
+                    "`is_deleted`	INTEGER NOT NULL DEFAULT 0 "
+                ");");
+    // TABLE GROUPS-USERS
+    qCreate.exec("CREATE TABLE `tau_groups_users` ( "
+                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                    "`id_groups`	INTEGER NOT NULL, "
+                    "`id_users`	INTEGER NOT NULL "
+                ");");
+    // TABLE SUBJECTS
+    qCreate.exec("CREATE TABLE `tau_subjects` ( "
+                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                    "`name`	TEXT NOT NULL, "
+                    "`shortName`	TEXT NOT NULL, "
+                    "`color`	TEXT NOT NULL "
+                ");");
+    // TABLE TEACHERS
+    qCreate.exec("CREATE TABLE `tau_teachers` ( "
+                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                    "`name`	TEXT NOT NULL, "
+                     "`id_subjects`	INTEGER NOT NULL "
+                ");");
+    // TABLE KHOLLEURS
+    qCreate.exec("CREATE TABLE `tau_kholleurs` ( "
+                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                    "`name`	TEXT NOT NULL, "
+                    " `id_subjects`	INTEGER NOT NULL, "
+                    "`duration`	INTEGER NOT NULL DEFAULT 0, "
+                    "`preparation`	INTEGER NOT NULL DEFAULT 0, "
+                    "`pupils`	INTEGER NOT NULL DEFAULT 0 "
+                ");");
+    // TABLE COURSES
+    qCreate.exec("CREATE TABLE `tau_courses` ( "
+                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                    "`id_subjects`	INTEGER NOT NULL, "
+                    "`time_start`	BLOB NOT NULL, "
+                    "`time_end`	TEXT NOT NULL, "
+                    "`id_groups`	INTEGER NOT NULL, "
+                    "`id_teachers`	INTEGER NOT NULL, "
+                    "`id_day`	INTEGER NOT NULL, "
+                    "`id_week`	INTEGER NOT NULL "
+                ");");
+    // TABLE TIMESLOTS
+    qCreate.exec("CREATE TABLE `tau_timeslots` ( "
+                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                    "`time`	TEXT NOT NULL, "
+                    "`time_end`	TEXT NOT NULL, "
+                    "`id_kholleurs`	INTEGER NOT NULL, "
+                    "`date`	TEXT NOT NULL, "
+                    "`time_start`	TEXT NOT NULL, "
+                    "`pupils`	INTEGER NOT NULL "
+                ");");
+    // TABLE EVENTS
+    qCreate.exec("CREATE TABLE `tau_events` ( "
+                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                    "`name`	TEXT NOT NULL, "
+                    "`comment`	TEXT NOT NULL, "
+                    "`start`	TEXT NOT NULL, "
+                    "`end`	TEXT NOT NULL "
+                ");");
+    // TABLE EVENTS-GROUPS
+    qCreate.exec("CREATE TABLE `tau_events_groups` ( "
+                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                    "`id_events`	INTEGER NOT NULL, "
+                    "`id_groups`	INTEGER NOT NULL "
+                ");");
+    // TABLE KHOLLES
+    qCreate.exec("CREATE TABLE `tau_kholles` ( "
+                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                    "`id_users`	INTEGER NOT NULL, "
+                    "`id_timeslots`	INTEGER NOT NULL "
+                ");");
+    QMessageBox::information(NULL, "Succès", "Votre kholloscope a été créé.<br />Vous pouvons dès maintenant l'utiliser. :p");
 }
 
 void MainWindow::loadDB() {
