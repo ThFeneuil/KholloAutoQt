@@ -45,6 +45,7 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
         ui->tabWidget->addTab(tab, subj->getShortName());
     }
     connect(ui->pushButton_print, SIGNAL(clicked(bool)), this, SLOT(printKholloscope()));
+    connect(ui->pushButton_review, SIGNAL(clicked(bool)), this, SLOT(openReviewDialog()));
 }
 
 InterfaceDialog::~InterfaceDialog()
@@ -83,4 +84,9 @@ bool InterfaceDialog::selectStudent(Student *stud) {
 
 void InterfaceDialog::printKholloscope() {
     PrintPDF::printKholles(m_students, m_dbase->listKholleurs(), m_dbase->listTimeslots(), m_monday, m_dbase->listKholles());
+}
+
+void InterfaceDialog::openReviewDialog() {
+    ReviewDialog dialog(m_db);
+    dialog.exec();
 }

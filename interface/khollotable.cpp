@@ -236,7 +236,7 @@ bool KholloTable::updateInfoArea() {
         if(m_selectedTimeslot->getTime_start() != m_selectedTimeslot->getTime())
             text += "<strong> ATTENTION préparation :</strong> Début à " + m_selectedTimeslot->getTime_start().toString("hh:mm") + "<br />";
         text += "<strong>Nombre d'étudiants attendus :</strong> " + QString::number(m_selectedTimeslot->getPupils()) + "<br />";
-        text += "<strong>Nombre d'étudiants présents :</strong> " + QString::number(m_selectedTimeslot->kholles()->count()) + "<br />";
+        text += "<strong>Nombre d'étudiants présents :</strong> " + QString::number(m_selectedTimeslot->kholles()->count());
         label_info->setText(text);
         label_info->setDisabled(false);
 
