@@ -39,6 +39,7 @@ public:
     explicit GeneratePage(QSqlDatabase *db, QWidget *parent = 0);
     ~GeneratePage();
     void initializePage();
+    void cleanupPage();
     void setPupilsOnTimeslots();
 
     void calculateProba();

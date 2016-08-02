@@ -49,6 +49,10 @@ void GeneratePage::initializePage() {
     display();
 }
 
+void GeneratePage::cleanupPage() {
+    disconnect(wizard()->button(QWizard::FinishButton), SIGNAL(clicked()), this, SLOT(saveKholles()));
+}
+
 void GeneratePage::setPupilsOnTimeslots() {
     //Get timeslots
     QMap<int, Timeslot*> *map = m_dbase->listTimeslots();
