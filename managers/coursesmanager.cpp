@@ -267,13 +267,14 @@ bool CoursesManager::save_changes() {
     query.bindValue(":id_groups", current->getId());
     query.exec();
 
-    //Save both weeks
-    save(ui->grid_even, 1);
-    save(ui->grid_odd, 2);
-    isChanged = false;
-
-    //Show feedback
-    QMessageBox::information(this, "Sauvegarde réussie", "Les modifications ont bien été sauvegardées");
+    //Save both weeks and show feedback
+    if(save(ui->grid_even, 1) && save(ui->grid_odd, 2)) {
+        QMessageBox::information(this, "Sauvegarde réussie", "Les modifications ont bien été sauvegardées");
+    }
+    else {
+        QMessageBox::warning(this, "Attention", "Certains cours ont été mal complétés et n'ont donc pu être enregistrés...");
+    }
+    isChanged = false;    
 
     //If this group is same as last group
     QList<QListWidgetItem*> selection = ui->list_groups->selectedItems();
@@ -285,7 +286,9 @@ bool CoursesManager::save_changes() {
     return true;
 }
 
-void CoursesManager::save(QGridLayout *grid, int week) {
+bool CoursesManager::save(QGridLayout *grid, int week) {
+    bool res = true;
+
     //Cycle through all QComboboxes
     int i, j;
     for(i = 0; i < 6; i++) {
@@ -293,8 +296,12 @@ void CoursesManager::save(QGridLayout *grid, int week) {
             QComboBox* subject = (QComboBox*) grid->itemAtPosition(j+1, i+1)->layout()->itemAt(0)->widget();
             QComboBox* teacher = (QComboBox*) grid->itemAtPosition(j+1, i+1)->layout()->itemAt(1)->widget();
 
-            if(subject->currentText() == "" || teacher->currentText() == "")
+            if(subject->currentText() == "" || teacher->currentText() == "") {
+                if(subject->currentText() != "" || teacher->currentText() != "")
+                    res = false;
+
                 continue;
+            }
 
             QSqlQuery query(*m_db);
             query.prepare("INSERT INTO tau_courses(id_subjects, time_start, time_end, id_groups, id_teachers, id_day, id_week) VALUES(:id_subjects, :time_start, :time_end, :id_groups, :id_teachers, :id_day, :id_week)");
@@ -308,6 +315,7 @@ void CoursesManager::save(QGridLayout *grid, int week) {
             query.exec();
         }
     }
+    return res;
 }
 
 void CoursesManager::onSelection_change() {

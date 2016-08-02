@@ -31,7 +31,7 @@ public:
     bool free_groups();
     bool free_subjects();
     bool free_teachers();
-    void save(QGridLayout *grid, int week);
+    bool save(QGridLayout *grid, int week);
 
 
 public slots:
