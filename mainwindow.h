@@ -29,7 +29,6 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    QString addSlashes(QString str);
 
 public slots:
     void openStudentsManager();
@@ -47,8 +46,8 @@ public slots:
     void openAboutIt();
 
     void createKhollo();
-
-    void loadDB();
+    void openKhollo();
+    void updateWindow();
 
 private:
     Ui::MainWindow *ui;

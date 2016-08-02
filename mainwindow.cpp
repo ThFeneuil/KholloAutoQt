@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_AboutIt, SIGNAL(triggered()), this, SLOT(openAboutIt()));
 
     connect(ui->action_File_Create, SIGNAL(triggered()), this, SLOT(createKhollo()));
-    connect(ui->action_File_Select, SIGNAL(triggered()), this, SLOT(loadDB()));
+    connect(ui->action_File_Open, SIGNAL(triggered()), this, SLOT(openKhollo()));
 
     // Connection with the DB
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
@@ -31,6 +31,8 @@ MainWindow::MainWindow(QWidget *parent) :
     db.setUserName("root");
     db.setPassword("");
     db.open();
+
+    updateWindow();
 }
 
 MainWindow::~MainWindow()
@@ -226,8 +228,10 @@ void MainWindow::createKhollo() {
     QString filename = QFileDialog::getSaveFileName(this, "Enregistrer sous...",
                                                     pref_path + QDir::separator() + "kholloscope",  "KSCOPE (*.kscope)");
 
-    if(filename == "")
+    if(filename == "") {
+        updateWindow();
         return;
+    }
 
     //Save directory in preferences
     QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
@@ -241,6 +245,7 @@ void MainWindow::createKhollo() {
     db.setDatabaseName(filename);
     if (!db.open()) {
         QMessageBox::critical(NULL, "Echec", "Impossible d'ouvrir la base de données générée...");
+        updateWindow();
         return;
     }
 
@@ -327,10 +332,13 @@ void MainWindow::createKhollo() {
                     "`id_users`	INTEGER NOT NULL, "
                     "`id_timeslots`	INTEGER NOT NULL "
                 ");");
+
     QMessageBox::information(NULL, "Succès", "Votre kholloscope a été créé.<br />Vous pouvons dès maintenant l'utiliser. :p");
+    updateWindow();
+    return;
 }
 
-void MainWindow::loadDB() {
+void MainWindow::openKhollo() {
     //Try to load directory preferences
     QString pref_path;
     QFile read(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
@@ -343,57 +351,43 @@ void MainWindow::loadDB() {
         pref_path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 
     //Get file name
-    QString fileBackup = QFileDialog::getOpenFileName(this, "Ouvrir un fichier", pref_path + QDir::separator(), "KSCOPE (*.kscope)");
+    QString fileDB = QFileDialog::getOpenFileName(this, "Ouvrir un fichier", pref_path + QDir::separator(), "KSCOPE (*.kscope)");
 
-    if(fileBackup == "")
+    if(fileDB == "") {
+        updateWindow();
         return;
+    }
 
     //Save directory in preferences
-    QString dirpath = QFileInfo(fileBackup).absoluteDir().absolutePath();
+    QString dirpath = QFileInfo(fileDB).absoluteDir().absolutePath();
     QFile pref_file(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
     if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text)){
         QTextStream out(&pref_file);
         out << dirpath;
     }
 
-    QFile file(fileBackup);
-    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return;
-
+    // Open the QSQLite database
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(":memory:");
-    if (!db.open())
+    db.setDatabaseName(fileDB);
+    if (!db.open()) {
+        QMessageBox::critical(NULL, "Echec", "Impossible d'ouvrir la base de données...");
+        updateWindow();
         return;
-
-    QSqlQuery query(db);
-
-    QTextStream in(&fileBackup);
-    while (!in.atEnd()) {
-        QString line = in.readLine();
-        query.exec(line);
     }
 
+    QMessageBox::information(NULL, "Succès", "Votre kholloscope a été chargé.<br />Vous pouvons l'utiliser. :p");
+    updateWindow();
     return;
 }
 
-QString MainWindow::addSlashes(QString str)  {
-    QString newStr = "";
+void MainWindow::updateWindow() {
+    QSqlDatabase db = QSqlDatabase::database();
 
-    for(int i=0;i<str.length();i++) {
-        if(str[i] == '\0') {
-            newStr += "\\\0";
+    QString info = "";
+    info += "<strong> Kholloscope :</strong> " + db.databaseName() + "<br />";
+    if(db.isOpen())
+            info += "<strong> Chargé :</strong> VRAI :p<br />";
+    else    info += "<strong> Chargé :</strong> FAUX :'(<br />";
 
-        } else if(str[i] == '\'')
-            newStr += "\\'";
-
-        else if(str[i] == '\"')
-            newStr += "\\\"";
-
-        else if(str[i] == '\\')
-            newStr += "\\\\";
-
-        else
-            newStr.append(str[i]);
-     }
-    return newStr;
+    ui->info->setText(info);
 }

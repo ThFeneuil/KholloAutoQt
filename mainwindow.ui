@@ -13,7 +13,30 @@
   <property name="windowTitle">
    <string>Kholloscope</string>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="info">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -27,11 +50,8 @@
     <property name="title">
      <string>&amp;Fichier</string>
     </property>
-    <addaction name="action_File_Select"/>
-    <addaction name="separator"/>
-    <addaction name="action_File_Configuate"/>
     <addaction name="action_File_Create"/>
-    <addaction name="action_File_Delete"/>
+    <addaction name="action_File_Open"/>
     <addaction name="separator"/>
     <addaction name="action_File_Quit"/>
    </widget>
@@ -75,9 +95,9 @@
    <addaction name="menu_Aide"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="action_File_Select">
+  <action name="action_File_Open">
    <property name="text">
-    <string>&amp;Sélectionner</string>
+    <string>&amp;Ouvrir</string>
    </property>
   </action>
   <action name="action_File_Create">
