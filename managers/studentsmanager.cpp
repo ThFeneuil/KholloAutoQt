@@ -62,7 +62,7 @@ bool StudentsManager::add_student() {
         return false;
     } else {
         QSqlQuery query(*m_db);
-        query.prepare("INSERT INTO tau_users(is_account, name, first_name, email) VALUES(1, :name, :firstName, :email)");
+        query.prepare("INSERT INTO tau_users(name, first_name, email) VALUES(:name, :firstName, :email)");
         query.bindValue(":name", name);
         query.bindValue(":firstName", firstName);
         query.bindValue(":email", email);

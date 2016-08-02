@@ -136,30 +136,30 @@ void KholloTable::displayTable() {
 
 bool KholloTable::compatible(Student* stdnt, Timeslot *timeslot) {
     //Get all groups of user (the ids)
-    QSqlQuery query(*m_db);
-    query.prepare("SELECT id_groups FROM tau_groups_users WHERE id_users=:id_users");
-    query.bindValue(":id_users", stdnt->getId());
-    query.exec();
+    QList<Group*> *groups = m_dbase->listStudents()->value(stdnt->getId())->groups();
 
-    //Get all courses that can interfere with this timeslot
-    if(query.next()) {
-        QString request = "id_groups=" + QString::number(query.value(0).toInt());
-        while(query.next())
-            request = request + " OR id_groups=" + QString::number(query.value(0).toInt());
+    int i;
+    if(groups->length() > 0) {
+        QString request = "id_groups=" + QString::number(groups->at(0)->getId());
+        for(i = 1; i < groups->length(); i++) {
+            request = request + " OR id_groups=" + QString::number(groups->at(i)->getId());
+        }
 
+        //Get all courses that can interfere with this timeslot
         QSqlQuery courses_query(*m_db);
         courses_query.prepare("SELECT * FROM tau_courses WHERE (" + request + ") AND id_day=:id_day AND id_week=:id_week AND ("
                                                                               "(time_start <= :time_start AND time_end > :time_start) OR"
                                                                               "(time_start < :time_end AND time_end >= :time_end) OR"
                                                                               "(time_start >= :time_start AND time_end <= :time_end) )");
-        courses_query.bindValue(":time_start", timeslot->getTime_start());
-        courses_query.bindValue(":time_end", timeslot->getTime_end());
+        courses_query.bindValue(":time_start", timeslot->getTime_start().toString("HH:mm:ss"));
+        courses_query.bindValue(":time_end", timeslot->getTime_end().toString("HH:mm:ss"));
         courses_query.bindValue(":id_day", timeslot->getDate().dayOfWeek());
         courses_query.bindValue(":id_week", m_id_week);
         courses_query.exec();
 
-        if(courses_query.next())
+        if(courses_query.next()) {
             return false;
+        }
 
         //Get all events that can interfere with this timeslot
         QSqlQuery event_query(*m_db);
@@ -167,13 +167,29 @@ bool KholloTable::compatible(Student* stdnt, Timeslot *timeslot) {
                                       "(E.`start` <= :start_time AND E.`end` > :start_time) OR"
                                       "(E.`start` < :end_time AND E.`end` >= :end_time) OR"
                                       "(E.`start` >= :start_time AND E.`end` <= :end_time))");
-
         event_query.bindValue(":start_time", QDateTime(timeslot->getDate(), timeslot->getTime_start()).toString("yyyy-MM-dd HH:mm:ss"));
         event_query.bindValue(":end_time", QDateTime(timeslot->getDate(), timeslot->getTime_end()).toString("yyyy-MM-dd HH:mm:ss"));
         event_query.exec();
 
-        if(event_query.next())
+        if(event_query.next()) {
             return false;
+        }
+
+        //Get all kholles that can interfere with this timeslot
+        QSqlQuery kholle_query(*m_db);
+        kholle_query.prepare("SELECT * FROM tau_kholles AS K JOIN tau_timeslots AS T ON K.`id_timeslots` = T.`id` WHERE K.`id_users`=:id_users AND T.`date`=:date AND ("
+                             "(T.`time_start` <= :time_start AND T.`time_end` > :time_start) OR "
+                             "(T.`time_start` < :time_end AND T.`time_end` >= :time_end) OR "
+                             "(T.`time_start` >= :time_start AND T.`time_end` <= :time_end))");
+        kholle_query.bindValue(":id_users", stdnt->getId());
+        kholle_query.bindValue(":date", timeslot->getDate().toString("yyyy-MM-dd"));
+        kholle_query.bindValue(":time_start", timeslot->getTime_start().toString("HH:mm:ss"));
+        kholle_query.bindValue(":time_end", timeslot->getTime_end().toString("HH:mm:ss"));
+        kholle_query.exec();
+
+        if(kholle_query.next()) {
+            return false;
+        }
     }
 
     return true;

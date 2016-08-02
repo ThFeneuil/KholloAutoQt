@@ -15,6 +15,7 @@
 #include "interface/interfacetab.h"
 #include "interface/introinterface.h"
 #include "database.h"
+#include "printpdf.h"
 #include <QGraphicsView>
 #include <QListWidget>
 
@@ -34,6 +35,7 @@ public:
 
 public slots:
     bool selectStudent(Student* stud = NULL);
+    void printKholloscope();
 
 private:
     Ui::InterfaceDialog *ui;
