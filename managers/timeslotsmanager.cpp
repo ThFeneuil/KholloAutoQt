@@ -103,6 +103,7 @@ void TimeslotsManager::free_timeslots() {
 }
 
 void TimeslotsManager::onSelection_change() {
+    ui->listTimeslots->clear();
     QList<QListWidgetItem*> selection = ui->listKholleurs->selectedItems();
 
     if(selection.length() <= 0) {
