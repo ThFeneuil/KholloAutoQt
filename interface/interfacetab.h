@@ -9,7 +9,7 @@
 #include "storedData/kholleur.h"
 #include "storedData/student.h"
 #include "interface/khollotable.h"
-#include "interface/database.h"
+#include "database.h"
 #include "interface/interfacedialog.h"
 
 class InterfaceDialog;

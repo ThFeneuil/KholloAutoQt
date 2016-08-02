@@ -14,7 +14,7 @@
 #include <QPainter>
 #include "interface/interfacetab.h"
 #include "interface/introinterface.h"
-#include "interface/database.h"
+#include "database.h"
 #include <QGraphicsView>
 #include <QListWidget>
 
