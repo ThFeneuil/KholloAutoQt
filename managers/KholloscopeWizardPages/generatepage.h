@@ -19,6 +19,7 @@
 #include "storedData/kholle.h"
 #include "database.h"
 #include "managers/kholloscopewizard.h"
+#include "printpdf.h"
 
 struct working_index {
     int current_student;
@@ -57,10 +58,6 @@ public:
     void display();
 
     void freeKholles();
-
-    int longestUser(QFontMetrics font, QList<Student *> *students);
-    int longestKholleur(QFontMetrics font, QMap<int, Kholleur*> *kholleurs);
-    void printKholles(QList<Student *> *students, QMap<int, Kholleur *> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QMap<int, Kholle *> *kholloscope);
 
 public slots:
     void saveKholles();

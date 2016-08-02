@@ -66,7 +66,8 @@ HEADERS += \
     database.h \
     aboutitdialog.h \
     contactdialog.h \
-    reviewdialog.h
+    reviewdialog.h \
+    printpdf.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -107,7 +108,8 @@ SOURCES += \
     database.cpp \
     aboutitdialog.cpp \
     contactdialog.cpp \
-    reviewdialog.cpp
+    reviewdialog.cpp \
+    printpdf.cpp
 DISTFILES +=
 
 RESOURCES += \
