@@ -17,6 +17,7 @@
 #include "storedData/timeslot.h"
 #include "storedData/kholleur.h"
 #include "storedData/kholle.h"
+#include "interface/database.h"
 #include "managers/kholloscopewizard.h"
 
 struct working_index {
@@ -74,6 +75,7 @@ public slots:
 private:
     Ui::GeneratePage *ui;
     QSqlDatabase *m_db;
+    DataBase *m_dbase;
     QMap<int, Timeslot*> timeslots;
     QMap<int, Subject*> subjects;
     QMap<int, Kholleur*> kholleurs;
