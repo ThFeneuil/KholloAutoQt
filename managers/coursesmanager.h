@@ -39,6 +39,7 @@ public slots:
     bool save_changes();
     void onSelection_change();
     void courses_changed(int i);
+    void onClose_button();
 
 private:
     Ui::CoursesManager *ui;

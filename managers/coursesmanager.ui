@@ -323,22 +323,5 @@
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>pushButton_close</sender>
-   <signal>clicked()</signal>
-   <receiver>CoursesManager</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>937</x>
-     <y>564</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>889</x>
-     <y>559</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

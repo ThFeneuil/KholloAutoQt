@@ -9,6 +9,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
     ui->setupUi(this);
     connect(ui->list_groups, SIGNAL(itemSelectionChanged()), this, SLOT(onSelection_change()));
     connect(ui->pushButton_save, SIGNAL(clicked()), this, SLOT(save_changes()));
+    connect(ui->pushButton_close, SIGNAL(clicked()), this, SLOT(onClose_button()));
 
     //DB
     m_db = db;
@@ -271,6 +272,9 @@ bool CoursesManager::save_changes() {
     save(ui->grid_odd, 2);
     isChanged = false;
 
+    //Show feedback
+    QMessageBox::information(this, "Sauvegarde réussie", "Les modifications ont bien été sauvegardées");
+
     //If this group is same as last group
     QList<QListWidgetItem*> selection = ui->list_groups->selectedItems();
     if(selection.length() > 0 && (Group*) selection[0]->data(Qt::UserRole).toULongLong() == current) {
@@ -349,4 +353,17 @@ void CoursesManager::onSelection_change() {
 
     update_courses(ui->grid_even, 1);
     update_courses(ui->grid_odd, 2);
+}
+
+void CoursesManager::onClose_button() {
+    //Ask for confirmation
+    if(isChanged) {
+        int res = QMessageBox::question(this, "Modifications non sauvegardées", "Voulez-vous sauvegarder les modifications faites à l'emploi du temps de ce groupe?", QMessageBox::Yes | QMessageBox::No);
+        if(res == QMessageBox::Yes) {
+            save_changes();
+        }
+    }
+
+    //Close the dialog
+    accept();
 }
