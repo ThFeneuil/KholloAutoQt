@@ -38,7 +38,7 @@ void GeneratePage::initializePage() {
 
     freeKholles();
 
-    m_dbase->setConditionTimeslots("date>=\"" + m_date.toString("yyyy-MM-dd") + "\" AND date<=\"" + m_date.addDays(6).toString("yyyy-MM-dd") + "\"");
+    //m_dbase->setConditionTimeslots("date>=\"" + m_date.toString("yyyy-MM-dd") + "\" AND date<=\"" + m_date.addDays(6).toString("yyyy-MM-dd") + "\"");
     m_dbase->load();
 
     setPupilsOnTimeslots();
@@ -59,7 +59,8 @@ void GeneratePage::setPupilsOnTimeslots() {
 
     //Loop through all timeslots and update number of pupils
     foreach(Timeslot* ts, *map) {
-        ts->setPupils(ts->getPupils() - ts->kholles()->length());
+        if(ts->getDate() >= m_date && ts->getDate() <= m_date.addDays(6))
+            ts->setPupils(ts->getPupils() - ts->kholles()->length());
     }
 }
 
@@ -95,6 +96,7 @@ void GeneratePage::calculateProba() {
 
                     if(kholle_date >= m_date.addDays(-7) && kholle_date <= m_date.addDays(13)) //-50 if within a week
                         p -= 10;
+
                 }
             }
 
@@ -209,7 +211,10 @@ void GeneratePage::constructPoss() {
             foreach(Timeslot* ts, *m_dbase->listTimeslots()) { //For every timeslot
                 Subject* sub = ts->kholleur()->subject();
 
-                if(sub->getId() == selected_subjects->at(i)->getId() && compatible(users[j]->getId(), ts)) { //Add the compatible timeslots
+                if(sub->getId() == selected_subjects->at(i)->getId()
+                        && ts->getDate() >= m_date
+                        && ts->getDate() <= m_date.addDays(6)
+                        && compatible(users[j]->getId(), ts)) { //Add the compatible timeslots
                     new_list.append(ts);
                 }
             }
@@ -221,6 +226,7 @@ void GeneratePage::constructPoss() {
                 string += QString::number(new_list[k]->getId_kholleurs()) + "\n";
             }
             QMessageBox::information(this, QString::number(users[j]->getId()), string);*/
+
             map.insert(users[j]->getId(), new_list); //Insert the list
         }
 

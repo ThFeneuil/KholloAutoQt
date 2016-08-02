@@ -24,6 +24,7 @@ public:
     explicit UsersPage(QSqlDatabase *db, QWidget *parent = 0);
     ~UsersPage();
     void initializePage();
+    void cleanupPage();
     void get_selected_subjects();
     void populate(QListWidget *list);
 

@@ -46,6 +46,10 @@ void UsersPage::initializePage() {
     registerField("monday_date", ui->dateEdit);
 }
 
+void UsersPage::cleanupPage() {
+    ((KholloscopeWizard*) wizard())->get_input()->clear();
+}
+
 void UsersPage::get_selected_subjects() {
     /** Gets the selected subjects **/
     list_selected_subjects->clear();
