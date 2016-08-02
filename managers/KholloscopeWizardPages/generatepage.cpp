@@ -25,7 +25,7 @@ void GeneratePage::initializePage() {
     //Connect the finish button to save on finish
     connect(wizard()->button(QWizard::FinishButton), SIGNAL(clicked()), this, SLOT(saveKholles()));
 
-    //Initialise random number
+    //Initialise random number generator
     qsrand((uint)QTime::currentTime().msec());
 
     m_week = field("current_week").toInt() + 1;
@@ -38,14 +38,25 @@ void GeneratePage::initializePage() {
 
     freeKholles();
 
-    m_dbase->setConditionTimeslots("date>=" + m_date.toString("yyyy-MM-dd") + " AND date<=" + m_date.addDays(6).toString("yyyy-MM-dd"));
+    m_dbase->setConditionTimeslots("date>=\"" + m_date.toString("yyyy-MM-dd") + "\" AND date<=\"" + m_date.addDays(6).toString("yyyy-MM-dd") + "\"");
     m_dbase->load();
-    //setPupilsForTimeslots();
+
+    setPupilsOnTimeslots();
 
     calculateProba();
     constructPoss();
     generate();
     display();
+}
+
+void GeneratePage::setPupilsOnTimeslots() {
+    //Get timeslots
+    QMap<int, Timeslot*> *map = m_dbase->listTimeslots();
+
+    //Loop through all timeslots and update number of pupils
+    foreach(Timeslot* ts, *map) {
+        ts->setPupils(ts->getPupils() - ts->kholles()->length());
+    }
 }
 
 void GeneratePage::calculateProba() {
@@ -92,15 +103,13 @@ void GeneratePage::calculateProba() {
 
 bool GeneratePage::compatible(int id_user, Timeslot *timeslot) {
     //Get all groups of user (the ids)
-    QSqlQuery query(*m_db);
-    query.prepare("SELECT id_groups FROM tau_groups_users WHERE id_users=:id_users");
-    query.bindValue(":id_users", id_user);
-    query.exec();
+    QList<Group*> *groups = m_dbase->listStudents()->value(id_user)->groups();
 
-    if(query.next()) {
-        QString request = "id_groups=" + QString::number(query.value(0).toInt());
-        while(query.next()) {
-            request = request + " OR id_groups=" + QString::number(query.value(0).toInt());
+    int i;
+    if(groups->length() > 0) {
+        QString request = "id_groups=" + QString::number(groups->at(0)->getId());
+        for(i = 1; i < groups->length(); i++) {
+            request = request + " OR id_groups=" + QString::number(groups->at(i)->getId());
         }
 
         //Get all courses that can interfere with this timeslot
@@ -125,17 +134,29 @@ bool GeneratePage::compatible(int id_user, Timeslot *timeslot) {
                                       "(E.`start` <= :start_time AND E.`end` > :start_time) OR"
                                       "(E.`start` < :end_time AND E.`end` >= :end_time) OR"
                                       "(E.`start` >= :start_time AND E.`end` <= :end_time))");
-        QDate new_date = m_date.addDays(timeslot->getDate().dayOfWeek() - 1);
-
-        event_query.bindValue(":start_time", QDateTime(new_date, timeslot->getTime_start()).toString("yyyy-MM-dd HH:mm:ss"));
-        event_query.bindValue(":end_time", QDateTime(new_date, timeslot->getTime_end()).toString("yyyy-MM-dd HH:mm:ss"));
+        event_query.bindValue(":start_time", QDateTime(timeslot->getDate(), timeslot->getTime_start()).toString("yyyy-MM-dd HH:mm:ss"));
+        event_query.bindValue(":end_time", QDateTime(timeslot->getDate(), timeslot->getTime_end()).toString("yyyy-MM-dd HH:mm:ss"));
         event_query.exec();
 
         if(event_query.next()) {
             return false;
         }
 
-        //Get all kholles that can interfere with this
+        //Get all kholles that can interfere with this timeslot
+        QSqlQuery kholle_query(*m_db);
+        kholle_query.prepare("SELECT * FROM tau_kholles AS K JOIN tau_timeslots AS T ON K.`id_timeslots` = T.`id` WHERE K.`id_users`=:id_users AND T.`date`=:date AND ("
+                             "(T.`time_start` <= :time_start AND T.`time_end` > :time_start) OR "
+                             "(T.`time_start` < :time_end AND T.`time_end` >= :time_end) OR "
+                             "(T.`time_start` >= :time_start AND T.`time_end` <= :time_end))");
+        kholle_query.bindValue(":id_users", id_user);
+        kholle_query.bindValue(":date", timeslot->getDate().toString("yyyy-MM-dd"));
+        kholle_query.bindValue(":time_start", timeslot->getTime_start().toString("HH:mm:ss"));
+        kholle_query.bindValue(":time_end", timeslot->getTime_end().toString("HH:mm:ss"));
+        kholle_query.exec();
+
+        if(kholle_query.next()) {
+            return false;
+        }
     }
 
     return true;
@@ -191,6 +212,7 @@ void GeneratePage::constructPoss() {
             quickSort(&new_list, 0, new_list.length() - 1, users[j]->getId()); //Sort the list based on probabilities
 
             /*QString string;
+            int k;
             for(k = 0; k < new_list.length(); k++) {
                 string += QString::number(new_list[k]->getId_kholleurs()) + "\n";
             }
@@ -413,8 +435,26 @@ void GeneratePage::saveKholles() {
         box.hide();
     }
 
-    if(ui->printCheckBox->isChecked())
-        printKholles(((KholloscopeWizard*) wizard())->get_students(), m_dbase->listKholleurs(), m_dbase->listTimeslots(), m_date, &kholloscope);
+    if(ui->printCheckBox->isChecked()) {
+        //Create QMap of Kholles
+        QMap<int, Kholle*> *khollo = new QMap<int, Kholle*>;
+
+        //Add the other kholles of the week for printing
+        foreach(Kholle* k, *m_dbase->listKholles()) {
+            if(k->timeslot()->getDate() >= m_date && k->timeslot()->getDate() <= m_date.addDays(6))
+                khollo->insert(k->getId(), k);
+        }
+
+        //Add the generated kholles
+        int i;
+        for(i = 0; i < kholloscope.length(); i++) {
+            khollo->insertMulti(0, kholloscope[i]);
+        }
+
+        //Print!
+        //QMessageBox::information(this, "OK", QString::number(kholloscope.length()));
+        printKholles(((KholloscopeWizard*) wizard())->get_students(), m_dbase->listKholleurs(), m_dbase->listTimeslots(), m_date, khollo);
+    }
 }
 
 void GeneratePage::freeKholles() {
@@ -423,7 +463,7 @@ void GeneratePage::freeKholles() {
     }
 }
 
-int GeneratePage::longestUser(QFontMetrics font, QList<Student*> *students) {
+int GeneratePage::longestUser(QFontMetrics font, QList<Student *> *students) {
     int max = 0;
     int i;
     for(i = 0; i < students->length(); i++) {
@@ -446,7 +486,7 @@ int GeneratePage::longestKholleur(QFontMetrics font, QMap<int, Kholleur*> *kholl
     return max;
 }
 
-void GeneratePage::printKholles(QList<Student *> *students, QMap<int, Kholleur *> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QList<Kholle *> *kholloscope) {
+void GeneratePage::printKholles(QList<Student *> *students, QMap<int, Kholleur *> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QMap<int, Kholle *> *kholloscope) {
     //Try to load directory preferences
     QString pref_path;
     QFile read(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
@@ -580,8 +620,8 @@ void GeneratePage::printKholles(QList<Student *> *students, QMap<int, Kholleur *
         }
     }
 
-    for(i = 0; i < kholloscope->length(); i++) {
-        kholles[assoc.value(kholloscope->at(i)->getId_students())]->at(timeslots->value(kholloscope->at(i)->getId_timeslots())->getDate().dayOfWeek() - 1)->append(kholloscope->at(i));
+    foreach(Kholle* k, *kholloscope) {
+        kholles[assoc.value(k->getId_students())]->at(timeslots->value(k->getId_timeslots())->getDate().dayOfWeek() - 1)->append(k);
     }
 
     for(i = 0; i < students->length(); i++) {

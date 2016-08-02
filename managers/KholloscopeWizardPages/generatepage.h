@@ -17,7 +17,7 @@
 #include "storedData/timeslot.h"
 #include "storedData/kholleur.h"
 #include "storedData/kholle.h"
-#include "interface/database.h"
+#include "database.h"
 #include "managers/kholloscopewizard.h"
 
 struct working_index {
@@ -38,14 +38,7 @@ public:
     explicit GeneratePage(QSqlDatabase *db, QWidget *parent = 0);
     ~GeneratePage();
     void initializePage();
-
-    void getTimeslots();
-    void freeTimeslots();
-
-    void loadSubjects();
-
-    void getKholleurs();
-    void freeKholleurs();
+    void setPupilsOnTimeslots();
 
     void calculateProba();
 
@@ -67,7 +60,7 @@ public:
 
     int longestUser(QFontMetrics font, QList<Student *> *students);
     int longestKholleur(QFontMetrics font, QMap<int, Kholleur*> *kholleurs);
-    void printKholles(QList<Student*> *students, QMap<int, Kholleur*> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QList<Kholle *> *kholloscope);
+    void printKholles(QList<Student *> *students, QMap<int, Kholleur *> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QMap<int, Kholle *> *kholloscope);
 
 public slots:
     void saveKholles();
