@@ -108,6 +108,9 @@
    <property name="text">
     <string>&amp;Ouvrir</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="action_File_Create">
    <property name="enabled">
@@ -115,6 +118,9 @@
    </property>
    <property name="text">
     <string>C&amp;réer</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
   <action name="action_File_Delete">
@@ -165,6 +171,9 @@
    <property name="text">
     <string>&amp;Emploi du temps</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
   </action>
   <action name="action_Schedule_Students_Groups">
    <property name="text">
@@ -174,6 +183,9 @@
   <action name="action_Schedule_Kholles">
    <property name="text">
     <string>&amp;Horaires de kholles</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+K</string>
    </property>
   </action>
   <action name="action_Schedule_Events">
@@ -188,15 +200,24 @@
    <property name="text">
     <string>&amp;Interface</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
   </action>
   <action name="action_Kholles_Generate">
    <property name="text">
     <string>&amp;Générer</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
   </action>
   <action name="action_Kholles_Historic">
    <property name="text">
     <string>&amp;Historique</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
    </property>
   </action>
   <action name="action_Help">
