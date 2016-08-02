@@ -56,6 +56,9 @@
     <addaction name="action_File_Quit"/>
    </widget>
    <widget class="QMenu" name="menuBDD">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;BDD</string>
     </property>
@@ -65,6 +68,9 @@
     <addaction name="action_DB_Kholleurs"/>
    </widget>
    <widget class="QMenu" name="menuPlanning">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;Planning</string>
     </property>
@@ -74,6 +80,9 @@
     <addaction name="action_Schedule_Events"/>
    </widget>
    <widget class="QMenu" name="menuKholles">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;Kholles</string>
     </property>
@@ -101,6 +110,9 @@
    </property>
   </action>
   <action name="action_File_Create">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>C&amp;réer</string>
    </property>
@@ -124,6 +136,9 @@
    </property>
   </action>
   <action name="action_DB_Students">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Elèves</string>
    </property>
@@ -144,6 +159,9 @@
    </property>
   </action>
   <action name="action_Schedule_Timetable">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Emploi du temps</string>
    </property>
@@ -164,6 +182,9 @@
    </property>
   </action>
   <action name="action_Kholles_Interface">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Interface</string>
    </property>
@@ -179,6 +200,9 @@
    </property>
   </action>
   <action name="action_Help">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Contacts</string>
    </property>

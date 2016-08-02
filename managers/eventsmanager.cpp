@@ -42,8 +42,8 @@ bool EventsManager::update_list() {
     // Make the request
     QSqlQuery query(*m_db);
     if( ! ui->checkBox_old->isChecked())
-            query.exec("SELECT id, name, comment, start, end FROM tau_events WHERE end >= NOW() ORDER BY start");
-    else    query.exec("SELECT id, name, comment, start, end FROM tau_events WHERE end <  NOW() ORDER BY start DESC");
+            query.exec("SELECT id, name, comment, start, end FROM tau_events WHERE end >= datetime('NOW') ORDER BY start");
+    else    query.exec("SELECT id, name, comment, start, end FROM tau_events WHERE end <  datetime('NOW') ORDER BY start DESC");
 
     // Treat the request & Display the events
     while (query.next()) {

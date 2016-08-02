@@ -24,14 +24,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_File_Create, SIGNAL(triggered()), this, SLOT(createKhollo()));
     connect(ui->action_File_Open, SIGNAL(triggered()), this, SLOT(openKhollo()));
 
-    // Connection with the DB
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
-    db.setDatabaseName("lataupe");
-    db.setUserName("root");
-    db.setPassword("");
-    db.open();
-
     updateWindow();
 }
 
@@ -366,6 +358,25 @@ void MainWindow::openKhollo() {
         out << dirpath;
     }
 
+    // To load the DB which is on a local server
+    if(QFileInfo(fileDB).fileName() == "localhost.kscope") {
+        // Connection with the DB
+        QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
+        db.setHostName("localhost");
+        db.setDatabaseName("lataupe");
+        db.setUserName("root");
+        db.setPassword("");
+        if (!db.open()) {
+            QMessageBox::critical(NULL, "Echec", "Impossible d'ouvrir la base de données (du serveur local)...");
+            updateWindow();
+            return;
+        }
+
+        QMessageBox::information(NULL, "Succès", "La base de données qui est sur le serveur local a été chargée.<br />Vous pouvez l'utiliser. :p");
+        updateWindow();
+        return;
+    }
+
     // Open the QSQLite database
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(fileDB);
@@ -375,7 +386,7 @@ void MainWindow::openKhollo() {
         return;
     }
 
-    QMessageBox::information(NULL, "Succès", "Votre kholloscope a été chargé.<br />Vous pouvons l'utiliser. :p");
+    QMessageBox::information(NULL, "Succès", "Votre kholloscope a été chargé.<br />Vous pouvez l'utiliser. :p");
     updateWindow();
     return;
 }
@@ -384,10 +395,27 @@ void MainWindow::updateWindow() {
     QSqlDatabase db = QSqlDatabase::database();
 
     QString info = "";
-    info += "<strong> Kholloscope :</strong> " + db.databaseName() + "<br />";
-    if(db.isOpen())
-            info += "<strong> Chargé :</strong> VRAI :p<br />";
-    else    info += "<strong> Chargé :</strong> FAUX :'(<br />";
+    if(db.databaseName() != "") {
+        info += "<strong> Kholloscope :</strong> " + db.databaseName() + "<br />";
+        if(db.isOpen())
+                info += "<strong> Chargé :</strong> VRAI :p<br />";
+        else    info += "<strong> Chargé :</strong> FAUX :'(<br />";
+    } else {
+        info += "<strong> Aucun kholloscope n'a été chargé.</strong><br />Veuillez en créer ou en ouvrir un via le menu \"Fichier\"...";
+    }
 
     ui->info->setText(info);
+
+    // Update the menu
+    ui->action_DB_Students->setEnabled(db.isOpen());
+    ui->action_DB_Groups->setEnabled(db.isOpen());
+    ui->action_DB_Subjects->setEnabled(db.isOpen());
+    ui->action_DB_Kholleurs->setEnabled(db.isOpen());
+    ui->action_Schedule_Timetable->setEnabled(db.isOpen());
+    ui->action_Schedule_Students_Groups->setEnabled(db.isOpen());
+    ui->action_Schedule_Kholles->setEnabled(db.isOpen());
+    ui->action_Schedule_Events->setEnabled(db.isOpen());
+    ui->action_Kholles_Interface->setEnabled(db.isOpen());
+    ui->action_Kholles_Generate->setEnabled(db.isOpen());
+    ui->action_Kholles_Historic->setEnabled(db.isOpen());
 }
