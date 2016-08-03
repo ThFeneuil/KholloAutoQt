@@ -287,7 +287,7 @@ void MainWindow::createKhollo() {
     qCreate.exec("CREATE TABLE `tau_courses` ( "
                     "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
                     "`id_subjects`	INTEGER NOT NULL, "
-                    "`time_start`	BLOB NOT NULL, "
+                    "`time_start`	TEXT NOT NULL, "
                     "`time_end`	TEXT NOT NULL, "
                     "`id_groups`	INTEGER NOT NULL, "
                     "`id_teachers`	INTEGER NOT NULL, "
