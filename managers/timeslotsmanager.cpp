@@ -178,6 +178,10 @@ void TimeslotsManager::deleteTimeslot() {
     Timeslot* ts = (Timeslot*) selection[0]->data(Qt::UserRole).toULongLong();
 
     QList<QListWidgetItem*> kholleurs = ui->listKholleurs->selectedItems();
+    if(kholleurs.length() <= 0) {
+        QMessageBox::critical(this, "Erreur", "Aucun kholleur n'est sélectionné. Comment est-ce possible ?");
+        return;
+    }
 
     //Confirmation
     int res = QMessageBox::warning(this, "Suppression en cours", "Vous êtes sur le point de supprimer un horaire de kholle "
@@ -195,9 +199,8 @@ void TimeslotsManager::deleteTimeslot() {
         query.exec();
 
         //Update
-        if(kholleurs.length() > 0) {
-            update_list_timeslots(((Kholleur*)kholleurs[0]->data(Qt::UserRole).toULongLong())->getId());
-        }
+        update_list_timeslots(((Kholleur*)kholleurs[0]->data(Qt::UserRole).toULongLong())->getId());
+
     }
 
 }

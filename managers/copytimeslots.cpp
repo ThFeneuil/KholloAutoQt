@@ -48,7 +48,7 @@ void CopyTimeslots::copy() {
                                        "Vous êtes sur le point de copier les horaires de <strong>tous</strong> les kholleurs. "
                                        "Cela <strong>supprimera</strong> les horaires actuellement rentrés ainsi que les <strong>kholles</strong> associées. "
                                        "<br />Voulez-vous continuer ?",
-                                       QMessageBox::Yes | QMessageBox::Cancel);
+                                       QMessageBox::Yes | QMessageBox::No);
 
         if(res == QMessageBox::Yes) {
             //Get all timeslots from the other week
@@ -120,7 +120,7 @@ void CopyTimeslots::copy() {
                                            "Vous êtes sur le point de copier les horaires du kholleur <strong>" + warning_query.value(0).toString() + "</strong>. "
                                            "Cela <strong>supprimera</strong> les horaires actuellement rentrés ainsi que les <strong>kholles</strong> associées. "
                                            "<br />Voulez-vous continuer ?",
-                                           QMessageBox::Yes | QMessageBox::Cancel);
+                                           QMessageBox::Yes | QMessageBox::No);
 
             if(res == QMessageBox::Yes) {
                 //Get all timeslots from the other week for this kholleur

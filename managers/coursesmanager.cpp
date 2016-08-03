@@ -55,7 +55,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 subjects->addItem(list_subjects[j]->getShortName(), list_subjects[j]->getId());
             }
             subjects->setEnabled(false);
-            connect(subjects, SIGNAL(currentIndexChanged(int)), this, SLOT(courses_changed(int)));
+            connect(subjects, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
 
             QComboBox *teachers = new QComboBox();
             teachers->addItem("");
@@ -63,7 +63,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 teachers->addItem(list_teachers[j]->getName(), list_teachers[j]->getId());
             }
             teachers->setEnabled(false);
-            connect(teachers, SIGNAL(currentIndexChanged(int)), this, SLOT(courses_changed(int)));
+            connect(teachers, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
 
             layout->setContentsMargins(5, 5, 5, 5);
             layout->setSpacing(2);
@@ -81,7 +81,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 subjects->addItem(list_subjects[j]->getShortName(), list_subjects[j]->getId());
             }
             subjects->setEnabled(false);
-            connect(subjects, SIGNAL(currentIndexChanged(int)), this, SLOT(courses_changed(int)));
+            connect(subjects, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
 
             teachers = new QComboBox();
             teachers->addItem("");
@@ -89,7 +89,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 teachers->addItem(list_teachers[j]->getName(), list_teachers[j]->getId());
             }
             teachers->setEnabled(false);
-            connect(teachers, SIGNAL(currentIndexChanged(int)), this, SLOT(courses_changed(int)));
+            connect(teachers, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
 
             layout->setContentsMargins(5, 5, 5, 5);
             layout->setSpacing(2);
@@ -387,6 +387,8 @@ void CoursesManager::copyToEven() {
             }
         }
     }
+
+    isChanged = true;
 }
 
 void CoursesManager::copyToOdd() {
@@ -405,6 +407,8 @@ void CoursesManager::copyToOdd() {
             }
         }
     }
+
+    isChanged = true;
 }
 
 void CoursesManager::onClose_button() {
