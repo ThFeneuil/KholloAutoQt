@@ -33,7 +33,7 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="tab_even">
         <attribute name="title">
@@ -149,6 +149,19 @@
           <widget class="QLabel" name="label_40">
            <property name="text">
             <string>Samedi</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QPushButton" name="copyToOdd">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>Copier ces cours vers la semaine impaire</string>
+           </property>
+           <property name="text">
+            <string>Recopier...</string>
            </property>
           </widget>
          </item>
@@ -268,6 +281,19 @@
           <widget class="QLabel" name="label_17">
            <property name="text">
             <string>Samedi</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QPushButton" name="copyToEven">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>Copier ces cours vers la semaine paire</string>
+           </property>
+           <property name="text">
+            <string>Recopier...</string>
            </property>
           </widget>
          </item>

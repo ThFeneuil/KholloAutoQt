@@ -10,6 +10,8 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
     connect(ui->list_groups, SIGNAL(itemSelectionChanged()), this, SLOT(onSelection_change()));
     connect(ui->pushButton_save, SIGNAL(clicked()), this, SLOT(save_changes()));
     connect(ui->pushButton_close, SIGNAL(clicked()), this, SLOT(onClose_button()));
+    connect(ui->copyToEven, SIGNAL(clicked()), this, SLOT(copyToEven()));
+    connect(ui->copyToOdd, SIGNAL(clicked()), this, SLOT(copyToOdd()));
 
     //DB
     m_db = db;
@@ -330,6 +332,9 @@ void CoursesManager::onSelection_change() {
     QList<QListWidgetItem*> selection = ui->list_groups->selectedItems();
     if(selection.length() <= 0) {
         //Disable all
+        ui->copyToEven->setEnabled(false);
+        ui->copyToOdd->setEnabled(false);
+
         int i, j;
         for(i = 0; i < 6; i++) {
             for(j = 0; j < 10; j++) {
@@ -346,6 +351,9 @@ void CoursesManager::onSelection_change() {
     }
 
     //Enable all
+    ui->copyToEven->setEnabled(true);
+    ui->copyToOdd->setEnabled(true);
+
     int i, j;
     for(i = 0; i < 6; i++) {
         for(j = 0; j < 10; j++) {
@@ -361,6 +369,42 @@ void CoursesManager::onSelection_change() {
 
     update_courses(ui->grid_even, 1);
     update_courses(ui->grid_odd, 2);
+}
+
+void CoursesManager::copyToEven() {
+    //Display warning
+    int res = QMessageBox::warning(this, "Copie en cours", "Vous êtes sur le point de copier les cours de la semaine impaire vers la semaine paire. Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::No);
+
+    //Copy
+    if(res == QMessageBox::Yes) {
+        int i, j;
+        for(i = 0; i < 6; i++) {
+            for(j = 0; j < 10; j++) {
+                ((QComboBox*)ui->grid_even->itemAtPosition(j+1, i+1)->layout()->itemAt(0)->widget())->setCurrentIndex(
+                            ((QComboBox*)ui->grid_odd->itemAtPosition(j+1, i+1)->layout()->itemAt(0)->widget())->currentIndex());
+                ((QComboBox*)ui->grid_even->itemAtPosition(j+1, i+1)->layout()->itemAt(1)->widget())->setCurrentIndex(
+                            ((QComboBox*)ui->grid_odd->itemAtPosition(j+1, i+1)->layout()->itemAt(1)->widget())->currentIndex());
+            }
+        }
+    }
+}
+
+void CoursesManager::copyToOdd() {
+    //Display warning
+    int res = QMessageBox::warning(this, "Copie en cours", "Vous êtes sur le point de copier les cours de la semaine paire vers la semaine impaire. Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::No);
+
+    //Copy
+    if(res == QMessageBox::Yes) {
+        int i, j;
+        for(i = 0; i < 6; i++) {
+            for(j = 0; j < 10; j++) {
+                ((QComboBox*)ui->grid_odd->itemAtPosition(j+1, i+1)->layout()->itemAt(0)->widget())->setCurrentIndex(
+                            ((QComboBox*)ui->grid_even->itemAtPosition(j+1, i+1)->layout()->itemAt(0)->widget())->currentIndex());
+                ((QComboBox*)ui->grid_odd->itemAtPosition(j+1, i+1)->layout()->itemAt(1)->widget())->setCurrentIndex(
+                            ((QComboBox*)ui->grid_even->itemAtPosition(j+1, i+1)->layout()->itemAt(1)->widget())->currentIndex());
+            }
+        }
+    }
 }
 
 void CoursesManager::onClose_button() {

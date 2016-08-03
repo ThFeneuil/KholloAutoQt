@@ -40,6 +40,8 @@ public slots:
     void onSelection_change();
     void courses_changed(int i);
     void onClose_button();
+    void copyToEven();
+    void copyToOdd();
 
 private:
     Ui::CoursesManager *ui;
