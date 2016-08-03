@@ -339,7 +339,7 @@ void MainWindow::createKhollo() {
                     "`id_timeslots`	INTEGER NOT NULL "
                 ");");
 
-    QMessageBox::information(NULL, "Succès", "Votre kholloscope a été créé.<br />Vous pouvons dès maintenant l'utiliser. :p");
+    QMessageBox::information(NULL, "Succès", "Votre kholloscope a été créé.<br />Vous pouvez dès maintenant l'utiliser. :p");
     updateWindow();
     return;
 }
