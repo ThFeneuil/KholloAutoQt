@@ -74,6 +74,21 @@ void KholloTable::displayTable() {
                 areaCourses.append(rect);
             }
         }
+
+        QList<Kholle*>* listKholles = m_student->kholles();
+        for(int i=0; i<listKholles->count(); i++) { // For each group
+            Kholle* klle = listKholles->at(i);
+            Timeslot* slot = klle->timeslot();
+
+            // Display the course
+            int x = m_sizeImg[BeginDays]+m_sizeImg[BetweenDays]*m_monday.daysTo(slot->getDate());
+            int y = m_sizeImg[BeginHours]+m_sizeImg[BetweenHours]*(slot->getTime().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
+            int w = m_sizeImg[BetweenDays];
+            int h = m_sizeImg[BetweenHours]*(slot->getTime_end().msecsSinceStartOfDay() - slot->getTime().msecsSinceStartOfDay())/3600000;
+            QRect rect(x,y,w,h);
+            addRect(rect, QPen(Qt::black, 0), QBrush(QColor(255,201,14)));
+            areaCourses.append(rect);
+        }
     }
 
     if(m_kholleur) {
