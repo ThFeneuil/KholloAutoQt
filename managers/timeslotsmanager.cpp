@@ -181,6 +181,9 @@ void TimeslotsManager::deleteTimeslot() {
 
     //Query
     QSqlQuery query(*m_db);
+    query.prepare("DELETE FROM tau_kholles WHERE id_timeslots=:id_timeslots");
+    query.bindValue(":id_timeslots", ts->getId());
+    query.exec();
     query.prepare("DELETE FROM tau_timeslots WHERE id=:id");
     query.bindValue(":id", ts->getId());
     query.exec();

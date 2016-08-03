@@ -58,6 +58,11 @@ void CopyTimeslots::copy() {
 
             //Delete all timeslots for this week
             QSqlQuery delete_query(*m_db);
+            delete_query.prepare("DELETE FROM tau_kholles WHERE id_timeslots IN "
+                                    "(SELECT id FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date)");
+            delete_query.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
+            delete_query.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
+            delete_query.exec();
             delete_query.prepare("DELETE FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date");
             delete_query.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
             delete_query.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
@@ -113,6 +118,12 @@ void CopyTimeslots::copy() {
 
         //Delete all timeslots for this week for this kholleur
         QSqlQuery delete_query(*m_db);
+        delete_query.prepare("DELETE FROM tau_kholles WHERE id_timeslots IN "
+                                "(SELECT id FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date AND id_kholleurs=:id_kholleurs)");
+        delete_query.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
+        delete_query.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
+        delete_query.bindValue(":id_kholleurs", m_id_kholleur);
+        delete_query.exec();
         delete_query.prepare("DELETE FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date AND id_kholleurs=:id_kholleurs");
         delete_query.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
         delete_query.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));

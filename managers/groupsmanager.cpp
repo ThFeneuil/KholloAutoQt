@@ -77,10 +77,19 @@ bool GroupsManager::delete_group() {
     } else {
         Group* grp = (Group*) item->data(Qt::UserRole).toULongLong();
         int res = QMessageBox::warning(this, "Suppression en cours",
-                "Vous êtes sur le point de supprimer le groupe <strong>\"" + grp->getName() + "\"</strong>.<br /> Voulez-vous continuer ?",
+                "Vous êtes sur le point de supprimer le groupe <strong>\"" + grp->getName() + "\"</strong> ainsi que les <strong>cours</strong> associés.<br /> Voulez-vous continuer ?",
                 QMessageBox::Yes | QMessageBox::Cancel);
         if(res == QMessageBox::Yes) {
             QSqlQuery query(*m_db);
+            query.prepare("DELETE FROM tau_courses WHERE id_groups=:id_groups");
+            query.bindValue(":id_groups", grp->getId());
+            query.exec();
+            query.prepare("DELETE FROM tau_events_groups WHERE id_groups=:id_groups");
+            query.bindValue(":id_groups", grp->getId());
+            query.exec();
+            query.prepare("DELETE FROM tau_groups_users WHERE id_groups=:id_groups");
+            query.bindValue(":id_groups", grp->getId());
+            query.exec();
             query.prepare("DELETE FROM tau_groups WHERE id=:id");
             query.bindValue(":id", grp->getId());
             query.exec();
