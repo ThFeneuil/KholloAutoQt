@@ -177,21 +177,26 @@ void TimeslotsManager::deleteTimeslot() {
 
     Timeslot* ts = (Timeslot*) selection[0]->data(Qt::UserRole).toULongLong();
 
-    //No confirmation needed, I think
+    //Confirmation
+    int res = QMessageBox::warning(this, "Suppression en cours", "Vous êtes sur le point de supprimer un horaire de kholle "
+                                                                 "du kholleur <strong>" + ((Kholleur*)kholleurs[0]->data(Qt::UserRole).toULongLong())->getName() + "</strong> "
+                                                                 "ainsi que les <strong>kholles</strong> associées. <br /> Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::No);
 
-    //Query
-    QSqlQuery query(*m_db);
-    query.prepare("DELETE FROM tau_kholles WHERE id_timeslots=:id_timeslots");
-    query.bindValue(":id_timeslots", ts->getId());
-    query.exec();
-    query.prepare("DELETE FROM tau_timeslots WHERE id=:id");
-    query.bindValue(":id", ts->getId());
-    query.exec();
+    if(res == QMessageBox::Yes) {
+        //Query
+        QSqlQuery query(*m_db);
+        query.prepare("DELETE FROM tau_kholles WHERE id_timeslots=:id_timeslots");
+        query.bindValue(":id_timeslots", ts->getId());
+        query.exec();
+        query.prepare("DELETE FROM tau_timeslots WHERE id=:id");
+        query.bindValue(":id", ts->getId());
+        query.exec();
 
-    //Update
-    QList<QListWidgetItem*> kholleurs = ui->listKholleurs->selectedItems();
-    if(kholleurs.length() > 0) {
-        update_list_timeslots(((Kholleur*)kholleurs[0]->data(Qt::UserRole).toULongLong())->getId());
+        //Update
+        QList<QListWidgetItem*> kholleurs = ui->listKholleurs->selectedItems();
+        if(kholleurs.length() > 0) {
+            update_list_timeslots(((Kholleur*)kholleurs[0]->data(Qt::UserRole).toULongLong())->getId());
+        }
     }
 
 }

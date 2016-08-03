@@ -55,7 +55,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 subjects->addItem(list_subjects[j]->getShortName(), list_subjects[j]->getId());
             }
             subjects->setEnabled(false);
-            connect(subjects, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
+            connect(subjects, SIGNAL(currentIndexChanged(int)), this, SLOT(courses_changed(int)));
 
             QComboBox *teachers = new QComboBox();
             teachers->addItem("");
@@ -63,7 +63,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 teachers->addItem(list_teachers[j]->getName(), list_teachers[j]->getId());
             }
             teachers->setEnabled(false);
-            connect(teachers, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
+            connect(teachers, SIGNAL(currentIndexChanged(int)), this, SLOT(courses_changed(int)));
 
             layout->setContentsMargins(5, 5, 5, 5);
             layout->setSpacing(2);
@@ -81,7 +81,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 subjects->addItem(list_subjects[j]->getShortName(), list_subjects[j]->getId());
             }
             subjects->setEnabled(false);
-            connect(subjects, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
+            connect(subjects, SIGNAL(currentIndexChanged(int)), this, SLOT(courses_changed(int)));
 
             teachers = new QComboBox();
             teachers->addItem("");
@@ -89,7 +89,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 teachers->addItem(list_teachers[j]->getName(), list_teachers[j]->getId());
             }
             teachers->setEnabled(false);
-            connect(teachers, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
+            connect(teachers, SIGNAL(currentIndexChanged(int)), this, SLOT(courses_changed(int)));
 
             layout->setContentsMargins(5, 5, 5, 5);
             layout->setSpacing(2);
@@ -373,7 +373,7 @@ void CoursesManager::onSelection_change() {
 
 void CoursesManager::copyToEven() {
     //Display warning
-    int res = QMessageBox::warning(this, "Copie en cours", "Vous êtes sur le point de copier les cours de la semaine impaire vers la semaine paire. Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::No);
+    int res = QMessageBox::warning(this, "Copie en cours", "Vous êtes sur le point de copier les cours de la semaine impaire vers la semaine paire. <br />Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::No);
 
     //Copy
     if(res == QMessageBox::Yes) {
@@ -391,7 +391,7 @@ void CoursesManager::copyToEven() {
 
 void CoursesManager::copyToOdd() {
     //Display warning
-    int res = QMessageBox::warning(this, "Copie en cours", "Vous êtes sur le point de copier les cours de la semaine paire vers la semaine impaire. Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::No);
+    int res = QMessageBox::warning(this, "Copie en cours", "Vous êtes sur le point de copier les cours de la semaine paire vers la semaine impaire. <br />Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::No);
 
     //Copy
     if(res == QMessageBox::Yes) {
