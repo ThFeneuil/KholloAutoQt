@@ -1,7 +1,11 @@
 #ifndef Kholle_H
 #define Kholle_H
 
-#include <QTime>
+#include "storedData/student.h"
+#include "storedData/timeslot.h"
+
+class Student;
+class Timeslot;
 
 class Kholle
 {
@@ -11,30 +15,26 @@ public:
 
     //Getters
     int getId() const;
-    QDateTime getTime_start() const;
-    QDateTime getTime() const;
-    QDateTime getTime_end() const;
-    int getId_subjects() const;
     int getId_students() const;
-    int getId_teachers() const;
+    int getId_timeslots() const;
+    Student* student() const; // Interface
+    Timeslot* timeslot() const; // Interface
 
     //Setters
     void setId(int id);
-    void setTime_start(QDateTime time_start);
-    void setTime(QDateTime time);
-    void setTime_end(QDateTime time_end);
-    void setId_subjects(int id_subjects);
     void setId_students(int id_students);
-    void setId_teachers(int id_teachers);
+    void setId_timeslots(int id_timeslots);
+    void setStudent(Student* stud); // Interface
+    void setTimeslot(Timeslot* slot); // Interface
 
 private:
     int m_id;
-    QDateTime m_time_start;
-    QDateTime m_time;
-    QDateTime m_time_end;
-    int m_id_subjects;
     int m_id_students;
-    int m_id_teachers;
+    int m_id_timeslots;
+
+    // Interface
+    Student* m_student;
+    Timeslot* m_timeslot;
 };
 
 #endif // Kholle_H

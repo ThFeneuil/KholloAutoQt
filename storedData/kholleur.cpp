@@ -7,10 +7,12 @@ Kholleur::Kholleur() {
     m_duration = 0;
     m_preparation = 0;
     m_pupils = 0;
+    m_subject = NULL;
+    m_timeslots = new QList<Timeslot*>();
 }
 
 Kholleur::~Kholleur() {
-
+    delete m_timeslots;
 }
 
 //Getters
@@ -32,6 +34,12 @@ int Kholleur::getPreparation() const {
 int Kholleur::getPupils() const {
     return m_pupils;
 }
+Subject* Kholleur::subject() const {
+    return m_subject;
+}
+QList<Timeslot*>* Kholleur::timeslots() const {
+    return m_timeslots;
+}
 
 // Setters
 void Kholleur::setId(int id) {
@@ -51,5 +59,8 @@ void Kholleur::setPreparation(int preparation) {
 }
 void Kholleur::setPupils(int pupils) {
     m_pupils = pupils;
+}
+void Kholleur::setSubject(Subject* subj) {
+    m_subject = subj;
 }
 

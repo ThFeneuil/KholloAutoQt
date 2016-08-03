@@ -21,7 +21,12 @@ FORMS += \
     interface/interfacedialog.ui \
     interface/interfacetab.ui \
     interface/introinterface.ui \
-    managers/timeslotsmanager.ui
+    managers/timeslotsmanager.ui \
+    managers/introtimeslots.ui \
+    managers/copytimeslots.ui \
+    aboutitdialog.ui \
+    contactdialog.ui \
+    reviewdialog.ui
 
 HEADERS += \
     mainwindow.h \
@@ -51,11 +56,18 @@ HEADERS += \
     storedData/timeslot.h \
     storedData/kholle.h \
     interface/interfacedialog.h \
-    interface/table.h \
     interface/khollotable.h \
     interface/interfacetab.h \
     interface/introinterface.h \
-    managers/timeslotsmanager.h
+    managers/timeslotsmanager.h \
+    managers/introtimeslots.h \
+    managers/copytimeslots.h \
+    storedData/storeddatum.h \
+    database.h \
+    aboutitdialog.h \
+    contactdialog.h \
+    reviewdialog.h \
+    printpdf.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -86,13 +98,21 @@ SOURCES += \
     storedData/timeslot.cpp \
     storedData/kholle.cpp \
     interface/interfacedialog.cpp \
-    interface/table.cpp \
     interface/khollotable.cpp \
     interface/interfacetab.cpp \
     interface/introinterface.cpp \
-	managers/timeslotsmanager.cpp
+	managers/timeslotsmanager.cpp \
+    managers/introtimeslots.cpp \
+    managers/copytimeslots.cpp \
+    storedData/storeddatum.cpp \
+    database.cpp \
+    aboutitdialog.cpp \
+    contactdialog.cpp \
+    reviewdialog.cpp \
+    printpdf.cpp
 DISTFILES +=
 
 RESOURCES += \
     khollo.qrc
 
+win32:RC_ICONS += "images/iconApp.ico"

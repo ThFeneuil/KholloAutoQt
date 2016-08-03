@@ -6,6 +6,8 @@
 #include <QList>
 #include "storedData/group.h"
 
+class Group;
+
 class Event
 {
 public:
@@ -19,6 +21,7 @@ public:
     QDateTime getStart() const;
     QDateTime getEnd() const;
     QList<Group*>* getGroups() const;
+    QList<Group*>* groups() const; // Interface
 
     //Setters
     void setId(int id);
@@ -34,7 +37,10 @@ private:
     QString m_comment;
     QDateTime m_start;
     QDateTime m_end;
-    QList<Group*> *m_groups;
+    QList<Group*>* m_groups2;
+
+    // Interface
+    QList<Group*>* m_groups;
 };
 
 #endif // EVENT_H

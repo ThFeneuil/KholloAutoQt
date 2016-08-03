@@ -88,10 +88,28 @@ bool SubjectsManager::delete_subject() {
     } else {
         Subject* subj = (Subject*) item->data(Qt::UserRole).toULongLong();
         int res = QMessageBox::warning(this, "Suppression en cours",
-                "Vous êtes sur le point de supprimer la matière <strong>" + subj->getName() + " (" + subj->getShortName() + ")</strong>.<br /> Voulez-vous continuer ?",
+                "Vous êtes sur le point de supprimer la matière <strong>" + subj->getName() + " (" + subj->getShortName() + ")</strong> ainsi que toutes les <strong>données associées</strong> : cours, kholleurs, horaires de kholles, kholles.<br /> Voulez-vous continuer ?",
                 QMessageBox::Yes | QMessageBox::Cancel);
         if(res == QMessageBox::Yes) {
             QSqlQuery query(*m_db);
+            query.prepare("DELETE FROM tau_courses WHERE id_subjects=:id_subjects");
+            query.bindValue(":id_subjects", subj->getId());
+            query.exec();
+            query.prepare("UPDATE tau_teachers SET id_subjects=0 WHERE id_subjects=:id_subjects");
+            query.bindValue(":id_subjects", subj->getId());
+            query.exec();
+            query.prepare("DELETE FROM tau_kholles WHERE id_timeslots IN "
+                            "(SELECT id FROM tau_timeslots WHERE id_kholleurs IN "
+                                "(SELECT id FROM tau_kholleurs WHERE id_subjects = :id_subjects))");
+            query.bindValue(":id_subjects", subj->getId());
+            query.exec();
+            query.prepare("DELETE FROM tau_timeslots WHERE id_kholleurs IN "
+                            "(SELECT id FROM tau_kholleurs WHERE id_subjects = :id_subjects)");
+            query.bindValue(":id_subjects", subj->getId());
+            query.exec();
+            query.prepare("DELETE FROM tau_kholleurs WHERE id_subjects = :id_subjects");
+            query.bindValue(":id_subjects", subj->getId());
+            query.exec();
             query.prepare("DELETE FROM tau_subjects WHERE id=:id");
             query.bindValue(":id", subj->getId());
             query.exec();

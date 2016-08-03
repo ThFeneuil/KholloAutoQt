@@ -9,11 +9,14 @@
 #include "managers/kholleursmanager.h"
 #include "managers/usersgroupsmanager.h"
 #include "managers/coursesmanager.h"
-#include "managers/timeslotsmanager.h"
+#include "managers/introtimeslots.h"
 #include "managers/eventsmanager.h"
 #include "managers/kholloscopewizard.h"
 #include "interface/interfacedialog.h"
 #include "interface/introinterface.h"
+#include "aboutitdialog.h"
+#include "contactdialog.h"
+#include "reviewdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -37,7 +40,18 @@ public slots:
     void openTimeslotsManager();
     void openEventsManager();
     void openInterface();
+    void openInterfaceWithDate(QDate date, int id_week);
 	void openKholloscope();
+    void openReview();
+    void openHelp();
+    void openAboutIt();
+
+    void createKhollo();
+    void openKhollo();
+    void updateWindow();
+
+signals:
+    void triggerInterface(QDate date, int id_week);
 
 private:
     Ui::MainWindow *ui;

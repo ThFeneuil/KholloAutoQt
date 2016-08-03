@@ -11,6 +11,11 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
     m_id_week = id_week;
     m_monday = monday;
 
+    m_dbase = new DataBase(m_db);
+    m_dbase->setConditionCourses("id_week = " + QString::number(m_id_week));
+    m_dbase->setConditionTimeslots("date >= '"+ m_monday.toString("yyyy-MM-dd") +"' AND date < '" + m_monday.addDays(7).toString("yyyy-MM-dd") + "'");
+    m_dbase->load();
+
     // Get the list of all the students
     QSqlQuery query(*m_db);
     query.exec("SELECT id, name, first_name, email FROM tau_users ORDER BY name, first_name");
@@ -36,27 +41,52 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
         subj->setShortName(query.value(2).toString());
         subj->setColor(query.value(3).toString());
 
-        InterfaceTab* tab = new InterfaceTab(subj, m_id_week, m_monday, m_db);
+        InterfaceTab* tab = new InterfaceTab(subj, m_id_week, m_monday, m_db, m_dbase, NULL, this);
         ui->tabWidget->addTab(tab, subj->getShortName());
     }
+    connect(ui->pushButton_print, SIGNAL(clicked(bool)), this, SLOT(printKholloscope()));
+    connect(ui->pushButton_review, SIGNAL(clicked(bool)), this, SLOT(openReviewDialog()));
 }
 
 InterfaceDialog::~InterfaceDialog()
 {
     delete ui;
+    delete m_dbase;
 }
 
-bool InterfaceDialog::selectStudent() {
-    QListWidgetItem *item = ui->list_students->currentItem();
+bool InterfaceDialog::selectStudent(Student *stud) {
+    if(stud == NULL) {
+        QListWidgetItem *item = ui->list_students->currentItem();
 
-    if(item == NULL) {
-        QMessageBox::critical(this, "Erreur", "Veuillez sélectionner un étudiant.");
-        return false;
+        if(item == NULL) {
+            QMessageBox::critical(this, "Erreur", "Veuillez sélectionner un étudiant.");
+            return false;
+        } else {
+            Student* stud = (Student*) item->data(Qt::UserRole).toULongLong();
+            for(int i=0; i<ui->tabWidget->count(); i++)
+                ((InterfaceTab*) ui->tabWidget->widget(i))->selectStudent(stud);
+        }
     } else {
-        Student* stud = (Student*) item->data(Qt::UserRole).toULongLong();
-        for(int i=0; i<ui->tabWidget->count(); i++)
-            ((InterfaceTab*) ui->tabWidget->widget(i))->selectStudent(stud);
+       for(int i=0; i<ui->list_students->count(); i++) {
+            QListWidgetItem *item = ui->list_students->item(i);
+            Student* stdnt = (Student*) item->data(Qt::UserRole).toULongLong();
+            if(stdnt->getId() == stud->getId()) {
+                ui->list_students->setCurrentItem(item);
+                for(int j=0; j<ui->tabWidget->count(); j++)
+                    ((InterfaceTab*) ui->tabWidget->widget(j))->selectStudent(stdnt);
+                return true;
+            }
+       }
     }
 
     return true;
+}
+
+void InterfaceDialog::printKholloscope() {
+    PrintPDF::printKholles(m_students, m_dbase->listKholleurs(), m_dbase->listTimeslots(), m_monday, m_dbase->listKholles());
+}
+
+void InterfaceDialog::openReviewDialog() {
+    ReviewDialog dialog(m_db);
+    dialog.exec();
 }

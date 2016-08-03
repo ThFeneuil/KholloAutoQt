@@ -6,12 +6,14 @@ Event::Event() {
     m_comment = "";
     m_start = QDateTime::currentDateTime();
     m_end = m_start.addDays(1);
+    m_groups2 = new QList<Group*>();
     m_groups = new QList<Group*>();
 }
 
 Event::~Event() {
     for(int i=0; i<m_groups->count(); i++)
         delete m_groups->at(i);
+    delete m_groups2;
     delete m_groups;
 }
 
@@ -32,6 +34,9 @@ QDateTime Event::getEnd() const {
     return m_end;
 }
 QList<Group*>* Event::getGroups() const {
+    return m_groups2;
+}
+QList<Group*>* Event::groups() const {
     return m_groups;
 }
 
@@ -52,5 +57,5 @@ void Event::setEnd(QDateTime end) {
     m_end = end;
 }
 void Event::setGroups(QList<Group*>* groups) {
-    m_groups = groups;
+    m_groups2 = groups;
 }

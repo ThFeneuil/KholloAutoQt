@@ -62,7 +62,7 @@ bool StudentsManager::add_student() {
         return false;
     } else {
         QSqlQuery query(*m_db);
-        query.prepare("INSERT INTO tau_users(is_account, name, first_name, email) VALUES(1, :name, :firstName, :email)");
+        query.prepare("INSERT INTO tau_users(name, first_name, email) VALUES(:name, :firstName, :email)");
         query.bindValue(":name", name);
         query.bindValue(":firstName", firstName);
         query.bindValue(":email", email);
@@ -104,10 +104,16 @@ bool StudentsManager::delete_student() {
     } else {
         Student* stdnt = (Student*) item->data(Qt::UserRole).toULongLong();
         int res = QMessageBox::warning(this, "Suppression en cours",
-                "Vous êtes sur le point de supprimer <strong>" + stdnt->getFirst_name() + " " + stdnt->getName() + "</strong>.<br /> Voulez-vous continuer ?",
+                "Vous êtes sur le point de supprimer <strong>" + stdnt->getFirst_name() + " " + stdnt->getName() + "</strong> ainsi que ses <strong>kholles</strong>.<br /> Voulez-vous continuer ?",
                 QMessageBox::Yes | QMessageBox::Cancel);
         if(res == QMessageBox::Yes) {
             QSqlQuery query(*m_db);
+            query.prepare("DELETE FROM tau_groups_users WHERE id_users=:id_users");
+            query.bindValue(":id_users", stdnt->getId());
+            query.exec();
+            query.prepare("DELETE FROM tau_kholles WHERE id_users=:id_users");
+            query.bindValue(":id_users", stdnt->getId());
+            query.exec();
             query.prepare("DELETE FROM tau_users WHERE id=:id");
             query.bindValue(":id", stdnt->getId());
             query.exec();

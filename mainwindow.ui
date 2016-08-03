@@ -13,7 +13,30 @@
   <property name="windowTitle">
    <string>Kholloscope</string>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="info">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -27,15 +50,15 @@
     <property name="title">
      <string>&amp;Fichier</string>
     </property>
-    <addaction name="action_File_Select"/>
-    <addaction name="separator"/>
-    <addaction name="action_File_Configuate"/>
     <addaction name="action_File_Create"/>
-    <addaction name="action_File_Delete"/>
+    <addaction name="action_File_Open"/>
     <addaction name="separator"/>
     <addaction name="action_File_Quit"/>
    </widget>
    <widget class="QMenu" name="menuBDD">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;BDD</string>
     </property>
@@ -45,6 +68,9 @@
     <addaction name="action_DB_Kholleurs"/>
    </widget>
    <widget class="QMenu" name="menuPlanning">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;Planning</string>
     </property>
@@ -54,6 +80,9 @@
     <addaction name="action_Schedule_Events"/>
    </widget>
    <widget class="QMenu" name="menuKholles">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>&amp;Kholles</string>
     </property>
@@ -75,14 +104,23 @@
    <addaction name="menu_Aide"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="action_File_Select">
+  <action name="action_File_Open">
    <property name="text">
-    <string>&amp;Sélectionner</string>
+    <string>&amp;Ouvrir</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="action_File_Create">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>C&amp;réer</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
   <action name="action_File_Delete">
@@ -104,6 +142,9 @@
    </property>
   </action>
   <action name="action_DB_Students">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Elèves</string>
    </property>
@@ -124,8 +165,14 @@
    </property>
   </action>
   <action name="action_Schedule_Timetable">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Emploi du temps</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
    </property>
   </action>
   <action name="action_Schedule_Students_Groups">
@@ -137,6 +184,9 @@
    <property name="text">
     <string>&amp;Horaires de kholles</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+K</string>
+   </property>
   </action>
   <action name="action_Schedule_Events">
    <property name="text">
@@ -144,23 +194,38 @@
    </property>
   </action>
   <action name="action_Kholles_Interface">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>&amp;Interface</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
    </property>
   </action>
   <action name="action_Kholles_Generate">
    <property name="text">
     <string>&amp;Générer</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
   </action>
   <action name="action_Kholles_Historic">
    <property name="text">
     <string>&amp;Historique</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
+   </property>
   </action>
   <action name="action_Help">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>&amp;Débrouillez-vous !</string>
+    <string>&amp;Contacts</string>
    </property>
   </action>
   <action name="action_AboutIt">

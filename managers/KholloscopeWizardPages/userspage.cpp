@@ -16,13 +16,16 @@ UsersPage::UsersPage(QSqlDatabase *db, QWidget *parent) :
 UsersPage::~UsersPage()
 {
     delete ui;
-    delete list_selected_subjects;
 }
 
 void UsersPage::initializePage() {
+    //Clear the page
     ui->tabWidget->clear();
+
+    //Get the selected subjects
     get_selected_subjects();
 
+    //Display the tabs and populate each tab
     int i;
     for(i = 0; i < list_selected_subjects->length(); i++) {
         QListWidget *list = new QListWidget();
@@ -43,7 +46,12 @@ void UsersPage::initializePage() {
     registerField("monday_date", ui->dateEdit);
 }
 
+void UsersPage::cleanupPage() {
+    ((KholloscopeWizard*) wizard())->get_input()->clear();
+}
+
 void UsersPage::get_selected_subjects() {
+    /** Gets the selected subjects **/
     list_selected_subjects->clear();
     //Get all subjects
     QList<Subject*>* subjects = ((KholloscopeWizard*) wizard())->get_subjects();
@@ -53,11 +61,6 @@ void UsersPage::get_selected_subjects() {
     for(i = 0; i < subjects->length(); i++) {
         int id = subjects->at(i)->getId();
         if(field("subject_"+QString::number(id)).toBool()) {
-            /*Subject* subject = new Subject();
-            subject->setId(id);
-            subject->setName(subjects->at(i)->getName());
-            subject->setShortName(subjects->at(i)->getShortName());
-            subject->setColor(subjects->at(i)->getColor());*/
             list_selected_subjects->append(subjects->at(i));
         }
     }

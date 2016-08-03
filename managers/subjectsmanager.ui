@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>504</width>
+    <width>533</width>
     <height>356</height>
    </rect>
   </property>
@@ -42,7 +42,7 @@
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>Couleur</string>
+        <string>Choisir une couleur</string>
        </property>
       </widget>
      </item>

@@ -8,6 +8,10 @@ Course::Course()
     m_id_teachers = 0;
     m_id_day = 0;
     m_id_week = 0;
+
+    m_subject = NULL;
+    m_group = NULL;
+    m_teacher = NULL;
 }
 
 Course::~Course() {
@@ -46,6 +50,15 @@ int Course::getId_day() const {
 int Course::getId_week() const {
     return m_id_week;
 }
+Subject* Course::subject() const {
+    return m_subject;
+}
+Group* Course::group() const {
+    return m_group;
+}
+Teacher* Course::teacher() const {
+    return m_teacher;
+}
 
 
 //Setters
@@ -79,4 +92,13 @@ void Course::setId_day(int id_day) {
 
 void Course::setId_week(int id_week) {
     m_id_week = id_week;
+}
+void Course::setSubject(Subject* subj) {
+    m_subject = subj;
+}
+void Course::setGroup(Group* grp) {
+    m_group = grp;
+}
+void Course::setTeacher(Teacher* tcher) {
+    m_teacher = tcher;
 }

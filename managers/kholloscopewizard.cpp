@@ -7,18 +7,21 @@ KholloscopeWizard::KholloscopeWizard(QSqlDatabase *db, QWidget *parent) :
 {
     ui->setupUi(this);
 
+    //DB
     m_db = db;
 
+    //Get the students and the subjects
     m_students = new QList<Student*>();
     load_students();
     m_subjects = new QList<Subject*>();
     load_subjects();
     m_input = new QMap<int, QList<Student*> >;
+    assoc_subjects = NULL;
 
     //Add pages
     addPage(new SubjectsPage(db));
     addPage(new UsersPage(db));
-    addPage(new GeneratePage(db));
+    addPage(new GeneratePage(db, parent));
 }
 
 KholloscopeWizard::~KholloscopeWizard()
@@ -26,9 +29,9 @@ KholloscopeWizard::~KholloscopeWizard()
     delete ui;
     free_subjects();
     free_students();
-    //free_assoc_subjects();
-    //free_input();
-    delete assoc_subjects;
+    if(assoc_subjects != NULL) {
+        delete assoc_subjects;
+    }
     delete m_students;
     delete m_subjects;
     delete m_input;
@@ -40,12 +43,6 @@ QList<Subject*>* KholloscopeWizard::get_assoc_subjects() {
 
 void KholloscopeWizard::set_assoc_subjects(QList<Subject*> *list) {
     assoc_subjects = list;
-}
-
-void KholloscopeWizard::free_assoc_subjects() {
-    while(!assoc_subjects->isEmpty()) {
-        free(assoc_subjects->takeFirst());
-    }
 }
 
 void KholloscopeWizard::load_students() {
@@ -109,30 +106,6 @@ void KholloscopeWizard::set_input(QMap<int, QList<Student*> > *input) {
     m_input = input;
 }
 
-void KholloscopeWizard::free_input() {
-    foreach(QList<Student*> l, *m_input) {
-        while(!l.isEmpty()) {
-            free(l.takeFirst());
-        }
-    }
-}
-
 QMap<int, QList<Student*> > *KholloscopeWizard::get_input() {
     return m_input;
 }
-
-/*int KholloscopeWizard::get_week() {
-    return m_week;
-}
-
-void KholloscopeWizard::set_week(int week) {
-    m_week = week;
-}
-
-QDate KholloscopeWizard::get_date() {
-    return m_date;
-}
-
-void KholloscopeWizard::set_date(QDate date) {
-    m_date = date;
-}*/

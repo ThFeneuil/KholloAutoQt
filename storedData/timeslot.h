@@ -2,6 +2,13 @@
 #define TIMESLOT_H
 
 #include <QTime>
+#include <QRect>
+#include <QList>
+#include "storedData/kholle.h"
+#include "storedData/kholleur.h"
+
+class Kholleur;
+class Kholle;
 
 class Timeslot
 {
@@ -15,8 +22,11 @@ public:
     QTime getTime() const;
     QTime getTime_end() const;
     int getId_kholleurs() const;
-    int getId_day() const;
+    QDate getDate() const;
     int getPupils() const;
+    QRect* getArea() const;
+    QList<Kholle*>* kholles() const;
+    Kholleur* kholleur() const;
 
     //Setters
     void setId(int id);
@@ -24,8 +34,10 @@ public:
     void setTime(QTime time);
     void setTime_end(QTime time_end);
     void setId_kholleurs(int id_kholleurs);
-    void setId_day(int id_day);
+    void setDate(QDate date);
     void setPupils(int pupils);
+    void setArea(QRect* area);
+    void setKholleur(Kholleur* kll);
 
 private:
     int m_id;
@@ -33,8 +45,13 @@ private:
     QTime m_time;
     QTime m_time_end;
     int m_id_kholleurs;
-    int m_id_day;
+    QDate m_date;
     int m_pupils;
+
+    // Interface
+    QRect* m_area;
+    QList<Kholle*>* m_kholles;
+    Kholleur* m_kholleur;
 };
 
 #endif // TIMESLOT_H

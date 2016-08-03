@@ -31,7 +31,7 @@ public:
     bool free_groups();
     bool free_subjects();
     bool free_teachers();
-    void save(QGridLayout *grid, int week);
+    bool save(QGridLayout *grid, int week);
 
 
 public slots:
@@ -39,6 +39,9 @@ public slots:
     bool save_changes();
     void onSelection_change();
     void courses_changed(int i);
+    void onClose_button();
+    void copyToEven();
+    void copyToOdd();
 
 private:
     Ui::CoursesManager *ui;

@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Hoszt: 127.0.0.1
--- Létrehozás ideje: 2016. Júl 27. 20:29
+-- Létrehozás ideje: 2016. Júl 30. 12:19
 -- Szerver verzió: 5.6.17
 -- PHP verzió: 5.5.12
 
@@ -28,12 +28,8 @@ SET time_zone = "+00:00";
 
 CREATE TABLE IF NOT EXISTS `tau_kholles` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `time_start` datetime NOT NULL,
-  `time` datetime NOT NULL,
-  `time_end` datetime NOT NULL,
-  `id_subjects` int(11) NOT NULL,
   `id_users` int(11) NOT NULL,
-  `id_teachers` int(11) NOT NULL,
+  `id_timeslots` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 

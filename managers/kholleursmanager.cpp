@@ -130,11 +130,14 @@ bool KholleursManager::delete_teacher() {
         Teacher* tcher = (Teacher*) item->data(Qt::UserRole).toULongLong();
         // Ask for a confirmation of the deletion
         int res = QMessageBox::warning(this, "Suppression en cours",
-                "Vous êtes sur le point de supprimer <strong>" + tcher->getName() + "</strong>.<br /> Voulez-vous continuer ?",
+                "Vous êtes sur le point de supprimer <strong>" + tcher->getName() + "</strong> ainsi que tous ses <strong>cours</strong>.<br /> Voulez-vous continuer ?",
                 QMessageBox::Yes | QMessageBox::Cancel);
         if(res == QMessageBox::Yes) {
             // Update the DB if it is a positive answer
             QSqlQuery query(*m_db);
+            query.prepare("DELETE FROM tau_courses WHERE id_teachers=:id_teachers");
+            query.bindValue(":id_teachers", tcher->getId());
+            query.exec();
             query.prepare("DELETE FROM tau_teachers WHERE id=:id");
             query.bindValue(":id", tcher->getId());
             query.exec();
@@ -234,11 +237,18 @@ bool KholleursManager::delete_kholleur() {
         Kholleur* khll = (Kholleur*) item->data(Qt::UserRole).toULongLong();
         // Ask for a confirmation of the deletion
         int res = QMessageBox::warning(this, "Suppression en cours",
-                "Vous êtes sur le point de supprimer <strong>" + khll->getName() + "</strong>.<br /> Voulez-vous continuer ?",
+                "Vous êtes sur le point de supprimer <strong>" + khll->getName() + "</strong>, ses <strong>horaires de kholles</strong> ainsi que ses <strong>kholles</strong>. Voulez-vous continuer ?",
                 QMessageBox::Yes | QMessageBox::Cancel);
         if(res == QMessageBox::Yes) {
             // Update the DB if it is a positive answer
             QSqlQuery query(*m_db);
+            query.prepare("DELETE FROM tau_kholles WHERE id_timeslots IN "
+                            "(SELECT id FROM tau_timeslots WHERE id_kholleurs=:id_kholleurs)");
+            query.bindValue(":id_kholleurs", khll->getId());
+            query.exec();
+            query.prepare("DELETE FROM tau_timeslots WHERE id_kholleurs=:id_kholleurs");
+            query.bindValue(":id_kholleurs", khll->getId());
+            query.exec();
             query.prepare("DELETE FROM tau_kholleurs WHERE id=:id");
             query.bindValue(":id", khll->getId());
             query.exec();

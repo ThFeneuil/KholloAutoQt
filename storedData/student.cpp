@@ -5,10 +5,13 @@ Student::Student() {
     m_name = "";
     m_first_name = "";
     m_email = "";
+    m_groups = new QList<Group*>();
+    m_kholles = new QList<Kholle*>();
 }
 
 Student::~Student() {
-
+    delete m_groups;
+    delete m_kholles;
 }
 
 //Getters
@@ -23,6 +26,12 @@ QString Student::getFirst_name() const {
 }
 QString Student::getEmail() const {
     return m_email;
+}
+QList<Group*>* Student::groups() const {
+    return m_groups;
+}
+QList<Kholle*>* Student::kholles() const {
+    return m_kholles;
 }
 
 //Setters

@@ -76,6 +76,9 @@ bool UpdateKholleurDialog::update_kholleur() {
         query.bindValue(":id", m_kholleur->getId());
         query.exec();
 
+        QMessageBox::warning(this, "Attention", "Les horaires de kholles ne sont pas automatiquement mis à jour.\n"
+                                                "Pour que ces changements se répercutent sur les horaires, il faut les rentrer à nouveau.");
+
         accept();
     }
 

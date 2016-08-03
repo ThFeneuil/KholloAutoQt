@@ -41,9 +41,15 @@ bool EventsManager::update_list() {
 
     // Make the request
     QSqlQuery query(*m_db);
-    if( ! ui->checkBox_old->isChecked())
-            query.exec("SELECT id, name, comment, start, end FROM tau_events WHERE end >= NOW() ORDER BY start");
-    else    query.exec("SELECT id, name, comment, start, end FROM tau_events WHERE end <  NOW() ORDER BY start DESC");
+    if(m_db->driverName() == "QMYSQL") {
+        if( ! ui->checkBox_old->isChecked())
+                query.exec("SELECT id, name, comment, start, end FROM tau_events WHERE end >= NOW() ORDER BY start");
+        else    query.exec("SELECT id, name, comment, start, end FROM tau_events WHERE end <  NOW() ORDER BY start DESC");
+    } else {
+        if( ! ui->checkBox_old->isChecked())
+                query.exec("SELECT id, name, comment, start, end FROM tau_events WHERE end >= datetime('NOW') ORDER BY start");
+        else    query.exec("SELECT id, name, comment, start, end FROM tau_events WHERE end <  datetime('NOW') ORDER BY start DESC");
+    }
 
     // Treat the request & Display the events
     while (query.next()) {
@@ -170,6 +176,9 @@ bool EventsManager::delete_event() {
             QSqlQuery query(*m_db);
             query.prepare("DELETE FROM tau_events WHERE id=:id");
             query.bindValue(":id", event->getId());
+            query.exec();
+            query.prepare("DELETE FROM tau_events_groups WHERE id_events=:id_events");
+            query.bindValue(":id_events", event->getId());
             query.exec();
 
             // Update the widgets

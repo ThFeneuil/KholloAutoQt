@@ -9,6 +9,9 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
     ui->setupUi(this);
     connect(ui->list_groups, SIGNAL(itemSelectionChanged()), this, SLOT(onSelection_change()));
     connect(ui->pushButton_save, SIGNAL(clicked()), this, SLOT(save_changes()));
+    connect(ui->pushButton_close, SIGNAL(clicked()), this, SLOT(onClose_button()));
+    connect(ui->copyToEven, SIGNAL(clicked()), this, SLOT(copyToEven()));
+    connect(ui->copyToOdd, SIGNAL(clicked()), this, SLOT(copyToOdd()));
 
     //DB
     m_db = db;
@@ -266,10 +269,14 @@ bool CoursesManager::save_changes() {
     query.bindValue(":id_groups", current->getId());
     query.exec();
 
-    //Save both weeks
-    save(ui->grid_even, 1);
-    save(ui->grid_odd, 2);
-    isChanged = false;
+    //Save both weeks and show feedback
+    if(save(ui->grid_even, 1) && save(ui->grid_odd, 2)) {
+        QMessageBox::information(this, "Sauvegarde réussie", "Les modifications ont bien été sauvegardées");
+    }
+    else {
+        QMessageBox::warning(this, "Attention", "Certains cours ont été mal complétés et n'ont donc pu être enregistrés...");
+    }
+    isChanged = false;    
 
     //If this group is same as last group
     QList<QListWidgetItem*> selection = ui->list_groups->selectedItems();
@@ -281,7 +288,9 @@ bool CoursesManager::save_changes() {
     return true;
 }
 
-void CoursesManager::save(QGridLayout *grid, int week) {
+bool CoursesManager::save(QGridLayout *grid, int week) {
+    bool res = true;
+
     //Cycle through all QComboboxes
     int i, j;
     for(i = 0; i < 6; i++) {
@@ -289,8 +298,12 @@ void CoursesManager::save(QGridLayout *grid, int week) {
             QComboBox* subject = (QComboBox*) grid->itemAtPosition(j+1, i+1)->layout()->itemAt(0)->widget();
             QComboBox* teacher = (QComboBox*) grid->itemAtPosition(j+1, i+1)->layout()->itemAt(1)->widget();
 
-            if(subject->currentText() == "" || teacher->currentText() == "")
+            if(subject->currentText() == "" || teacher->currentText() == "") {
+                if(subject->currentText() != "" || teacher->currentText() != "")
+                    res = false;
+
                 continue;
+            }
 
             QSqlQuery query(*m_db);
             query.prepare("INSERT INTO tau_courses(id_subjects, time_start, time_end, id_groups, id_teachers, id_day, id_week) VALUES(:id_subjects, :time_start, :time_end, :id_groups, :id_teachers, :id_day, :id_week)");
@@ -304,6 +317,7 @@ void CoursesManager::save(QGridLayout *grid, int week) {
             query.exec();
         }
     }
+    return res;
 }
 
 void CoursesManager::onSelection_change() {
@@ -318,6 +332,9 @@ void CoursesManager::onSelection_change() {
     QList<QListWidgetItem*> selection = ui->list_groups->selectedItems();
     if(selection.length() <= 0) {
         //Disable all
+        ui->copyToEven->setEnabled(false);
+        ui->copyToOdd->setEnabled(false);
+
         int i, j;
         for(i = 0; i < 6; i++) {
             for(j = 0; j < 10; j++) {
@@ -334,6 +351,9 @@ void CoursesManager::onSelection_change() {
     }
 
     //Enable all
+    ui->copyToEven->setEnabled(true);
+    ui->copyToOdd->setEnabled(true);
+
     int i, j;
     for(i = 0; i < 6; i++) {
         for(j = 0; j < 10; j++) {
@@ -349,4 +369,55 @@ void CoursesManager::onSelection_change() {
 
     update_courses(ui->grid_even, 1);
     update_courses(ui->grid_odd, 2);
+}
+
+void CoursesManager::copyToEven() {
+    //Display warning
+    int res = QMessageBox::warning(this, "Copie en cours", "Vous êtes sur le point de copier les cours de la semaine impaire vers la semaine paire. <br />Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::No);
+
+    //Copy
+    if(res == QMessageBox::Yes) {
+        int i, j;
+        for(i = 0; i < 6; i++) {
+            for(j = 0; j < 10; j++) {
+                ((QComboBox*)ui->grid_even->itemAtPosition(j+1, i+1)->layout()->itemAt(0)->widget())->setCurrentIndex(
+                            ((QComboBox*)ui->grid_odd->itemAtPosition(j+1, i+1)->layout()->itemAt(0)->widget())->currentIndex());
+                ((QComboBox*)ui->grid_even->itemAtPosition(j+1, i+1)->layout()->itemAt(1)->widget())->setCurrentIndex(
+                            ((QComboBox*)ui->grid_odd->itemAtPosition(j+1, i+1)->layout()->itemAt(1)->widget())->currentIndex());
+            }
+        }
+        isChanged = true;
+    }
+}
+
+void CoursesManager::copyToOdd() {
+    //Display warning
+    int res = QMessageBox::warning(this, "Copie en cours", "Vous êtes sur le point de copier les cours de la semaine paire vers la semaine impaire. <br />Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::No);
+
+    //Copy
+    if(res == QMessageBox::Yes) {
+        int i, j;
+        for(i = 0; i < 6; i++) {
+            for(j = 0; j < 10; j++) {
+                ((QComboBox*)ui->grid_odd->itemAtPosition(j+1, i+1)->layout()->itemAt(0)->widget())->setCurrentIndex(
+                            ((QComboBox*)ui->grid_even->itemAtPosition(j+1, i+1)->layout()->itemAt(0)->widget())->currentIndex());
+                ((QComboBox*)ui->grid_odd->itemAtPosition(j+1, i+1)->layout()->itemAt(1)->widget())->setCurrentIndex(
+                            ((QComboBox*)ui->grid_even->itemAtPosition(j+1, i+1)->layout()->itemAt(1)->widget())->currentIndex());
+            }
+        }
+        isChanged = true;
+    }
+}
+
+void CoursesManager::onClose_button() {
+    //Ask for confirmation
+    if(isChanged) {
+        int res = QMessageBox::question(this, "Modifications non sauvegardées", "Voulez-vous sauvegarder les modifications faites à l'emploi du temps de ce groupe?", QMessageBox::Yes | QMessageBox::No);
+        if(res == QMessageBox::Yes) {
+            save_changes();
+        }
+    }
+
+    //Close the dialog
+    accept();
 }

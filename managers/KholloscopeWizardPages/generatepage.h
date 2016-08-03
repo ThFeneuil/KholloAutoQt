@@ -8,12 +8,19 @@
 #include <QMap>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QFileDialog>
+#include <QStandardPaths>
+#include <QPdfWriter>
+#include <QPainter>
 #include "storedData/subject.h"
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
 #include "storedData/kholleur.h"
 #include "storedData/kholle.h"
+#include "database.h"
 #include "managers/kholloscopewizard.h"
+#include "mainwindow.h"
+#include "printpdf.h"
 
 struct working_index {
     int current_student;
@@ -33,14 +40,8 @@ public:
     explicit GeneratePage(QSqlDatabase *db, QWidget *parent = 0);
     ~GeneratePage();
     void initializePage();
-
-    void getTimeslots();
-    void freeTimeslots();
-
-    void loadSubjects();
-
-    void getKholleurs();
-    void freeKholleurs();
+    void cleanupPage();
+    void setPupilsOnTimeslots();
 
     void calculateProba();
 
@@ -65,8 +66,10 @@ public slots:
 
 private:
     Ui::GeneratePage *ui;
+    QObject *m_window;
     QSqlDatabase *m_db;
-    QList<Timeslot*> timeslots;
+    DataBase *m_dbase;
+    QMap<int, Timeslot*> timeslots;
     QMap<int, Subject*> subjects;
     QMap<int, Kholleur*> kholleurs;
     int m_week;
@@ -74,9 +77,6 @@ private:
 
     QMap<int, QMap<int, float> > proba;
     QMap<int, QMap<int, QList<Timeslot*> > > poss;
-    int current_student;
-    int current_subject;
-    int current_min;
     int profondeur;
     QList<Kholle*> kholloscope;
 };
