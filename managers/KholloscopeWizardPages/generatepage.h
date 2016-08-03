@@ -19,6 +19,7 @@
 #include "storedData/kholle.h"
 #include "database.h"
 #include "managers/kholloscopewizard.h"
+#include "mainwindow.h"
 #include "printpdf.h"
 
 struct working_index {
@@ -65,6 +66,7 @@ public slots:
 
 private:
     Ui::GeneratePage *ui;
+    QObject *m_window;
     QSqlDatabase *m_db;
     DataBase *m_dbase;
     QMap<int, Timeslot*> timeslots;
