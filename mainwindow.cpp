@@ -242,7 +242,7 @@ void MainWindow::createKhollo() {
     //Save directory in preferences
     QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
     QFile pref_file(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
-    if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text)){
+    if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)){
         QTextStream out(&pref_file);
         out << dirpath;
     }
@@ -367,7 +367,7 @@ void MainWindow::openKhollo() {
     //Save directory in preferences
     QString dirpath = QFileInfo(fileDB).absoluteDir().absolutePath();
     QFile pref_file(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
-    if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text)){
+    if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)){
         QTextStream out(&pref_file);
         out << dirpath;
     }
