@@ -386,9 +386,8 @@ void CoursesManager::copyToEven() {
                             ((QComboBox*)ui->grid_odd->itemAtPosition(j+1, i+1)->layout()->itemAt(1)->widget())->currentIndex());
             }
         }
+        isChanged = true;
     }
-
-    isChanged = true;
 }
 
 void CoursesManager::copyToOdd() {
@@ -406,9 +405,8 @@ void CoursesManager::copyToOdd() {
                             ((QComboBox*)ui->grid_even->itemAtPosition(j+1, i+1)->layout()->itemAt(1)->widget())->currentIndex());
             }
         }
+        isChanged = true;
     }
-
-    isChanged = true;
 }
 
 void CoursesManager::onClose_button() {
