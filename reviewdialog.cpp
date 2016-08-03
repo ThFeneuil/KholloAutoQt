@@ -182,8 +182,7 @@ void ReviewDialog::updateInfoArea() {
     qKholles.bindValue(":id_kholleurs", khll->getId());
     qKholles.exec();
 
-    text += "<br />Nombre de kholles : " + QString::number(qKholles.size()) + "<br />";
-
+    QString textKholles = "";
     int numKholle = 0;
     while(qKholles.next()) {
         numKholle++;
@@ -211,10 +210,12 @@ void ReviewDialog::updateInfoArea() {
             continue;
 
         // Display the information
-        text += "<br />";
-        text += "<strong>Kholle " + QString::number(numKholle) + " :</strong><br />";
-        text += "Le " + klle->timeslot()->getDate().toString("dd/MM/yyyy") + " à " + klle->timeslot()->getTime().toString("hh:mm") + "<br />";
+        textKholles += "<br />";
+        textKholles += "<strong>Kholle " + QString::number(numKholle) + " :</strong><br />";
+        textKholles += "Le " + klle->timeslot()->getDate().toString("dd/MM/yyyy") + " à " + klle->timeslot()->getTime().toString("hh:mm") + "<br />";
     }
+
+    text += "<br />Nombre de kholles : " + QString::number(numKholle) + "<br />" + textKholles;
 
     // Update the widgets
     ui->infoKholles->setText(text);

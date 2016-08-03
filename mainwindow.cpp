@@ -397,6 +397,7 @@ void MainWindow::updateWindow() {
     QString info = "";
     if(db.databaseName() != "") {
         info += "<strong> Kholloscope :</strong> " + db.databaseName() + "<br />";
+        info += "<strong> Driver :</strong> " + db.driverName() + "<br />";
         if(db.isOpen())
                 info += "<strong> Chargé :</strong> VRAI :p<br />";
         else    info += "<strong> Chargé :</strong> FAUX :'(<br />";
