@@ -17,8 +17,7 @@ GeneratePage::GeneratePage(QSqlDatabase *db, QWidget *parent) :
     m_window = parent;
 }
 
-GeneratePage::~GeneratePage()
-{
+GeneratePage::~GeneratePage() {
     delete ui;
     delete m_dbase;
     freeKholles();

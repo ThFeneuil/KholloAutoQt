@@ -150,7 +150,7 @@ bool KholleursManager::delete_teacher() {
     return true;
 }
 
-bool KholleursManager::update_listKholleurs() {
+bool KholleursManager::update_listKholleurs(int idSelected) {
     /** To update the list of the kholleurs **/
     // Clear the list
     ui->list_kholleurs->clear();
@@ -180,6 +180,8 @@ bool KholleursManager::update_listKholleurs() {
             subject = "(" + subject + ") ";
         QListWidgetItem *item = new QListWidgetItem(khll->getName() + " " + subject + ": " + QString::number(khll->getDuration()) + ", " + QString::number(khll->getPreparation()) + ", " + QString::number(khll->getPupils()), ui->list_kholleurs);
         item->setData(Qt::UserRole, (qulonglong) khll);
+        if(idSelected == khll->getId())
+            ui->list_kholleurs->setCurrentItem(item);
         queue_displayedKholleurs.enqueue(khll);
     }
 
@@ -189,6 +191,7 @@ bool KholleursManager::update_listKholleurs() {
 bool KholleursManager::add_kholleur() {
     /** To add a kholleur in the DB **/
     QString name = ui->lineEdit_kholleur->text();
+    int idKholleur = 0;
 
     if(name == "") { // If there is no name
         QMessageBox::critical(this, "Erreur", "Il faut renseigner le nom du kholleur.");
@@ -198,11 +201,15 @@ bool KholleursManager::add_kholleur() {
         query.prepare("INSERT INTO tau_kholleurs(name, id_subjects, duration, preparation, pupils) VALUES(:name, 0, 0, 0, 0)");
         query.bindValue(":name", name);
         query.exec();
-
+        idKholleur = query.lastInsertId().toInt()
+;
         // Update the widgets
         ui->lineEdit_kholleur->clear();
-        update_listKholleurs();
+        update_listKholleurs(idKholleur);
     }
+
+    if(idKholleur > 0)
+        update_kholleur();
 
     return true;
 }

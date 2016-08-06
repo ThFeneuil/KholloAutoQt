@@ -25,6 +25,7 @@ class InterfaceTab : public QWidget
 public:
     explicit InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabase* db, DataBase* dbase, QWidget *parent = 0, InterfaceDialog* interface = NULL);
     ~InterfaceTab();
+    Subject* getSubject() const;
 
 public slots:
     bool displayTeacher();
