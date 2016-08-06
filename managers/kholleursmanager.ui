@@ -33,6 +33,9 @@
          <property name="text">
           <string>Ajouter</string>
          </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
         </widget>
        </item>
       </layout>
@@ -60,12 +63,18 @@
          <property name="text">
           <string>Modifier enseignant</string>
          </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_deleteTeacher">
          <property name="text">
           <string>Supprimer enseignant</string>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -105,6 +114,9 @@
          <property name="text">
           <string>Ajouter</string>
          </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
         </widget>
        </item>
       </layout>
@@ -132,12 +144,18 @@
          <property name="text">
           <string>Modifier kholleur</string>
          </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_deleteKholleur">
          <property name="text">
           <string>Supprimer kholleur</string>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
          </property>
         </widget>
        </item>

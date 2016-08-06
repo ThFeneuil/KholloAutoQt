@@ -30,6 +30,7 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
         // Display the student
         QListWidgetItem *item = new QListWidgetItem(stdnt->getName() + " " + stdnt->getFirst_name(), ui->list_students);
         item->setData(Qt::UserRole, (qulonglong) stdnt);
+        item->setIcon(QIcon(QPixmap(":/images/nbKh0.png")));
     }
     connect(ui->list_students, SIGNAL(itemSelectionChanged()), this, SLOT(selectStudent()));
 

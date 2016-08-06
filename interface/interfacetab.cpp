@@ -40,6 +40,10 @@ InterfaceTab::~InterfaceTab()
     delete ui;
 }
 
+Subject* InterfaceTab::getSubject() const {
+    return m_subject;
+}
+
 bool InterfaceTab::displayTeacher() {
     QListWidgetItem* item = ui->list_kholleurs->currentItem();
 
