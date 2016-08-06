@@ -2,5 +2,8 @@
     <qresource prefix="/">
         <file>images/emptyTimeTable.png</file>
         <file>images/iconPrint.png</file>
+        <file>images/nbKh0.png</file>
+        <file>images/nbKh1.png</file>
+        <file>images/nbKh2.png</file>
     </qresource>
 </RCC>

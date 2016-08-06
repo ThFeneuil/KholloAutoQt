@@ -31,7 +31,7 @@ public slots:
     bool update_teacher();
     bool delete_teacher();
     // Kholleurs
-    bool update_listKholleurs();
+    bool update_listKholleurs(int idSelected = 0);
     bool add_kholleur();
     bool update_kholleur();
     bool delete_kholleur();
