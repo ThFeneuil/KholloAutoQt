@@ -12,6 +12,9 @@ GeneratePage::GeneratePage(QSqlDatabase *db, QWidget *parent) :
     profondeur = 0;
 
     m_dbase = new DataBase(m_db);
+
+    //Pointer to MainWindow
+    m_window = parent;
 }
 
 GeneratePage::~GeneratePage() {
@@ -422,7 +425,7 @@ void GeneratePage::msg_display() {
 }
 
 void GeneratePage::saveKholles() {
-    /** To save the kholloscope that has been generated to the database **/
+    /** To save the kholloscope that has been generated to the database and other things after finish **/
     int i;
 
     //Only if checkbox selected...
@@ -463,6 +466,11 @@ void GeneratePage::saveKholles() {
         //Print!
         //QMessageBox::information(this, "OK", QString::number(kholloscope.length()));
         PrintPDF::printKholles(((KholloscopeWizard*) wizard())->get_students(), m_dbase->listKholleurs(), m_dbase->listTimeslots(), m_date, khollo);
+    }
+
+    //Open interface if checkbox selected
+    if(ui->interfaceCheckBox->isChecked()) {
+        ((MainWindow*) m_window)->triggerInterface(m_date, m_week);
     }
 }
 

@@ -21,7 +21,7 @@ KholloscopeWizard::KholloscopeWizard(QSqlDatabase *db, QWidget *parent) :
     //Add pages
     addPage(new SubjectsPage(db));
     addPage(new UsersPage(db));
-    addPage(new GeneratePage(db));
+    addPage(new GeneratePage(db, parent));
 }
 
 KholloscopeWizard::~KholloscopeWizard()

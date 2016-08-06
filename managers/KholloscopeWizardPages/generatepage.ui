@@ -37,6 +37,16 @@
      </property>
     </widget>
    </item>
+   <item>
+    <widget class="QCheckBox" name="interfaceCheckBox">
+     <property name="text">
+      <string>Ouvrir l'interface à la semaine sélectionnée</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>

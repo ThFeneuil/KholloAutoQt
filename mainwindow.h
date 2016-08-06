@@ -40,6 +40,7 @@ public slots:
     void openTimeslotsManager();
     void openEventsManager();
     void openInterface();
+    void openInterfaceWithDate(QDate date, int id_week);
 	void openKholloscope();
     void openReview();
     void openHelp();
@@ -48,6 +49,9 @@ public slots:
     void createKhollo();
     void openKhollo();
     void updateWindow();
+
+signals:
+    void triggerInterface(QDate date, int id_week);
 
 private:
     Ui::MainWindow *ui;

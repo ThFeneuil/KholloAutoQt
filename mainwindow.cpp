@@ -24,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_File_Create, SIGNAL(triggered()), this, SLOT(createKhollo()));
     connect(ui->action_File_Open, SIGNAL(triggered()), this, SLOT(openKhollo()));
 
+    connect(this, SIGNAL(triggerInterface(QDate,int)), this, SLOT(openInterfaceWithDate(QDate,int)));
+
     updateWindow();
 }
 
@@ -164,13 +166,26 @@ void MainWindow::openInterface() {
     }
 }
 
+void MainWindow::openInterfaceWithDate(QDate date, int id_week) {
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if(db.isOpen()) {
+        InterfaceDialog manager(&db, id_week, date, this);
+        manager.exec();
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
+    }
+}
+
 void MainWindow::openKholloscope() {
     //Get connection information
     QSqlDatabase db = QSqlDatabase::database();
 
     if(db.isOpen()) {
         // Open the manager
-        KholloscopeWizard manager(&db);
+        KholloscopeWizard manager(&db, this);
         manager.exec();
     }
     else {
@@ -201,7 +216,6 @@ void MainWindow::openHelp(){
     ContactDialog dialog;
     dialog.exec();
 }
-
 
 
 void MainWindow::createKhollo() {
