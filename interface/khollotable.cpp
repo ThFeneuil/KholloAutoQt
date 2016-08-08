@@ -253,8 +253,8 @@ bool KholloTable::updateInfoArea() {
                        "<strong>Horaire :</strong> " + m_selectedTimeslot->getTime().toString("hh:mm") + " >> " + m_selectedTimeslot->getTime_end().toString("hh:mm") + "<br />";
         if(m_selectedTimeslot->getTime_start() != m_selectedTimeslot->getTime())
             text += "<strong> ATTENTION préparation :</strong> Début à " + m_selectedTimeslot->getTime_start().toString("hh:mm") + "<br />";
-        text += "<strong>Nombre d'étudiants attendus :</strong> " + QString::number(m_selectedTimeslot->getPupils()) + "<br />";
-        text += "<strong>Nombre d'étudiants présents :</strong> " + QString::number(m_selectedTimeslot->kholles()->count());
+        text += "<strong>Nombre d'étudiants :</strong> " +
+                QString::number(m_selectedTimeslot->kholles()->count()) + " / " + QString::number(m_selectedTimeslot->getPupils()) + "<br />";
         label_info->setText(text);
         label_info->setDisabled(false);
 
@@ -336,6 +336,7 @@ bool KholloTable::addKholle() {
 
         displayTable();
         updateInfoArea();
+        m_interface->update_list(m_tab->getSubject());
     } else {
         if(!m_student)
                 QMessageBox::critical(NULL, "Erreur", "Veuillez sélectionner un étudiant...");
@@ -375,6 +376,7 @@ bool KholloTable::removeKholle(Student* stud) {
 
         displayTable();
         updateInfoArea();
+        m_interface->update_list(m_tab->getSubject());
     } else {
         if(!stud)
                 QMessageBox::critical(NULL, "Erreur", "Veuillez sélectionner un étudiant...");

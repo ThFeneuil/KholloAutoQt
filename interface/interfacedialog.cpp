@@ -18,19 +18,15 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
 
     // Get the list of all the students
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, first_name, email FROM tau_users ORDER BY name, first_name");
+    query.exec("SELECT id FROM tau_users ORDER BY name, first_name");
     while (query.next()) {
-        Student* stdnt = new Student();
-        stdnt->setId(query.value(0).toInt());
-        stdnt->setName(query.value(1).toString());
-        stdnt->setFirst_name(query.value(2).toString());
-        stdnt->setEmail(query.value(3).toString());
+        Student* stdnt = m_dbase->listStudents()->value(query.value(0).toInt());
         m_students->append(stdnt);
 
         // Display the student
         QListWidgetItem *item = new QListWidgetItem(stdnt->getName() + " " + stdnt->getFirst_name(), ui->list_students);
         item->setData(Qt::UserRole, (qulonglong) stdnt);
-        item->setIcon(QIcon(QPixmap(":/images/nbKh0.png")));
+        item->setIcon(QIcon(QPixmap(":/images/none.png")));
     }
     connect(ui->list_students, SIGNAL(itemSelectionChanged()), this, SLOT(selectStudent()));
 
@@ -45,6 +41,8 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
         InterfaceTab* tab = new InterfaceTab(subj, m_id_week, m_monday, m_db, m_dbase, NULL, this);
         ui->tabWidget->addTab(tab, subj->getShortName());
     }
+    update_list(((InterfaceTab*) ui->tabWidget->currentWidget())->getSubject());
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(detectChangeTab(int)));
     connect(ui->pushButton_print, SIGNAL(clicked(bool)), this, SLOT(printKholloscope()));
     connect(ui->pushButton_review, SIGNAL(clicked(bool)), this, SLOT(openReviewDialog()));
 }
@@ -53,6 +51,7 @@ InterfaceDialog::~InterfaceDialog()
 {
     delete ui;
     delete m_dbase;
+    delete m_students;
 }
 
 bool InterfaceDialog::selectStudent(Student *stud) {
@@ -90,4 +89,34 @@ void InterfaceDialog::printKholloscope() {
 void InterfaceDialog::openReviewDialog() {
     ReviewDialog dialog(m_db);
     dialog.exec();
+}
+
+bool InterfaceDialog::detectChangeTab(int index) {
+    InterfaceTab* tab = (InterfaceTab*) ui->tabWidget->widget(index);
+    update_list(tab->getSubject());
+    return true;
+}
+
+bool InterfaceDialog::update_list(Subject* subj) {
+    for(int i=0; i<ui->list_students->count(); i++) {
+        QListWidgetItem *item = ui->list_students->item(i);
+        if(subj) {
+            Student* stdnt = (Student*) item->data(Qt::UserRole).toULongLong();
+            QList<Kholle*>* listKholles = stdnt->kholles();
+            int nbKholles = 0;
+            for(int j=0; j<listKholles->count(); j++) {
+                if(listKholles->value(j)->timeslot()->kholleur()->getId_subjects() == subj->getId())
+                    nbKholles++;
+            }
+            if(nbKholles <= 0)
+                item->setIcon(QPixmap(":/images/nbKh0.png"));
+            else if(nbKholles == 1)
+                item->setIcon(QPixmap(":/images/nbKh1.png"));
+            else
+                item->setIcon(QPixmap(":/images/nbKh2.png"));
+        } else {
+            item->setIcon(QPixmap(":/images/none.png"));
+        }
+    }
+    return true;
 }

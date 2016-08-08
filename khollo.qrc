@@ -5,5 +5,6 @@
         <file>images/nbKh0.png</file>
         <file>images/nbKh1.png</file>
         <file>images/nbKh2.png</file>
+        <file>images/none.png</file>
     </qresource>
 </RCC>

@@ -38,6 +38,8 @@ public slots:
     bool selectStudent(Student* stud = NULL);
     void printKholloscope();
     void openReviewDialog();
+    bool detectChangeTab(int index);
+    bool update_list(Subject* subj = NULL);
 
 private:
     Ui::InterfaceDialog *ui;
