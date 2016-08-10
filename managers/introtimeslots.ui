@@ -81,7 +81,7 @@
    <sender>pushButton_2</sender>
    <signal>clicked()</signal>
    <receiver>IntroTimeslots</receiver>
-   <slot>accept()</slot>
+   <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>349</x>
@@ -90,6 +90,22 @@
     <hint type="destinationlabel">
      <x>364</x>
      <y>85</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>OKButton</sender>
+   <signal>clicked()</signal>
+   <receiver>IntroTimeslots</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>250</x>
+     <y>71</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>193</x>
+     <y>60</y>
     </hint>
    </hints>
   </connection>

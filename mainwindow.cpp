@@ -124,8 +124,13 @@ void MainWindow::openTimeslotsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        IntroTimeslots manager(&db);
-        manager.exec();
+        QDate monday;
+        IntroTimeslots intro(&monday);
+        if(intro.exec() == IntroTimeslots::Accepted) {
+            //Open TimeslotsManager with this date and DB connection
+            TimeslotsManager manager(&db, monday);
+            manager.exec();
+        }
     }
     else {
         QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
