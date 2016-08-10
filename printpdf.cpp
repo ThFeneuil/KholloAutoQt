@@ -84,23 +84,23 @@ void PrintPDF::printKholles(QList<Student *> *students, QMap<int, Kholleur *> *k
 
     //Create two fonts -> one for the normal text, one for title
     QFont normal_font = painter.font();
-    if(QFontMetrics(normal_font).lineSpacing() > row_height) {
-        while(QFontMetrics(normal_font).lineSpacing() > row_height)
+    if(QFontMetrics(normal_font).lineSpacing() > row_height || longestUser(QFontMetrics(normal_font), students) > width/7 || QFontMetrics(normal_font).width("Mercredi") > width/7) {
+        while(QFontMetrics(normal_font).lineSpacing() > row_height || longestUser(QFontMetrics(normal_font), students) > width/7 || QFontMetrics(normal_font).width("Mercredi") > width/7)
             normal_font.setPointSize(normal_font.pointSize() - 1);
     }
-    if(QFontMetrics(normal_font).lineSpacing() < row_height) {
-        while(QFontMetrics(normal_font).lineSpacing() <= row_height)
+    if(QFontMetrics(normal_font).lineSpacing() < row_height && longestUser(QFontMetrics(normal_font), students) < width/7 && QFontMetrics(normal_font).width("Mercredi") < width/7) {
+        while(QFontMetrics(normal_font).lineSpacing() <= row_height && longestUser(QFontMetrics(normal_font), students) <= width/7 && QFontMetrics(normal_font).width("Mercredi") <= width/7)
             normal_font.setPointSize(normal_font.pointSize() + 1);
         normal_font.setPointSize(normal_font.pointSize() - 1);
     }
 
     QFont title_font = painter.font();
-    if(QFontMetrics(title_font).lineSpacing() > 2*row_height) {
-        while(QFontMetrics(title_font).lineSpacing() > 2*row_height)
+    if(QFontMetrics(title_font).lineSpacing() > 2*row_height || QFontMetrics(title_font).width("Semaine du lundi 22/22/2222 au samedi 22/22/2222") > width) {
+        while(QFontMetrics(title_font).lineSpacing() > 2*row_height || QFontMetrics(title_font).width("Semaine du lundi 22/22/2222 au samedi 22/22/2222") > width)
             title_font.setPointSize(title_font.pointSize() - 1);
     }
-    if(QFontMetrics(title_font).lineSpacing() < 2*row_height) {
-        while(QFontMetrics(title_font).lineSpacing() <= 2*row_height)
+    if(QFontMetrics(title_font).lineSpacing() < 2*row_height && QFontMetrics(title_font).width("Semaine du lundi 22/22/2222 au samedi 22/22/2222") < width) {
+        while(QFontMetrics(title_font).lineSpacing() <= 2*row_height && QFontMetrics(title_font).width("Semaine du lundi 22/22/2222 au samedi 22/22/2222") <= width)
             title_font.setPointSize(title_font.pointSize() + 1);
         title_font.setPointSize(title_font.pointSize() - 1);
     }
