@@ -138,29 +138,6 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
-      <widget class="QScrollArea" name="scrollArea_2">
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>100</height>
-        </size>
-       </property>
-       <property name="widgetResizable">
-        <bool>true</bool>
-       </property>
-       <widget class="QWidget" name="scrollAreaWidgetContents">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>98</width>
-          <height>98</height>
-         </rect>
-        </property>
-       </widget>
-      </widget>
-     </item>
-     <item>
       <widget class="QListWidget" name="list_kholleurs">
        <property name="maximumSize">
         <size>

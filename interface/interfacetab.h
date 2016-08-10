@@ -29,6 +29,7 @@ public:
 
 public slots:
     bool displayTeacher();
+    bool selectKholleur(Kholleur* khll);
     bool selectStudent(Student* stud);
 
 private:

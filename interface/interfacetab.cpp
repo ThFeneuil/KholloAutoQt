@@ -17,7 +17,7 @@ InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabas
     ui->viewTable->setScene(scene);
     //connect(ui->viewTable, SIGNAL())
     QSqlQuery query(*m_db);
-    query.prepare("SELECT `id`, `name`, `id_subjects`, `duration`, `preparation`, `pupils` FROM `tau_kholleurs` WHERE `id_subjects`=:id_subjects");
+    query.prepare("SELECT `id`, `name`, `id_subjects`, `duration`, `preparation`, `pupils` FROM `tau_kholleurs` WHERE `id_subjects`=:id_subjects ORDER BY `name`");
     query.bindValue(":id_subjects", m_subject->getId());
     query.exec();
     while (query.next()) {
@@ -84,4 +84,18 @@ bool InterfaceTab::selectStudent(Student* stud) {
     }
     ((KholloTable*) ui->viewTable->scene())->displayStudent(stud);
     return true;
+}
+
+bool InterfaceTab::selectKholleur(Kholleur* khll) {
+    if(khll) {
+        for(int i=0; i<ui->list_kholleurs->count(); i++) {
+            QListWidgetItem* item =  ui->list_kholleurs->item(i);
+            Kholleur* khll_item = (Kholleur*) item->data(Qt::UserRole).toULongLong();
+            if(khll->getId() == khll_item->getId()) {
+                ui->list_kholleurs->setCurrentItem(item);
+                return true;
+            }
+        }
+    }
+    return false;
 }

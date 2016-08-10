@@ -76,21 +76,22 @@ void KholloTable::displayTable() {
         }
 
         QList<Kholle*>* listKholles = m_student->kholles();
-        for(int i=0; i<listKholles->count(); i++) { // For each group
+        for(int i=0; i<listKholles->count(); i++) { // For each kholle
             Kholle* klle = listKholles->at(i);
             Timeslot* slot = klle->timeslot();
 
-            // Display only the kholle of the subjects of the tab
-            if(slot->kholleur()->getId_subjects() == m_tab->getSubject()->getId()) {
-                // Display the kholle
-                int x = m_sizeImg[BeginDays]+m_sizeImg[BetweenDays]*m_monday.daysTo(slot->getDate());
-                int y = m_sizeImg[BeginHours]+m_sizeImg[BetweenHours]*(slot->getTime().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
-                int w = m_sizeImg[BetweenDays];
-                int h = m_sizeImg[BetweenHours]*(slot->getTime_end().msecsSinceStartOfDay() - slot->getTime().msecsSinceStartOfDay())/3600000;
-                QRect rect(x,y,w,h);
-                addRect(rect, QPen(Qt::black, 0), QBrush(QColor(255,201,14)));
-                areaCourses.append(rect);
-            }
+            // Display the kholle
+            int x = m_sizeImg[BeginDays]+m_sizeImg[BetweenDays]*m_monday.daysTo(slot->getDate());
+            int y = m_sizeImg[BeginHours]+m_sizeImg[BetweenHours]*(slot->getTime().msecsSinceStartOfDay() - QTime(8, 0).msecsSinceStartOfDay())/3600000;
+            int w = m_sizeImg[BetweenDays];
+            int h = m_sizeImg[BetweenHours]*(slot->getTime_end().msecsSinceStartOfDay() - slot->getTime().msecsSinceStartOfDay())/3600000;
+            slot->setArea(new QRect(x,y,w,h));
+            QRect rect(x,y,w,h);
+
+            if(slot->kholleur()->getId_subjects() == m_tab->getSubject()->getId())
+                    addRect(rect, QPen(Qt::black, 0), QBrush(QColor(255,201,14)));
+            else    addRect(rect, QPen(Qt::black, 0), QBrush(QColor(255,220,100)));
+            areaCourses.append(rect);
         }
     }
 
@@ -221,16 +222,32 @@ bool KholloTable::selection(QGraphicsSceneMouseEvent *mouseEvent) {
     QPoint pos = mouseEvent->scenePos().toPoint();
     m_selectedTimeslot = NULL;
 
-    if(!m_kholleur)
-        return false;
+    // SELECT A TIMESLOT
+    if(mouseEvent->button() == Qt::LeftButton && m_kholleur) {
+        QList<Timeslot*>* listTimeslots = m_dbase->listKholleurs()->value(m_kholleur->getId())->timeslots();
+        for(int i=0; i<listTimeslots->count(); i++) { // For each timeslot
+            Timeslot* slot = listTimeslots->at(i);
 
-    QList<Timeslot*>* listTimeslots = m_dbase->listKholleurs()->value(m_kholleur->getId())->timeslots();
-    for(int i=0; i<listTimeslots->count(); i++) { // For each timeslot
-        Timeslot* slot = listTimeslots->at(i);
+            if(slot->getArea()->contains(pos)) {
+                m_selectedTimeslot = slot;
+                break;
+            }
+        }
+    }
 
-        if(slot->getArea()->contains(pos)) {
-            m_selectedTimeslot = slot;
-            break;
+    // SELECT A KHOLLE
+    if(mouseEvent->button() == Qt::RightButton && m_selectedTimeslot == NULL) {
+        QList<Kholle*>* listKholles = m_student->kholles();
+        for(int i=0; i<listKholles->count(); i++) { // For each group
+            Kholle* klle = listKholles->at(i);
+            Timeslot* slot = klle->timeslot();
+
+            // Display only the kholle of the subjects of the tab
+            if(slot->kholleur()->getId_subjects() == m_tab->getSubject()->getId() && slot->getArea()->contains(pos)) {
+                m_kholleur = slot->kholleur();
+                m_tab->selectKholleur(m_kholleur);
+                m_selectedTimeslot = slot;
+            }
         }
     }
 
@@ -336,6 +353,7 @@ bool KholloTable::addKholle() {
 
         displayTable();
         updateInfoArea();
+        m_interface->selectStudent(m_student);
         m_interface->update_list(m_tab->getSubject());
     } else {
         if(!m_student)
@@ -376,6 +394,7 @@ bool KholloTable::removeKholle(Student* stud) {
 
         displayTable();
         updateInfoArea();
+        m_interface->selectStudent(m_student);
         m_interface->update_list(m_tab->getSubject());
     } else {
         if(!stud)
