@@ -41,7 +41,13 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
         InterfaceTab* tab = new InterfaceTab(subj, m_id_week, m_monday, m_db, m_dbase, NULL, this);
         ui->tabWidget->addTab(tab, subj->getShortName());
     }
-    update_list(((InterfaceTab*) ui->tabWidget->currentWidget())->getSubject());
+
+    if(ui->tabWidget->currentWidget()) {
+        update_list(((InterfaceTab*) ui->tabWidget->currentWidget())->getSubject());
+    } else {
+        QMessageBox::warning(this, "Aucune matière sélectionnée", "Aucune matière n'est sélectionnée...<br />Veuillez vérifier si au moins une matière est attribuée à un kholleur.");
+        update_list();
+    }
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(detectChangeTab(int)));
     connect(ui->pushButton_print, SIGNAL(clicked(bool)), this, SLOT(printKholloscope()));
     connect(ui->pushButton_review, SIGNAL(clicked(bool)), this, SLOT(openReviewDialog()));
