@@ -1,4 +1,4 @@
-QT += widgets sql
+QT += widgets sql concurrent
 
 FORMS += \
     mainwindow.ui \

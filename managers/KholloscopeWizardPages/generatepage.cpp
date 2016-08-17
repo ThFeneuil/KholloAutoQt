@@ -9,18 +9,28 @@ GeneratePage::GeneratePage(QSqlDatabase *db, QWidget *parent) :
 
     //DB
     m_db = db;
-    profondeur = 0;
 
+    //Create DataBase object
     m_dbase = new DataBase(m_db);
+
+    //Create message
+    m_box = new QMessageBox(QMessageBox::Information, "Génération automatique", "Génération en cours. Veuillez patienter...",
+                            QMessageBox::Cancel, this);
 
     //Pointer to MainWindow
     m_window = parent;
 }
 
 GeneratePage::~GeneratePage() {
+    m_abort = true;
+    m_watcher.waitForFinished();
+
     delete ui;
     delete m_dbase;
+    delete m_box;
     freeKholles();
+
+    //QMessageBox::information(this, "OK", "destructor called...");
 }
 
 void GeneratePage::initializePage() {
@@ -38,21 +48,48 @@ void GeneratePage::initializePage() {
         QMessageBox::information(this, "Information", "La date n'étant pas à un lundi, la date utilisée sera le lundi de la même semaine.");
     }
 
+    profondeur = 0;
+    m_abort = false;
     freeKholles();
 
+    //Reinitialise DataBase object
+    delete m_dbase;
+    m_dbase = new DataBase(m_db);
     //m_dbase->setConditionTimeslots("date>=\"" + m_date.toString("yyyy-MM-dd") + "\" AND date<=\"" + m_date.addDays(6).toString("yyyy-MM-dd") + "\"");
     m_dbase->load();
 
     setPupilsOnTimeslots();
 
+    //Connect watcher to slot...
+    connect(&m_watcher, SIGNAL(finished()), this, SLOT(finished()));
+
+    //Start work, mostly in different thread
     calculateProba();
     constructPoss();
-    generate();
-    display();
+    QFuture<bool> future = QtConcurrent::run(this, &GeneratePage::generate);
+    m_watcher.setFuture(future);
+
+    //Display a message with an option to abort
+    connect(m_box, SIGNAL(finished(int)), this, SLOT(abort()));
+    m_box->show();
 }
 
 void GeneratePage::cleanupPage() {
     disconnect(wizard()->button(QWizard::FinishButton), SIGNAL(clicked()), this, SLOT(saveKholles()));
+
+    //Abort operation
+    m_abort = true;
+    m_watcher.waitForFinished();
+
+    m_box->hide();
+    disconnect(m_box, SIGNAL(finished(int)), this, SLOT(abort()));
+    disconnect(&m_watcher, SIGNAL(finished()), this, SLOT(finished()));
+
+    //Clear list
+    ui->listWidget->clear();
+
+    //delete m_dbase;
+    //QMessageBox::information(this, "OK", "cleanupPage() called...");
 }
 
 void GeneratePage::setPupilsOnTimeslots() {
@@ -150,21 +187,22 @@ bool GeneratePage::compatible(int id_user, Timeslot *timeslot) {
             return false;
         }
 
-        //Get all kholles that can interfere with this timeslot
-        QSqlQuery kholle_query(*m_db);
-        kholle_query.prepare("SELECT * FROM tau_kholles AS K JOIN tau_timeslots AS T ON K.`id_timeslots` = T.`id` WHERE K.`id_users`=:id_users AND T.`date`=:date AND ("
-                             "(T.`time_start` <= :time_start AND T.`time_end` > :time_start) OR "
-                             "(T.`time_start` < :time_end AND T.`time_end` >= :time_end) OR "
-                             "(T.`time_start` >= :time_start AND T.`time_end` <= :time_end))");
-        kholle_query.bindValue(":id_users", id_user);
-        kholle_query.bindValue(":date", timeslot->getDate().toString("yyyy-MM-dd"));
-        kholle_query.bindValue(":time_start", timeslot->getTime_start().toString("HH:mm:ss"));
-        kholle_query.bindValue(":time_end", timeslot->getTime_end().toString("HH:mm:ss"));
-        kholle_query.exec();
+    }
 
-        if(kholle_query.next()) {
-            return false;
-        }
+    //Get all kholles that can interfere with this timeslot
+    QSqlQuery kholle_query(*m_db);
+    kholle_query.prepare("SELECT * FROM tau_kholles AS K JOIN tau_timeslots AS T ON K.`id_timeslots` = T.`id` WHERE K.`id_users`=:id_users AND T.`date`=:date AND ("
+                         "(T.`time_start` <= :time_start AND T.`time_end` > :time_start) OR "
+                         "(T.`time_start` < :time_end AND T.`time_end` >= :time_end) OR "
+                         "(T.`time_start` >= :time_start AND T.`time_end` <= :time_end))");
+    kholle_query.bindValue(":id_users", id_user);
+    kholle_query.bindValue(":date", timeslot->getDate().toString("yyyy-MM-dd"));
+    kholle_query.bindValue(":time_start", timeslot->getTime_start().toString("HH:mm:ss"));
+    kholle_query.bindValue(":time_end", timeslot->getTime_end().toString("HH:mm:ss"));
+    kholle_query.exec();
+
+    if(kholle_query.next()) {
+        return false;
     }
 
     return true;
@@ -353,11 +391,18 @@ bool GeneratePage::generate() {
     profondeur++;
     working_index* index = findMin(); //Get the min
     //QMessageBox::information(this, "OK", QString::number(profondeur));
+    //qDebug() << QString::number(profondeur);
 
     //It is finished
     if(index->min == -1) {
         free(index);
         return true;
+    }
+
+    //If abort needed, finish
+    if(m_abort) {
+        free(index);
+        return false;
     }
 
     QMap<int, QList<Timeslot*> > map = poss.value(index->current_subject);
@@ -388,6 +433,13 @@ bool GeneratePage::generate() {
                 return true;
             }
 
+            //If abort needed, return false
+            if(m_abort) {
+                delete old;
+                free(index);
+                return false;
+            }
+
             //If false, reset everything
             resetPoss(index->current_student, old);
             delete old;
@@ -403,6 +455,19 @@ bool GeneratePage::generate() {
     profondeur--;
     free(index);
     return false;
+}
+
+void GeneratePage::finished() {
+    display();
+
+    m_box->hide();
+}
+
+void GeneratePage::abort() {
+    m_abort = true;
+    m_watcher.waitForFinished();
+    display();
+    m_box->hide();
 }
 
 void GeneratePage::display() {
@@ -426,6 +491,9 @@ void GeneratePage::msg_display() {
 
 void GeneratePage::saveKholles() {
     /** To save the kholloscope that has been generated to the database and other things after finish **/
+    //Wait for finish if not finished
+    m_watcher.waitForFinished();
+
     int i;
 
     //Only if checkbox selected...

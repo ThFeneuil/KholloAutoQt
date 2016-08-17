@@ -12,6 +12,7 @@
 #include <QStandardPaths>
 #include <QPdfWriter>
 #include <QPainter>
+#include <QtConcurrentRun>
 #include "storedData/subject.h"
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
@@ -63,6 +64,8 @@ public:
 
 public slots:
     void saveKholles();
+    void finished();
+    void abort();
 
 private:
     Ui::GeneratePage *ui;
@@ -79,6 +82,9 @@ private:
     QMap<int, QMap<int, QList<Timeslot*> > > poss;
     int profondeur;
     QList<Kholle*> kholloscope;
+    bool m_abort;
+    QFutureWatcher<bool> m_watcher;
+    QMessageBox *m_box;
 };
 
 #endif // GENERATEPAGE_H
