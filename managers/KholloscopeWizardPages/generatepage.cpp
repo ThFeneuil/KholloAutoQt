@@ -17,6 +17,9 @@ GeneratePage::GeneratePage(QSqlDatabase *db, QWidget *parent) :
     m_box = new QMessageBox(QMessageBox::Information, "Génération automatique", "Génération en cours. Veuillez patienter...",
                             QMessageBox::Cancel, this);
 
+    //Set variables
+    last_index = NULL;
+
     //Pointer to MainWindow
     m_window = parent;
 }
@@ -29,6 +32,9 @@ GeneratePage::~GeneratePage() {
     delete m_dbase;
     delete m_box;
     freeKholles();
+
+    if(last_index != NULL)
+        free(last_index);
 
     //QMessageBox::information(this, "OK", "destructor called...");
 }
@@ -60,6 +66,7 @@ void GeneratePage::initializePage() {
 
     setPupilsOnTimeslots();
 
+    //Warning if not enough free space for everyone...
     QList<Subject*> *problem_subjects = testAvailability();
     if(problem_subjects->length() > 0) {
         QString warning_text = "Il n'y a pas suffisamment d'horaires de kholles libres pour accommoder tous les élèves sélectionnés dans ";
@@ -438,6 +445,14 @@ bool GeneratePage::generate() {
         return true;
     }
 
+    //Copy current index to the global variable
+    if(last_index != NULL)
+        free(last_index);
+    last_index = (working_index*) malloc(sizeof(working_index));
+    last_index->current_student = index->current_student;
+    last_index->current_subject = index->current_subject;
+    last_index->min = index->min;
+
     //If abort needed, finish
     if(m_abort) {
         free(index);
@@ -498,15 +513,17 @@ bool GeneratePage::generate() {
 
 void GeneratePage::finished() {
     display();
-
     m_box->hide();
+
+    if(!m_watcher.future().result())
+        displayBlocking();
 }
 
 void GeneratePage::abort() {
     m_abort = true;
     m_watcher.waitForFinished();
-    display();
-    m_box->hide();
+    //display();
+    //m_box->hide();
 }
 
 void GeneratePage::display() {
@@ -526,6 +543,20 @@ void GeneratePage::msg_display() {
         msg = msg + QString::number(kholloscope[i]->getId_students()) + ", " + QString::number(kholloscope[i]->getId_timeslots()) + "\n";
     }
     QMessageBox::information(this, "OK", msg);
+}
+
+void GeneratePage::displayBlocking() {
+    if(last_index == NULL)
+        return;
+
+    QString message = "La génération a été interrompue ou n’a pas pu être finie. Le dernier élément sur lequel a travaillé le logiciel est le couple suivant : <br />";
+    message += "Matière : <strong>" + m_dbase->listSubjects()->value(last_index->current_subject)->getName() + "</strong> <br />";
+    message += "Élève : <strong>" + m_dbase->listStudents()->value(last_index->current_student)->getName() + ", "
+            + m_dbase->listStudents()->value(last_index->current_student)->getFirst_name() + "</strong> <br />";
+    message += "Il est donc probable qu’il y ait une incohérence au niveau de cette matière ou de cet/cette élève. "
+               "Veuillez vérifier les horaires de kholles, groupes, emplois du temps correspondants.";
+
+    QMessageBox::information(this, "La génération n'a pas abouti...", message);
 }
 
 void GeneratePage::saveKholles() {

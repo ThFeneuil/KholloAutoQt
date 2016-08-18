@@ -61,6 +61,7 @@ public:
 
     void msg_display();
     void display();
+    void displayBlocking();
 
     void freeKholles();
 
@@ -83,7 +84,9 @@ private:
     QMap<int, QMap<int, float> > proba;
     QMap<int, QMap<int, QList<Timeslot*> > > poss;
     int profondeur;
+    working_index *last_index;
     QList<Kholle*> kholloscope;
+
     bool m_abort;
     QFutureWatcher<bool> m_watcher;
     QMessageBox *m_box;
