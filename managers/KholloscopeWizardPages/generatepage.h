@@ -44,6 +44,8 @@ public:
     void cleanupPage();
     void setPupilsOnTimeslots();
 
+    QList<Subject *> *testAvailability();
+
     void calculateProba();
 
     bool compatible(int id_user, Timeslot* timeslot);

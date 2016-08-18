@@ -60,6 +60,17 @@ void GeneratePage::initializePage() {
 
     setPupilsOnTimeslots();
 
+    QList<Subject*> *problem_subjects = testAvailability();
+    if(problem_subjects->length() > 0) {
+        QString warning_text = "Il n'y a pas suffisamment d'horaires de kholles libres pour accommoder tous les élèves sélectionnés dans ";
+        warning_text += (problem_subjects->length() >= 2 ? "les matières suivantes : <br />" : "la matière suivante : <br />");
+        int i;
+        for(i = 0; i < problem_subjects->length(); i++)
+            warning_text += "<strong>" + problem_subjects->at(i)->getName() + "</strong> <br />";
+        QMessageBox::warning(this, "Attention", warning_text);
+    }
+    delete problem_subjects;
+
     //Connect watcher to slot...
     connect(&m_watcher, SIGNAL(finished()), this, SLOT(finished()));
 
@@ -101,6 +112,34 @@ void GeneratePage::setPupilsOnTimeslots() {
         if(ts->getDate() >= m_date && ts->getDate() <= m_date.addDays(6))
             ts->setPupils(ts->getPupils() - ts->kholles()->length());
     }
+}
+
+QList<Subject*>* GeneratePage::testAvailability() {
+    /** Tests if there is enough free space for everyone selected **/
+
+    int i;
+    QList<Subject*> *result = new QList<Subject*>;
+    QList<Subject*> *selected_subjects = ((KholloscopeWizard*) wizard())->get_assoc_subjects();
+    QMap<int, QList<Student*> > *input = ((KholloscopeWizard*) wizard())->get_input();
+    QMap<int, Timeslot*> *map_ts = m_dbase->listTimeslots();
+
+    //Test for every subject
+    for(i = 0; i < selected_subjects->length(); i++) {
+        QList<Student*> users = input->value(selected_subjects->at(i)->getId()); //Which users are selected
+
+        //Sum up the free places during this week and in this subject
+        int free_places = 0;
+        foreach(Timeslot* ts, *map_ts) {
+            if(ts->kholleur()->getId_subjects() == selected_subjects->at(i)->getId() && ts->getDate() >= m_date && ts->getDate() <= m_date.addDays(6))
+                free_places += ts->getPupils();
+        }
+
+        //If not enough free place, then add it to the list
+        if(users.length() > free_places)
+            result->append(selected_subjects->at(i));
+    }
+
+    return result;
 }
 
 void GeneratePage::calculateProba() {
