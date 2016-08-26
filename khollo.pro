@@ -62,7 +62,6 @@ HEADERS += \
     managers/timeslotsmanager.h \
     managers/introtimeslots.h \
     managers/copytimeslots.h \
-    storedData/storeddatum.h \
     database.h \
     aboutitdialog.h \
     contactdialog.h \
@@ -104,7 +103,6 @@ SOURCES += \
 	managers/timeslotsmanager.cpp \
     managers/introtimeslots.cpp \
     managers/copytimeslots.cpp \
-    storedData/storeddatum.cpp \
     database.cpp \
     aboutitdialog.cpp \
     contactdialog.cpp \

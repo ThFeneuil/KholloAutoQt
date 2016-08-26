@@ -28,8 +28,12 @@ EventsManager::~EventsManager() {
 
 bool EventsManager::free_events() {
     /** To free memories with events **/
-    while (!queue_displayedEvents.isEmpty())
-        delete queue_displayedEvents.dequeue();
+    while (!queue_displayedEvents.isEmpty()) {
+        Event* event = queue_displayedEvents.dequeue();
+        for(int i=0; i<event->groups()->size(); ++i)
+            delete event->groups()->at(i);
+        delete event;
+    }
     return true;
 }
 
@@ -71,7 +75,7 @@ bool EventsManager::update_list() {
             Group* grp = new Group();
             grp->setId(queryGroups.value(0).toInt());
             grp->setName(queryGroups.value(1).toString());
-            event->getGroups()->append(grp);
+            event->groups()->append(grp);
         }
 
         // Display the event
@@ -95,8 +99,8 @@ bool EventsManager::display_event(QListWidgetItem* item) {
         ui->label_start->setText(event->getStart().toString("hh:mm dd/MM/yyyy"));
         ui->label_end->setText(event->getEnd().toString("hh:mm dd/MM/yyyy"));
         QString textGroups = "";
-        for(int i=0; i<event->getGroups()->size(); ++i)
-            textGroups += (*event->getGroups())[i]->getName() + "<br />";
+        for(int i=0; i<event->groups()->size(); ++i)
+            textGroups += event->groups()->at(i)->getName() + "<br />";
         ui->label_groups->setText(textGroups);
     }
 
