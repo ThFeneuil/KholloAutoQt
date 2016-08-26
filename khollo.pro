@@ -113,6 +113,9 @@ DISTFILES +=
 RESOURCES += \
     khollo.qrc
 
+VERSION = 1.0
+QMAKE_TARGET_PRODUCT = "KholloAuto\0"
+
 win32:RC_ICONS += "images/iconApp.ico"
 macx {
     QMAKE_INFO_PLIST = Info.plist
