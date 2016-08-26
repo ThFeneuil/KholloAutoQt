@@ -12,6 +12,7 @@
 #include <QPdfWriter>
 #include <QPainter>
 #include <QMessageBox>
+#include <QCoreApplication>
 #include "storedData/student.h"
 #include "storedData/kholleur.h"
 #include "storedData/timeslot.h"

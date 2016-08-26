@@ -31,7 +31,7 @@ int PrintPDF::longestKholleur(QFontMetrics font, QMap<int, Kholleur*> *kholleurs
 void PrintPDF::printKholles(QList<Student *> *students, QMap<int, Kholleur *> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QMap<int, Kholle *> *kholloscope) {
     //Try to load directory preferences
     QString pref_path;
-    QFile read(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
+    QFile read(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
     if(read.exists() && read.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&read);
         pref_path = in.readLine();
@@ -50,7 +50,7 @@ void PrintPDF::printKholles(QList<Student *> *students, QMap<int, Kholleur *> *k
 
     //Save directory in preferences
     QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
-    QFile pref_file(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
+    QFile pref_file(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
     if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)){
         QTextStream out(&pref_file);
         out << dirpath;

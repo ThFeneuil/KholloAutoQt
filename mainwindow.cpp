@@ -226,7 +226,7 @@ void MainWindow::openHelp(){
 void MainWindow::createKhollo() {
     //Try to load directory preferences
     QString pref_path;
-    QFile read(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
+    QFile read(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
     if(read.exists() && read.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&read);
         pref_path = in.readLine();
@@ -246,7 +246,7 @@ void MainWindow::createKhollo() {
 
     //Save directory in preferences
     QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
-    QFile pref_file(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
+    QFile pref_file(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
     if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)){
         QTextStream out(&pref_file);
         out << dirpath;
@@ -352,7 +352,7 @@ void MainWindow::createKhollo() {
 void MainWindow::openKhollo() {
     //Try to load directory preferences
     QString pref_path;
-    QFile read(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
+    QFile read(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
     if(read.exists() && read.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&read);
         pref_path = in.readLine();
@@ -371,7 +371,7 @@ void MainWindow::openKhollo() {
 
     //Save directory in preferences
     QString dirpath = QFileInfo(fileDB).absoluteDir().absolutePath();
-    QFile pref_file(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
+    QFile pref_file(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
     if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)){
         QTextStream out(&pref_file);
         out << dirpath;
