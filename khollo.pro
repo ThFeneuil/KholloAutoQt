@@ -116,3 +116,7 @@ RESOURCES += \
     khollo.qrc
 
 win32:RC_ICONS += "images/iconApp.ico"
+macx {
+    QMAKE_INFO_PLIST = Info.plist
+    ICON = "images/iconApp.icns"
+}
