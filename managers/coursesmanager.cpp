@@ -9,7 +9,9 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
     ui->setupUi(this);
     connect(ui->list_groups, SIGNAL(itemSelectionChanged()), this, SLOT(onSelection_change()));
     connect(ui->pushButton_save, SIGNAL(clicked()), this, SLOT(save_changes()));
-    connect(ui->pushButton_close, SIGNAL(clicked()), this, SLOT(onClose_button()));
+    //connect(ui->pushButton_close, SIGNAL(clicked()), this, SLOT(onClose_button()));
+    connect(this, SIGNAL(accepted()), this, SLOT(onClose_button()));
+    connect(this, SIGNAL(rejected()), this, SLOT(onClose_button()));
     connect(ui->copyToEven, SIGNAL(clicked()), this, SLOT(copyToEven()));
     connect(ui->copyToOdd, SIGNAL(clicked()), this, SLOT(copyToOdd()));
 
@@ -417,7 +419,4 @@ void CoursesManager::onClose_button() {
             save_changes();
         }
     }
-
-    //Close the dialog
-    accept();
 }
