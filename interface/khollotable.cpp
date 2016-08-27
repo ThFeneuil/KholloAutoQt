@@ -194,21 +194,22 @@ bool KholloTable::compatible(Student* stdnt, Timeslot *timeslot) {
             return false;
         }
 
-        //Get all kholles that can interfere with this timeslot
-        QSqlQuery kholle_query(*m_db);
-        kholle_query.prepare("SELECT * FROM tau_kholles AS K JOIN tau_timeslots AS T ON K.`id_timeslots` = T.`id` WHERE K.`id_users`=:id_users AND T.`date`=:date AND ("
-                             "(T.`time_start` <= :time_start AND T.`time_end` > :time_start) OR "
-                             "(T.`time_start` < :time_end AND T.`time_end` >= :time_end) OR "
-                             "(T.`time_start` >= :time_start AND T.`time_end` <= :time_end))");
-        kholle_query.bindValue(":id_users", stdnt->getId());
-        kholle_query.bindValue(":date", timeslot->getDate().toString("yyyy-MM-dd"));
-        kholle_query.bindValue(":time_start", timeslot->getTime_start().toString("HH:mm:ss"));
-        kholle_query.bindValue(":time_end", timeslot->getTime_end().toString("HH:mm:ss"));
-        kholle_query.exec();
+    }
 
-        if(kholle_query.next()) {
-            return false;
-        }
+    //Get all kholles that can interfere with this timeslot
+    QSqlQuery kholle_query(*m_db);
+    kholle_query.prepare("SELECT * FROM tau_kholles AS K JOIN tau_timeslots AS T ON K.`id_timeslots` = T.`id` WHERE K.`id_users`=:id_users AND T.`date`=:date AND ("
+                         "(T.`time_start` <= :time_start AND T.`time_end` > :time_start) OR "
+                         "(T.`time_start` < :time_end AND T.`time_end` >= :time_end) OR "
+                         "(T.`time_start` >= :time_start AND T.`time_end` <= :time_end))");
+    kholle_query.bindValue(":id_users", stdnt->getId());
+    kholle_query.bindValue(":date", timeslot->getDate().toString("yyyy-MM-dd"));
+    kholle_query.bindValue(":time_start", timeslot->getTime_start().toString("HH:mm:ss"));
+    kholle_query.bindValue(":time_end", timeslot->getTime_end().toString("HH:mm:ss"));
+    kholle_query.exec();
+
+    if(kholle_query.next()) {
+        return false;
     }
 
     return true;
