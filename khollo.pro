@@ -26,7 +26,9 @@ FORMS += \
     managers/copytimeslots.ui \
     aboutitdialog.ui \
     contactdialog.ui \
-    reviewdialog.ui
+    reviewdialog.ui \
+    managers/lastchanges.ui \
+    managers/updatetimeslotdialog.ui
 
 HEADERS += \
     mainwindow.h \
@@ -66,7 +68,9 @@ HEADERS += \
     aboutitdialog.h \
     contactdialog.h \
     reviewdialog.h \
-    printpdf.h
+    printpdf.h \
+    managers/lastchanges.h \
+    managers/updatetimeslotdialog.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -107,7 +111,9 @@ SOURCES += \
     aboutitdialog.cpp \
     contactdialog.cpp \
     reviewdialog.cpp \
-    printpdf.cpp
+    printpdf.cpp \
+    managers/lastchanges.cpp \
+    managers/updatetimeslotdialog.cpp
 DISTFILES +=
 
 RESOURCES += \

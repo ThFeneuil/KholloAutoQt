@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_Kholles_Interface, SIGNAL(triggered()), this, SLOT(openInterface()));
     connect(ui->action_Kholles_Generate, SIGNAL(triggered()), this, SLOT(openKholloscope()));
     connect(ui->action_Kholles_Historic, SIGNAL(triggered()), this, SLOT(openReview()));
+    connect(ui->action_Kholles_LastChanges, SIGNAL(triggered()), this, SLOT(openLastChanges()));
     connect(ui->action_Help, SIGNAL(triggered()), this, SLOT(openHelp()));
     connect(ui->action_AboutIt, SIGNAL(triggered()), this, SLOT(openAboutIt()));
 
@@ -206,6 +207,24 @@ void MainWindow::openReview() {
         // Open the manager
         ReviewDialog dialog(&db);
         dialog.exec();
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
+    }
+}
+
+void MainWindow::openLastChanges() {
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if(db.isOpen()) {
+        QDate monday;
+        IntroTimeslots intro(&monday);
+        if(intro.exec() == IntroTimeslots::Accepted) {
+            //Open TimeslotsManager with this date and DB connection
+            LastChanges manager(&db, &monday);
+            manager.exec();
+        }
     }
     else {
         QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
@@ -438,4 +457,5 @@ void MainWindow::updateWindow() {
     ui->action_Kholles_Interface->setEnabled(db.isOpen());
     ui->action_Kholles_Generate->setEnabled(db.isOpen());
     ui->action_Kholles_Historic->setEnabled(db.isOpen());
+    ui->action_Kholles_LastChanges->setEnabled(db.isOpen());
 }

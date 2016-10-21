@@ -14,6 +14,7 @@
 #include "managers/kholloscopewizard.h"
 #include "interface/interfacedialog.h"
 #include "interface/introinterface.h"
+#include "managers/lastchanges.h"
 #include "aboutitdialog.h"
 #include "contactdialog.h"
 #include "reviewdialog.h"
@@ -43,6 +44,7 @@ public slots:
     void openInterfaceWithDate(QDate date, int id_week);
 	void openKholloscope();
     void openReview();
+    void openLastChanges();
     void openHelp();
     void openAboutIt();
 

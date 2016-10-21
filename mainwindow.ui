@@ -88,6 +88,7 @@
     </property>
     <addaction name="action_Kholles_Interface"/>
     <addaction name="action_Kholles_Generate"/>
+    <addaction name="action_Kholles_LastChanges"/>
     <addaction name="action_Kholles_Historic"/>
    </widget>
    <widget class="QMenu" name="menu_Aide">
@@ -231,6 +232,14 @@
   <action name="action_AboutIt">
    <property name="text">
     <string>A p&amp;ropos de</string>
+   </property>
+  </action>
+  <action name="action_Kholles_LastChanges">
+   <property name="text">
+    <string>&amp;Outil de dépannage</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
    </property>
   </action>
  </widget>
