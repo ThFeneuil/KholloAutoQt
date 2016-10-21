@@ -65,7 +65,7 @@ bool InterfaceTab::selectStudent(Student* stud) {
         Kholleur* kll = (Kholleur*) item->data(Qt::UserRole).toULongLong();
         if(stud) {
             QSqlQuery query(*m_db);
-            query.prepare("SELECT COUNT(*) "
+            /*query.prepare("SELECT COUNT(*) "
                           "FROM `tau_kholles` "
                           "WHERE `id_users` = :id_users AND `id_timeslots` IN "
                             "(SELECT `id` FROM `tau_timeslots` WHERE `id_kholleurs` = :id_kholleurs)");
@@ -78,9 +78,40 @@ bool InterfaceTab::selectStudent(Student* stud) {
             } else {
                 QMessageBox::critical(NULL, "Erreur", "Erreur base de données. Code: 4253");
                 exit(4253);
+            }*/
+            query.prepare("SELECT T.`date` "
+                          "FROM `tau_kholles` AS K "
+                          "JOIN `tau_timeslots` AS T "
+                            "ON T.`id` = K.`id_timeslots` "
+                          "WHERE `id_users` = :id_users AND T.`id_kholleurs` = :id_kholleurs");
+            query.bindValue(":id_users", stud->getId());
+            query.bindValue(":id_kholleurs", kll->getId());
+            query.exec();
+
+            int lastKholles = 0;
+            int nbKholles = 0;
+            QDate today = m_monday;
+            while(query.next()) {
+                int nbDays = query.value(0).toDate().daysTo(today);
+                if(nbKholles == 0 || abs(nbDays) < abs(lastKholles))
+                    lastKholles = nbDays;
+                nbKholles++;
             }
-        } else
+            item->setText(kll->getName() + " (" + QString::number(nbKholles) + ")");
+            if(nbKholles) {
+                int week = (lastKholles > 0) ? (lastKholles-1) / 7 + 1 : lastKholles / 7;
+                if(0 >= lastKholles && lastKholles > -7)
+                    item->setToolTip("Cette semaine...");
+                else if(abs(week) == 1)
+                    item->setToolTip(QString::number(week) + " semaine (" + QString::number(lastKholles) + ")");
+                else
+                    item->setToolTip(QString::number(week) + " semaines (" + QString::number(lastKholles) + ")");
+            } else
+                item->setToolTip("");
+        } else {
             item->setText(kll->getName());
+            item->setToolTip("");
+        }
     }
     ((KholloTable*) ui->viewTable->scene())->displayStudent(stud);
     return true;

@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QByteArray>
 #include "managers/studentsmanager.h"
 #include "managers/groupsmanager.h"
 #include "managers/subjectsmanager.h"

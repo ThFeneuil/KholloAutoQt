@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>970</width>
+    <width>1020</width>
     <height>600</height>
    </rect>
   </property>
@@ -79,8 +79,6 @@
     </widget>
    </item>
   </layout>
-  <zorder>tabWidget</zorder>
-  <zorder>pushButton_print</zorder>
  </widget>
  <resources>
   <include location="../khollo.qrc"/>
