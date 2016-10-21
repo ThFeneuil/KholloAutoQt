@@ -97,7 +97,7 @@ void MainWindow::openUsersGroupsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        usersgroupsmanager manager(&db);
+        UsersGroupsManager manager(&db);
         manager.exec();
     }
     else {

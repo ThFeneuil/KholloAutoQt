@@ -35,8 +35,7 @@ InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabas
     connect(ui->list_kholleurs, SIGNAL(itemSelectionChanged()), this, SLOT(displayTeacher()));
 }
 
-InterfaceTab::~InterfaceTab()
-{
+InterfaceTab::~InterfaceTab() {
     delete ui;
 }
 
