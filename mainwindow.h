@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QByteArray>
+#include <QTimer>
 #include "managers/studentsmanager.h"
 #include "managers/groupsmanager.h"
 #include "managers/subjectsmanager.h"
@@ -19,6 +20,7 @@
 #include "aboutitdialog.h"
 #include "contactdialog.h"
 #include "reviewdialog.h"
+#include "kscopemanager.h"
 
 namespace Ui {
 class MainWindow;
@@ -52,12 +54,17 @@ public slots:
     void createKhollo();
     void openKhollo();
     void updateWindow();
+    void record(bool start = true);
+    void updateRecord();
 
 signals:
     void triggerInterface(QDate date, int id_week);
 
 private:
     Ui::MainWindow *ui;
+    KScopeManager kscopemanager;
+    QTimer* m_timer;
+    int m_idRecord;
 };
 
 #endif // MAINWINDOW_H

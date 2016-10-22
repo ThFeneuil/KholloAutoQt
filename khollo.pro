@@ -70,7 +70,8 @@ HEADERS += \
     reviewdialog.h \
     printpdf.h \
     managers/lastchanges.h \
-    managers/updatetimeslotdialog.h
+    managers/updatetimeslotdialog.h \
+    kscopemanager.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -113,7 +114,8 @@ SOURCES += \
     reviewdialog.cpp \
     printpdf.cpp \
     managers/lastchanges.cpp \
-    managers/updatetimeslotdialog.cpp
+    managers/updatetimeslotdialog.cpp \
+    kscopemanager.cpp
 DISTFILES +=
 
 RESOURCES += \

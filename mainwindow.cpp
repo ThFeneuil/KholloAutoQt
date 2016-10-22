@@ -6,6 +6,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    m_idRecord = -1;
+
     connect(ui->action_File_Quit, SIGNAL(triggered()), this, SLOT(close()));
     connect(ui->action_DB_Students, SIGNAL(triggered()), this, SLOT(openStudentsManager()));
     connect(ui->action_DB_Groups, SIGNAL(triggered()), this, SLOT(openGroupsManager()));
@@ -243,6 +245,7 @@ void MainWindow::openHelp(){
 
 
 void MainWindow::createKhollo() {
+    record(false);
     //Try to load directory preferences
     QString pref_path;
     QFile read(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
@@ -271,104 +274,16 @@ void MainWindow::createKhollo() {
         out << dirpath;
     }
 
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(filename);
-    if (!db.open()) {
-        QMessageBox::critical(NULL, "Echec", "Impossible d'ouvrir la base de données générée...");
-        updateWindow();
-        return;
-    }
+    if(kscopemanager.createFile(filename))
+        QMessageBox::information(NULL, "Succès", "Votre kholloscope a été créé.<br />Vous pouvez dès maintenant l'utiliser. :p");
 
-    QSqlQuery qCreate(db);
-    // TABLE USERS
-    qCreate.exec("CREATE TABLE `tau_users` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`name`	TEXT NOT NULL, "
-                    "`first_name`	TEXT NOT NULL, "
-                    "`email`	TEXT NOT NULL "
-                ");");
-    // TABLE GROUPS
-    qCreate.exec("CREATE TABLE `tau_groups` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`name`	TEXT NOT NULL, "
-                    "`is_deleted`	INTEGER NOT NULL DEFAULT 0 "
-                ");");
-    // TABLE GROUPS-USERS
-    qCreate.exec("CREATE TABLE `tau_groups_users` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`id_groups`	INTEGER NOT NULL, "
-                    "`id_users`	INTEGER NOT NULL "
-                ");");
-    // TABLE SUBJECTS
-    qCreate.exec("CREATE TABLE `tau_subjects` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`name`	TEXT NOT NULL, "
-                    "`shortName`	TEXT NOT NULL, "
-                    "`color`	TEXT NOT NULL "
-                ");");
-    // TABLE TEACHERS
-    qCreate.exec("CREATE TABLE `tau_teachers` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`name`	TEXT NOT NULL, "
-                     "`id_subjects`	INTEGER NOT NULL "
-                ");");
-    // TABLE KHOLLEURS
-    qCreate.exec("CREATE TABLE `tau_kholleurs` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`name`	TEXT NOT NULL, "
-                    " `id_subjects`	INTEGER NOT NULL, "
-                    "`duration`	INTEGER NOT NULL DEFAULT 0, "
-                    "`preparation`	INTEGER NOT NULL DEFAULT 0, "
-                    "`pupils`	INTEGER NOT NULL DEFAULT 0 "
-                ");");
-    // TABLE COURSES
-    qCreate.exec("CREATE TABLE `tau_courses` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`id_subjects`	INTEGER NOT NULL, "
-                    "`time_start`	TEXT NOT NULL, "
-                    "`time_end`	TEXT NOT NULL, "
-                    "`id_groups`	INTEGER NOT NULL, "
-                    "`id_teachers`	INTEGER NOT NULL, "
-                    "`id_day`	INTEGER NOT NULL, "
-                    "`id_week`	INTEGER NOT NULL "
-                ");");
-    // TABLE TIMESLOTS
-    qCreate.exec("CREATE TABLE `tau_timeslots` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`time`	TEXT NOT NULL, "
-                    "`time_end`	TEXT NOT NULL, "
-                    "`id_kholleurs`	INTEGER NOT NULL, "
-                    "`date`	TEXT NOT NULL, "
-                    "`time_start`	TEXT NOT NULL, "
-                    "`pupils`	INTEGER NOT NULL "
-                ");");
-    // TABLE EVENTS
-    qCreate.exec("CREATE TABLE `tau_events` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`name`	TEXT NOT NULL, "
-                    "`comment`	TEXT NOT NULL, "
-                    "`start`	TEXT NOT NULL, "
-                    "`end`	TEXT NOT NULL "
-                ");");
-    // TABLE EVENTS-GROUPS
-    qCreate.exec("CREATE TABLE `tau_events_groups` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`id_events`	INTEGER NOT NULL, "
-                    "`id_groups`	INTEGER NOT NULL "
-                ");");
-    // TABLE KHOLLES
-    qCreate.exec("CREATE TABLE `tau_kholles` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`id_users`	INTEGER NOT NULL, "
-                    "`id_timeslots`	INTEGER NOT NULL "
-                ");");
-
-    QMessageBox::information(NULL, "Succès", "Votre kholloscope a été créé.<br />Vous pouvez dès maintenant l'utiliser. :p");
     updateWindow();
+    record(QSqlDatabase::database().isOpen());
     return;
 }
 
 void MainWindow::openKhollo() {
+    record(false);
     //Try to load directory preferences
     QString pref_path;
     QFile read(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
@@ -396,36 +311,9 @@ void MainWindow::openKhollo() {
         out << dirpath;
     }
 
-    // To load the DB which is on a local server
-    if(QFileInfo(fileDB).fileName() == "localhost.kscope") {
-        // Connection with the DB
-        QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-        db.setHostName("localhost");
-        db.setDatabaseName("lataupe");
-        db.setUserName("root");
-        db.setPassword("");
-        if (!db.open()) {
-            QMessageBox::critical(NULL, "Echec", "Impossible d'ouvrir la base de données (du serveur local)...");
-            updateWindow();
-            return;
-        }
-
-        QMessageBox::information(NULL, "Succès", "La base de données qui est sur le serveur local a été chargée.<br />Vous pouvez l'utiliser. :p");
-        updateWindow();
-        return;
-    }
-
-    // Open the QSQLite database
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(fileDB);
-    if (!db.open()) {
-        QMessageBox::critical(NULL, "Echec", "Impossible d'ouvrir la base de données...");
-        updateWindow();
-        return;
-    }
-
-    QMessageBox::information(NULL, "Succès", "Votre kholloscope a été chargé.<br />Vous pouvez l'utiliser. :p");
+    kscopemanager.openFile(fileDB);
     updateWindow();
+    record(QSqlDatabase::database().isOpen());
     return;
 }
 
@@ -458,4 +346,32 @@ void MainWindow::updateWindow() {
     ui->action_Kholles_Generate->setEnabled(db.isOpen());
     ui->action_Kholles_Historic->setEnabled(db.isOpen());
     ui->action_Kholles_LastChanges->setEnabled(db.isOpen());
+}
+
+void MainWindow::record(bool start) {
+    if(start) {
+        QSqlDatabase db = QSqlDatabase::database();
+        QSqlQuery qInilisation(db);
+        qInilisation.prepare("INSERT INTO `tau_record`(`date`, `minutes`) VALUES(:date, 0)");
+        qInilisation.bindValue(":date", QDate::currentDate().toString("yyyy-MM-dd"));
+        qInilisation.exec();
+        m_idRecord = qInilisation.lastInsertId().toInt();
+        if(m_idRecord >= 0) {
+            m_timer = new QTimer(this);
+            connect(m_timer, SIGNAL(timeout()), this, SLOT(updateRecord()));
+            m_timer->start(60*1000);
+        }
+    } else if(!start && m_idRecord>=0) {
+        m_idRecord = -1;
+        disconnect(m_timer, SIGNAL(timeout()), this, SLOT(updateRecord()));
+        m_timer->stop();
+    }
+}
+
+void MainWindow::updateRecord() {
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query(db);
+    query.prepare("UPDATE tau_record SET minutes = minutes + 1 WHERE id = :id_record");
+    query.bindValue(":id_record", m_idRecord);
+    query.exec();
 }
