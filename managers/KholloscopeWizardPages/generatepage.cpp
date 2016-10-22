@@ -82,7 +82,6 @@ void GeneratePage::initializePage() {
     connect(&m_watcher, SIGNAL(finished()), this, SLOT(finished()));
 
     //Start work, mostly in different thread
-    calculateProba();
     constructPoss();
     QFuture<bool> future = QtConcurrent::run(this, &GeneratePage::generate);
     m_watcher.setFuture(future);
@@ -104,7 +103,7 @@ void GeneratePage::cleanupPage() {
     disconnect(&m_watcher, SIGNAL(finished()), this, SLOT(finished()));
 
     //Clear list
-    ui->listWidget->clear();
+    ui->tableWidget->clear();
 
     //delete m_dbase;
     //QMessageBox::information(this, "OK", "cleanupPage() called...");
@@ -149,47 +148,40 @@ QList<Subject*>* GeneratePage::testAvailability() {
     return result;
 }
 
-void GeneratePage::calculateProba() {
-    //Get the input (which users have been chosen on previous page)
-    QMap<int, QList<Student*> > *input = ((KholloscopeWizard*) wizard())->get_input();
+float GeneratePage::proba(Student *user, Timeslot *timeslot) {
+    /** Calculates a score for this (user, timeslot) couple
+        Attention ! The Student and Timeslot need to have their "kholleur", "kholles", etc. properties set (in DataBase) **/
+    int kholleur_total = 0;
+    int kholles_total = 0;
+    int this_kholleur = 0;
 
-    //For every kholleur
+    float p = 0; //Insert formula here
+
+    int i;
     foreach(Kholleur* k, *m_dbase->listKholleurs()) {
-        QMap<int, float> map; //Create a new map of floats
-
-        QList<Student*> users = input->value(k->getId_subjects()); //Get the chosen users for this subject
-
-        int i, j;
-        for(i = 0; i < users.length(); i++) { //For each student
-            float p = 100; //Calculate probability here
-
-            //Get all past (and future) kholles for the same student with same kholleur
-            QList<Kholle*> *list = m_dbase->listStudents()->value(users[i]->getId())->kholles();
-
-            for(j = 0; j < list->length(); j++) {
-                if(list->at(j)->timeslot()->getId_kholleurs() == k->getId()) {
-                    //-10 for the every kholle with the same kholleur
-                    p -= 10;
-
-                    QDate kholle_date = list->at(j)->timeslot()->getDate();
-
-                    if(kholle_date >= m_date.addDays(-21) && kholle_date <= m_date.addDays(27)) //-30 if within 3 weeks
-                        p -= 30;
-
-                    if(kholle_date >= m_date.addDays(-14) && kholle_date <= m_date.addDays(20)) //-40 if within 2 weeks
-                        p -= 10;
-
-                    if(kholle_date >= m_date.addDays(-7) && kholle_date <= m_date.addDays(13)) //-50 if within a week
-                        p -= 10;
-
-                }
-            }
-
-            map.insert(users[i]->getId(), p); //Insert the new probability
-        }
-
-        proba.insert(k->getId(), map);
+        if(k->getId_subjects() == timeslot->kholleur()->getId_subjects()) //Total number of kholleurs in this subject
+            kholleur_total++;
     }
+
+    for (i = 0; i < user->kholles()->length(); i++) {
+        Timeslot* ts = user->kholles()->at(i)->timeslot();
+
+        if(ts->kholleur()->getId_subjects() == timeslot->kholleur()->getId_subjects()) //Total number of kholles in this subject for this person
+            kholles_total++;
+        if(ts->getId_kholleurs() == timeslot->getId_kholleurs()) { //If it was the same kholleur
+            this_kholleur++;
+
+            if(ts->getDate() >= m_date.addDays(-21) && ts->getDate() <= m_date.addDays(28)) { //If it was within certain time limits
+                p -= 40*pow(2, 28-abs(ts->getDate().daysTo(timeslot->getDate())));
+            }
+        }
+    }
+
+    p -= 20 * this_kholleur * kholleur_total;
+    p += 20 * kholles_total;
+    p += 1000;
+
+    return p;
 }
 
 bool GeneratePage::compatible(int id_user, Timeslot *timeslot) {
@@ -254,15 +246,16 @@ bool GeneratePage::compatible(int id_user, Timeslot *timeslot) {
     return true;
 }
 
-void GeneratePage::quickSort(QList<Timeslot *> *list, int i, int j, int id_user) {
-    /** QuickSort of a QList<Timeslot*> based on the value of the probabilities **/
+void GeneratePage::quickSort(QList<Timeslot *> *list, int i, int j, Student* user) {
+    /** QuickSort of a QList<Timeslot*> based on the value of the probabilities
+        Attention ! Student must have "kholles" and other properties set (from DataBase) **/
     if(i >= j)
         return;
 
     int pivot_index = i;
     int k;
     for(k = i+1; k <= j; k++) {
-        if((proba.value(list->at(k)->getId_kholleurs())).value(id_user) > (proba.value(list->at(pivot_index)->getId_kholleurs())).value(id_user)) {
+        if(proba(user, list->at(k)) > proba(user, list->at(pivot_index))) {
             Timeslot* pivot = list->at(pivot_index);
             list->replace(pivot_index, list->at(k));
             list->replace(k, list->at(pivot_index+1));
@@ -271,8 +264,8 @@ void GeneratePage::quickSort(QList<Timeslot *> *list, int i, int j, int id_user)
         }
     }
 
-    quickSort(list, i, pivot_index-1, id_user);
-    quickSort(list, pivot_index+1, j, id_user);
+    quickSort(list, i, pivot_index-1, user);
+    quickSort(list, pivot_index+1, j, user);
 }
 
 void GeneratePage::constructPoss() {
@@ -304,7 +297,9 @@ void GeneratePage::constructPoss() {
                     new_list.append(ts);
                 }
             }
-            quickSort(&new_list, 0, new_list.length() - 1, users[j]->getId()); //Sort the list based on probabilities
+
+            // No sorting here !
+            //quickSort(&new_list, 0, new_list.length() - 1, users[j]->getId()); //Sort the list based on probabilities
 
             /*QString string;
             int k;
@@ -376,24 +371,34 @@ void GeneratePage::resetPoss(int id_user, QMap<int, QList<Timeslot *> > *old) {
     }
 }
 
-int GeneratePage::my_count(QList<Timeslot *> list) {
-    /** Own count function, takes into account the timeslots with 0 free pupils left **/
+int GeneratePage::listMax(QList<Timeslot *> list, Student* user) {
+    /** Returns the highest probability from the list or a very high score if the list is empty
+        Attention ! Student must have "kholles" and other properties set (from DataBase) **/
     int i;
-    int counter = 0;
+    bool is_empty = true;
+    int max = 0;
 
     for(i = 0; i < list.length(); i++) {
         if(list[i]->getPupils() > 0) {
-            counter++;
+            float p = proba(user, list[i]);
+            if(is_empty || p > max)
+                max = p;
+            is_empty = false;
         }
     }
-    return counter;
+
+    if(is_empty)
+        return 1000000;
+    else
+        return max;
 }
 
-working_index *GeneratePage::findMin() {
+working_index *GeneratePage::findMax() {
     /** To find the place with least possibilities **/
-    int min = -1;
-    QList<int> s_mins;
-    QList<int> u_mins;
+    bool is_empty = true;
+    int max = -1;
+    QList<int> s_maxs;
+    QList<int> u_maxs;
 
     QList<int> s_keys = poss.keys();
     int i, j;
@@ -401,29 +406,34 @@ working_index *GeneratePage::findMin() {
         QList<int> u_keys = poss.value(s_keys[i]).keys();
 
         for(j = 0; j < u_keys.length(); j++) {
-            int count = my_count(poss.value(s_keys[i]).value(u_keys[j]));
-            if(min == -1 || count < min) {
-                min = count;
-                s_mins.clear();
-                u_mins.clear();
-                s_mins.append(s_keys[i]);
-                u_mins.append(u_keys[j]);
+            int score = listMax(poss.value(s_keys[i]).value(u_keys[j]), m_dbase->listStudents()->value(u_keys[j]));
+            if(is_empty || score > max) {
+                max = score;
+                s_maxs.clear();
+                u_maxs.clear();
+                s_maxs.append(s_keys[i]);
+                u_maxs.append(u_keys[j]);
             }
-            if(count == min) {
-                s_mins.append(s_keys[i]);
-                u_mins.append(u_keys[j]);
+            if(score == max) {
+                s_maxs.append(s_keys[i]);
+                u_maxs.append(u_keys[j]);
             }
+            is_empty = false;
         }
     }
 
+    if(is_empty) {
+        return NULL;
+    }
+
     working_index *res = (working_index*) malloc(sizeof(working_index));
-    res->min = min;
+    res->max = max;
 
     //Get random number
-    if(s_mins.length() > 0) {
-        int random_int = qrand() % s_mins.length();
-        res->current_student = u_mins[random_int];
-        res->current_subject = s_mins[random_int];
+    if(s_maxs.length() > 0) {
+        int random_int = qrand() % s_maxs.length();
+        res->current_student = u_maxs[random_int];
+        res->current_subject = s_maxs[random_int];
     }
     else {
         res->current_student = 0;
@@ -435,13 +445,13 @@ working_index *GeneratePage::findMin() {
 bool GeneratePage::generate() {
     /** Generate the Kholloscope **/
     profondeur++;
-    working_index* index = findMin(); //Get the min
+    working_index* index = findMax(); //Get the highest priority
+
     //QMessageBox::information(this, "OK", QString::number(profondeur));
     //qDebug() << QString::number(profondeur);
 
     //It is finished
-    if(index->min == -1) {
-        free(index);
+    if(index == NULL) {
         return true;
     }
 
@@ -451,7 +461,7 @@ bool GeneratePage::generate() {
     last_index = (working_index*) malloc(sizeof(working_index));
     last_index->current_student = index->current_student;
     last_index->current_subject = index->current_subject;
-    last_index->min = index->min;
+    last_index->max = index->max;
 
     //If abort needed, finish
     if(m_abort) {
@@ -460,8 +470,11 @@ bool GeneratePage::generate() {
     }
 
     QMap<int, QList<Timeslot*> > map = poss.value(index->current_subject);
-    QList<Timeslot*> loop = map.take(index->current_student); //Get possibilities
+    QList<Timeslot*> loop = map.take(index->current_student); //Get possibilities and delete them from the possibilities map
     poss.insert(index->current_subject, map);
+
+    //Sort the possibilities
+    quickSort(&loop, 0, loop.length() - 1, m_dbase->listStudents()->value(index->current_student));
 
     //QMessageBox::information(this, "OK", QString::number(index->current_student));
     //QMessageBox::information(this, "OK", QString::number(loop.length()));
@@ -526,12 +539,74 @@ void GeneratePage::abort() {
     //m_box->hide();
 }
 
+int GeneratePage::nearestKholle(Student *user, Timeslot *timeslot) {
+    /** Number of weeks to nearest Kholle with the same Kholleur. (-1) if no such Kholle
+     *  Attention ! Student and Timeslot need to have all properties set (from DataBase) **/
+
+    int id_kholleur = timeslot->getId_kholleurs();
+    int min = -1;
+    Timeslot* m = NULL;
+
+    foreach(Kholle* k, *user->kholles()) { //Find the nearest one
+        if(k->timeslot()->getId_kholleurs() == id_kholleur) {
+            int daysTo = abs(k->timeslot()->getDate().daysTo(timeslot->getDate()));
+            if(min == -1 || daysTo < min) {
+                min = daysTo;
+                m = k->timeslot();
+            }
+        }
+    }
+
+    if(min == -1)
+        return (-1);
+    else {
+        //Get the corresponding mondays to have number of weeks between the two dates
+        QDate d1 = m->getDate();
+        while(d1.dayOfWeek() != 1)
+            d1 = d1.addDays(-1);
+
+        QDate d2 = timeslot->getDate();
+        while(d2.dayOfWeek() != 1)
+            d2 = d2.addDays(-1);
+
+        return int(abs(d1.daysTo(d2)) / 7);
+    }
+}
+
 void GeneratePage::display() {
     /** To display in the list **/
-    ui->listWidget->clear();
+    ui->tableWidget->clear();
+    ui->tableWidget->setRowCount(kholloscope.length());
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     int i;
     for(i = 0; i < kholloscope.length(); i++) {
-        ui->listWidget->addItem(QString::number(kholloscope[i]->getId_students()) + ", " + QString::number(kholloscope[i]->getId_timeslots()));
+        Student* student = m_dbase->listStudents()->value(kholloscope[i]->getId_students());
+        Timeslot* timeslot = m_dbase->listTimeslots()->value(kholloscope[i]->getId_timeslots());
+        Subject* subject = timeslot->kholleur()->subject();
+        Kholleur* kholleur = timeslot->kholleur();
+
+        int weeks = nearestKholle(student, timeslot);
+        QTableWidgetItem *left = new QTableWidgetItem(student->getName() + ", " + subject->getShortName() + " :");
+
+        if(weeks == -1) {
+            QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", jamais");
+            ui->tableWidget->setItem(i, 1, right);
+            left->setIcon(QIcon(QPixmap(":/images/ok.png")));
+        }
+        else if(weeks <= 1) {
+            QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaine");
+            ui->tableWidget->setItem(i, 1, right);
+            left->setIcon(QIcon(QPixmap(":/images/error.png")));
+        }
+        else {
+            QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaines");
+            ui->tableWidget->setItem(i, 1, right);
+            if(weeks == 2)
+                left->setIcon(QIcon(QPixmap(":/images/warning.png")));
+            else
+                left->setIcon(QIcon(QPixmap(":/images/ok.png")));
+        }
+        ui->tableWidget->setItem(i, 0, left);
     }
 }
 

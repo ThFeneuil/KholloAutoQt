@@ -13,6 +13,7 @@
 #include <QPdfWriter>
 #include <QPainter>
 #include <QtConcurrentRun>
+#include <math.h>
 #include "storedData/subject.h"
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
@@ -26,7 +27,7 @@
 struct working_index {
     int current_student;
     int current_subject;
-    int min;
+    int max;
 };
 
 namespace Ui {
@@ -46,20 +47,21 @@ public:
 
     QList<Subject *> *testAvailability();
 
-    void calculateProba();
+    float proba(Student* user, Timeslot* timeslot);
 
     bool compatible(int id_user, Timeslot* timeslot);
-    void quickSort(QList<Timeslot*> *list, int i, int j, int id_user);
+    void quickSort(QList<Timeslot*> *list, int i, int j, Student *user);
     void constructPoss();
 
     QMap<int, QList<Timeslot*> > *updatePoss(int id_user, Timeslot *current);
     void resetPoss(int id_user, QMap<int, QList<Timeslot*> > *old);
 
-    int my_count(QList<Timeslot*>);
-    working_index *findMin();
+    int listMax(QList<Timeslot*>, Student*);
+    working_index *findMax();
     bool generate();
 
     void msg_display();
+    int nearestKholle(Student*, Timeslot*);
     void display();
     void displayBlocking();
 
@@ -81,7 +83,6 @@ private:
     int m_week;
     QDate m_date;
 
-    QMap<int, QMap<int, float> > proba;
     QMap<int, QMap<int, QList<Timeslot*> > > poss;
     int profondeur;
     working_index *last_index;

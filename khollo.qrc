@@ -6,5 +6,8 @@
         <file>images/nbKh1.png</file>
         <file>images/nbKh2.png</file>
         <file>images/none.png</file>
+        <file>images/error.png</file>
+        <file>images/ok.png</file>
+        <file>images/warning.png</file>
     </qresource>
 </RCC>
