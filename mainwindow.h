@@ -14,6 +14,7 @@
 #include "managers/introtimeslots.h"
 #include "managers/eventsmanager.h"
 #include "managers/kholloscopewizard.h"
+#include "managers/groupsswappingsmanager.h"
 #include "interface/interfacedialog.h"
 #include "interface/introinterface.h"
 #include "managers/lastchanges.h"
@@ -41,6 +42,7 @@ public slots:
     void openKholleursManager();
     void openUsersGroupsManager();
     void openCoursesManager();
+    void openGroupsSwappingsManager();
     void openTimeslotsManager();
     void openEventsManager();
     void openInterface();

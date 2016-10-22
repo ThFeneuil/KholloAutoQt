@@ -3,7 +3,6 @@
  *  Comment:        INTERFACE FILE
  *	Description:    Class of the dialog which asks necessary information for the interface execution
  *      The information is returned thanks to 'id_week' and 'monday' pointors
-
  */
 
 #ifndef INTROINTERFACE_H

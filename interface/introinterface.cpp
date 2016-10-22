@@ -2,7 +2,7 @@
  *	File:			(Source) introinterface.cpp
  *  Comment:        INTERFACE FILE
  *	Description:    Class of the dialog which asks necessary information for the interface execution
- *
+ *      The information is returned thanks to 'id_week' and 'monday' pointors
  */
 
 #include "introinterface.h"

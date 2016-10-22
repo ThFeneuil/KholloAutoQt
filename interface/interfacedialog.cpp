@@ -2,7 +2,6 @@
  *	File:			(Source) interfaceDialog.cpp
  *  Comment:        INTERFACE FILE
  *	Description:    Class of the dialog which contains the interface
- *
  */
 
 #include "interfacedialog.h"

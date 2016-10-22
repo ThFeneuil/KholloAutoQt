@@ -76,6 +76,7 @@
     </property>
     <addaction name="action_Schedule_Timetable"/>
     <addaction name="action_Schedule_Students_Groups"/>
+    <addaction name="action_Schedule_Swapping_Groups"/>
     <addaction name="action_Schedule_Kholles"/>
     <addaction name="action_Schedule_Events"/>
    </widget>
@@ -178,7 +179,7 @@
   </action>
   <action name="action_Schedule_Students_Groups">
    <property name="text">
-    <string>&amp;Lien élèves-groupes</string>
+    <string>&amp;Liens élèves-groupes</string>
    </property>
   </action>
   <action name="action_Schedule_Kholles">
@@ -240,6 +241,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="action_Schedule_Swapping_Groups">
+   <property name="text">
+    <string>Echange de &amp;groupes</string>
    </property>
   </action>
  </widget>
