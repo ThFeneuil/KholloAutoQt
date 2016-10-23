@@ -26,7 +26,7 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Dans la filière MP :&lt;/span&gt;&lt;br/&gt;FACKLAM Olivér&lt;span style=&quot; font-style:italic;&quot;&gt; (promo 2017)&lt;br/&gt;&lt;/span&gt;FENEUIL Thibauld&lt;span style=&quot; font-style:italic;&quot;&gt; (promo 2017)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Dans la filière MP :&lt;/span&gt;&lt;br/&gt;FACKLAM Olivér&lt;span style=&quot; font-style:italic;&quot;&gt; MP*1 (promo 2017)&lt;br/&gt;&lt;/span&gt;FENEUIL Thibauld&lt;span style=&quot; font-style:italic;&quot;&gt; MP*1 (promo 2017)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>

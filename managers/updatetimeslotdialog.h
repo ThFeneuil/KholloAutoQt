@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QDate>
+#include <QMessageBox>
 #include "storedData/timeslot.h"
 
 namespace Ui {

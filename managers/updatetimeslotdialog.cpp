@@ -7,16 +7,13 @@ UpdateTimeslotDialog::UpdateTimeslotDialog(Timeslot *slot, QWidget *parent) :
 {
     ui->setupUi(this);
     m_slot = slot;
-    m_monday = m_slot->getDate().addDays(1-m_temp_slot->getDate().dayOfWeek());
-    if(m_slot) {
-        m_temp_slot = new Timeslot();
-        m_temp_slot->setDate(m_slot->getDate());
-        m_temp_slot->setTime_start(m_slot->getTime_start());
-    } else {
-        m_temp_slot = NULL;
-    }
+    m_monday = m_slot->getDate().addDays(1-m_slot->getDate().dayOfWeek());
+    m_temp_slot = new Timeslot();
+    m_temp_slot->setDate(m_slot->getDate());
+    m_temp_slot->setTime_start(m_slot->getTime_start());
+    m_temp_slot->setIsDeleted(m_slot->isDeleted());
 
-    if(! m_temp_slot) {
+    if(m_temp_slot->isDeleted()) {
         ui->days->setCurrentIndex(0);
     } else {
         ui->hours->setTime(m_temp_slot->getTime_start());
@@ -31,25 +28,20 @@ UpdateTimeslotDialog::UpdateTimeslotDialog(Timeslot *slot, QWidget *parent) :
 UpdateTimeslotDialog::~UpdateTimeslotDialog()
 {
     delete ui;
-
-    if(m_temp_slot)
-        delete m_temp_slot;
+    delete m_temp_slot;
 }
 
 bool UpdateTimeslotDialog::updateInputs() {
     int idx = ui->days->currentIndex();
 
     if(idx) {
-        if(! m_temp_slot)
-            m_temp_slot = new Timeslot();
+        m_temp_slot->setIsDeleted(false);
         m_temp_slot->setDate(m_monday.addDays(idx-1));
         m_temp_slot->setTime_start(ui->hours->time());
 
         ui->hours->setEnabled(true);
     } else {
-        if(m_temp_slot)
-            delete m_temp_slot;
-
+        m_temp_slot->setIsDeleted(true);
         ui->hours->setEnabled(false);
     }
 
@@ -57,16 +49,17 @@ bool UpdateTimeslotDialog::updateInputs() {
 }
 
 bool UpdateTimeslotDialog::update_timeslot() {
-    int preparation = m_temp_slot->getTime().msecsSinceStartOfDay() - m_temp_slot->getTime_start().msecsSinceStartOfDay();
-    int durationKholle = m_temp_slot->getTime_end().msecsSinceStartOfDay() - m_temp_slot->getTime().msecsSinceStartOfDay();
+    int preparation = m_slot->getTime().msecsSinceStartOfDay() - m_slot->getTime_start().msecsSinceStartOfDay();
+    int durationKholle = m_slot->getTime_end().msecsSinceStartOfDay() - m_slot->getTime().msecsSinceStartOfDay();
 
     m_slot->setDate(m_temp_slot->getDate());
-    m_slot->setTime_start(m_temp_slot->getTime_start());
-    m_slot->setTime(m_slot->getTime().addMSecs(preparation));
-    m_slot->setTime_end(m_slot->getTime().addMSecs(preparation + durationKholle));
+    m_slot->setTime_start(ui->hours->time());
+    m_slot->setTime(m_slot->getTime_start().addMSecs(preparation));
+    m_slot->setTime_end(m_slot->getTime_start().addMSecs(preparation + durationKholle));
+
+    m_slot->setIsDeleted(m_temp_slot->isDeleted());
 
     accept();
-
     return true;
 }
 

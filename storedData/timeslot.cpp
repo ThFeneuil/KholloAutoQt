@@ -51,6 +51,10 @@ Kholleur* Timeslot::kholleur() const {
     return m_kholleur;
 }
 
+bool Timeslot::isDeleted() const {
+    return m_is_deleted;
+}
+
 
 //Setters
 void Timeslot::setId(int id) {
@@ -86,4 +90,8 @@ void Timeslot::setArea(QRect* area) {
 }
 void Timeslot::setKholleur(Kholleur* kll) {
     m_kholleur = kll;
+}
+
+void Timeslot::setIsDeleted(bool is_deleted) {
+    m_is_deleted = is_deleted;
 }

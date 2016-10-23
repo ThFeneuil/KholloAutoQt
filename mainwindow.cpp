@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_Help, SIGNAL(triggered()), this, SLOT(openHelp()));
     connect(ui->action_AboutIt, SIGNAL(triggered()), this, SLOT(openAboutIt()));
 
+
     connect(ui->action_File_Create, SIGNAL(triggered()), this, SLOT(createKhollo()));
     connect(ui->action_File_Open, SIGNAL(triggered()), this, SLOT(openKhollo()));
 
@@ -235,11 +236,11 @@ void MainWindow::openLastChanges() {
     QSqlDatabase db = QSqlDatabase::database();
 
     if(db.isOpen()) {
+        int id_week = -1;
         QDate monday;
-        IntroTimeslots intro(&monday);
-        if(intro.exec() == IntroTimeslots::Accepted) {
-            //Open TimeslotsManager with this date and DB connection
-            LastChanges manager(&db, &monday);
+        IntroInterface intro(&id_week, &monday, this);
+        if(intro.exec() == IntroInterface::Accepted) {
+            LastChanges manager(&db, id_week, &monday, this);
             manager.exec();
         }
     }
