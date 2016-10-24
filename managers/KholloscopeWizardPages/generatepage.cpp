@@ -10,15 +10,14 @@ GeneratePage::GeneratePage(QSqlDatabase *db, QWidget *parent) :
     //DB
     m_db = db;
 
-    //Create DataBase object
-    m_dbase = new DataBase(m_db);
-
     //Create message
     m_box = new QMessageBox(QMessageBox::Information, "Génération automatique", "Génération en cours. Veuillez patienter...",
                             QMessageBox::Cancel, this);
 
     //Set variables
-    last_index = NULL;
+    last_index.current_student = -1; //Set to impossible value
+    log_file = NULL;
+    m_dbase = NULL;
 
     //Pointer to MainWindow
     m_window = parent;
@@ -29,12 +28,15 @@ GeneratePage::~GeneratePage() {
     m_watcher.waitForFinished();
 
     delete ui;
-    delete m_dbase;
+
+    if(m_dbase != NULL)
+        delete m_dbase;
+
     delete m_box;
     freeKholles();
 
-    if(last_index != NULL)
-        free(last_index);
+    /*if(last_index != NULL)
+        free(last_index);*/
 
     //QMessageBox::information(this, "OK", "destructor called...");
 }
@@ -59,7 +61,8 @@ void GeneratePage::initializePage() {
     freeKholles();
 
     //Reinitialise DataBase object
-    delete m_dbase;
+    if(m_dbase != NULL)
+        delete m_dbase;
     m_dbase = new DataBase(m_db);
     //m_dbase->setConditionTimeslots("date>=\"" + m_date.toString("yyyy-MM-dd") + "\" AND date<=\"" + m_date.addDays(6).toString("yyyy-MM-dd") + "\"");
     m_dbase->load();
@@ -81,8 +84,17 @@ void GeneratePage::initializePage() {
     //Connect watcher to slot...
     connect(&m_watcher, SIGNAL(finished()), this, SLOT(finished()));
 
-    //Start work, mostly in different thread
+    //Open log file
+    log_file = new QFile(QCoreApplication::applicationDirPath() + QDir::separator() + "gen_log.txt");
+    if(!log_file->open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)) {
+        delete log_file;
+        log_file = NULL;
+    }
+
+    //Prepare the table
     constructPoss();
+
+    //Start work in separate thread
     QFuture<bool> future = QtConcurrent::run(this, &GeneratePage::generate);
     m_watcher.setFuture(future);
 
@@ -269,6 +281,9 @@ void GeneratePage::quickSort(QList<Timeslot *> *list, int i, int j, Student* use
 }
 
 void GeneratePage::constructPoss() {
+    //Create stream around log_file
+    QTextStream out(log_file);
+
     //Get selected subjects
     QList<Subject*> *selected_subjects = ((KholloscopeWizard*) wizard())->get_assoc_subjects();
 
@@ -295,6 +310,12 @@ void GeneratePage::constructPoss() {
                         && ts->getDate() <= m_date.addDays(6)
                         && compatible(users[j]->getId(), ts)) { //Add the compatible timeslots
                     new_list.append(ts);
+
+                    //Log the probability for this timeslot
+                    if(log_file != NULL) {
+                        out << users[j]->getName() << ", " << selected_subjects->at(i)->getShortName() << ", " << ts->kholleur()->getName() << ", " << ts->getId() << " : ";
+                        out << proba(m_dbase->listStudents()->value(users[j]->getId()), ts) << "\n";
+                    }
                 }
             }
 
@@ -456,12 +477,12 @@ bool GeneratePage::generate() {
     }
 
     //Copy current index to the global variable
-    if(last_index != NULL)
-        free(last_index);
-    last_index = (working_index*) malloc(sizeof(working_index));
-    last_index->current_student = index->current_student;
-    last_index->current_subject = index->current_subject;
-    last_index->max = index->max;
+    /*if(last_index != NULL)
+        free(last_index);*/
+    //last_index = (working_index*) malloc(sizeof(working_index));
+    last_index.current_student = index->current_student;
+    last_index.current_subject = index->current_subject;
+    last_index.max = index->max;
 
     //If abort needed, finish
     if(m_abort) {
@@ -530,6 +551,11 @@ void GeneratePage::finished() {
 
     if(!m_watcher.future().result())
         displayBlocking();
+
+    if(log_file != NULL) {
+        delete log_file;
+        log_file = NULL;
+    }
 }
 
 void GeneratePage::abort() {
@@ -621,13 +647,13 @@ void GeneratePage::msg_display() {
 }
 
 void GeneratePage::displayBlocking() {
-    if(last_index == NULL)
+    if(last_index.current_student == -1)
         return;
 
     QString message = "La génération a été interrompue ou n’a pas pu être finie. Le dernier élément sur lequel a travaillé le logiciel est le couple suivant : <br />";
-    message += "Matière : <strong>" + m_dbase->listSubjects()->value(last_index->current_subject)->getName() + "</strong> <br />";
-    message += "Élève : <strong>" + m_dbase->listStudents()->value(last_index->current_student)->getName() + ", "
-            + m_dbase->listStudents()->value(last_index->current_student)->getFirst_name() + "</strong> <br />";
+    message += "Matière : <strong>" + m_dbase->listSubjects()->value(last_index.current_subject)->getName() + "</strong> <br />";
+    message += "Élève : <strong>" + m_dbase->listStudents()->value(last_index.current_student)->getName() + ", "
+            + m_dbase->listStudents()->value(last_index.current_student)->getFirst_name() + "</strong> <br />";
     message += "Il est donc probable qu’il y ait une incohérence au niveau de cette matière ou de cet/cette élève. "
                "Veuillez vérifier les horaires de kholles, groupes, emplois du temps correspondants.";
 

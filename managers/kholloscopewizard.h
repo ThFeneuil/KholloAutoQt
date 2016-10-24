@@ -28,7 +28,6 @@ public:
     ~KholloscopeWizard();
 
     QList<Subject *> *get_assoc_subjects();
-    void set_assoc_subjects(QList<Subject*> *list);
 
     void load_students();
     void free_students();
@@ -38,7 +37,6 @@ public:
     void free_subjects();
     QList<Subject*> *get_subjects();
 
-    void set_input(QMap<int, QList<Student*> > *input);
     QMap<int, QList<Student*> > *get_input();
 
 private:
