@@ -627,7 +627,7 @@ void GeneratePage::display() {
         else {
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaines");
             ui->tableWidget->setItem(i, 1, right);
-            if(weeks == 2)
+            if(weeks <= 3)
                 left->setIcon(QIcon(QPixmap(":/images/warning.png")));
             else
                 left->setIcon(QIcon(QPixmap(":/images/ok.png")));
