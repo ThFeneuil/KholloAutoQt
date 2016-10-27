@@ -11,7 +11,7 @@ ReviewDialog::ReviewDialog(QSqlDatabase *db, QWidget *parent) :
 
     // Initialisation ComboBox
     ui->comboBox_select->addItem("Étudiant", 0);
-    ui->comboBox_select->addItem("Kholeur", 1);
+    ui->comboBox_select->addItem("Kholleur", 1);
     connect(ui->comboBox_select, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCol1()));
 
     // Initialisation Lists

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>493</height>
+    <width>507</width>
+    <height>550</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,6 +37,13 @@
           <widget class="QComboBox" name="comboBox_kholleurs"/>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic; color:#ff0000;&quot;&gt;Si vous changez d'enseignant, vous perdrez toutes les modifications non validées.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QListWidget" name="list_timeslots">
@@ -171,13 +178,6 @@
         </layout>
        </item>
       </layout>
-      <zorder>label</zorder>
-      <zorder></zorder>
-      <zorder>list_timeslots</zorder>
-      <zorder>label_2</zorder>
-      <zorder>tableWidget_student</zorder>
-      <zorder>label_3</zorder>
-      <zorder></zorder>
      </widget>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
@@ -187,7 +187,7 @@
        <item>
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;Vous avez eu un problème de génération ?&lt;br/&gt;Vous souhaitez recommercer à partir de zéro le kholloscope de la semaine ?&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; color:#005500;&quot;&gt;Avec les outils ci-dessous, vous pourrez supprimer les kholles de la semaine...&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;Vous avez eu un problème de génération ?&lt;br/&gt;Vous souhaitez recommencer à partir de zéro le kholloscope de la semaine ?&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; color:#005500;&quot;&gt;Avec les outils ci-dessous, vous pourrez supprimer les kholles de la semaine...&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -330,22 +330,6 @@
  <resources/>
  <connections>
   <connection>
-   <sender>pushButton_close</sender>
-   <signal>clicked()</signal>
-   <receiver>LastChanges</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>429</x>
-     <y>456</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>461</x>
-     <y>400</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>pushButton_close_2</sender>
    <signal>clicked()</signal>
    <receiver>LastChanges</receiver>
@@ -358,6 +342,22 @@
     <hint type="destinationlabel">
      <x>496</x>
      <y>225</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_close</sender>
+   <signal>clicked()</signal>
+   <receiver>LastChanges</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>429</x>
+     <y>456</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>461</x>
+     <y>400</y>
     </hint>
    </hints>
   </connection>

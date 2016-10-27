@@ -7,8 +7,6 @@ LastChanges::LastChanges(QSqlDatabase *db, int id_week, QDate *monday, QWidget *
 {
     ui->setupUi(this);
 
-    //QMessageBox::information(NULL, "INFO", monday->toString("yyyy-MM-dd"));
-
     // Initialisation
     m_db = db;
     m_monday = monday;
@@ -42,7 +40,10 @@ LastChanges::LastChanges(QSqlDatabase *db, int id_week, QDate *monday, QWidget *
 
     connect(ui->comboBox_kholleurs, SIGNAL(currentIndexChanged(int)), this, SLOT(change_timeslotsList()));
     connect(ui->list_timeslots, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(change_timeslots(QListWidgetItem*)));
+    connect(ui->tableWidget_student, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(change_status_student(QTableWidgetItem*)));
 
+    connect(ui->pushButton_valid, SIGNAL(clicked(bool)), this, SLOT(save_timeslotsChanges()));
+    connect(ui->pushButton_valid_interface, SIGNAL(clicked(bool)), this, SLOT(save_timeslotsChanges_Interface()));
     connect(ui->pushButton_reset, SIGNAL(clicked(bool)), this, SLOT(change_timeslotsList()));
     change_timeslotsList();
 
@@ -61,18 +62,14 @@ LastChanges::LastChanges(QSqlDatabase *db, int id_week, QDate *monday, QWidget *
 LastChanges::~LastChanges()
 {
     delete ui;
-    free_kholleurs();
-}
-
-bool LastChanges::free_kholleurs() {
-    /** To free memories with kholleurs **/
+    // To free memories with kholleurs
     while (!queue_displayedKholleurs.isEmpty())
         delete queue_displayedKholleurs.dequeue();
-    return true;
+    free_timeslots();
 }
 
 bool LastChanges::free_timeslots() {
-    /** To free memories with kholleurs **/
+    /** To free memories with timeslots **/
     while (!queue_displayedTimeslots.isEmpty()) {
         TimeslotChg* tsChg= queue_displayedTimeslots.dequeue();
         delete tsChg->start;
@@ -82,29 +79,23 @@ bool LastChanges::free_timeslots() {
     return true;
 }
 
-bool LastChanges::free_students() {
-    /** To free memories with kholleurs **/
-    while (!queue_displayedStudents.isEmpty())
-        delete queue_displayedStudents.dequeue();
-    return true;
-}
-
 bool LastChanges::change_timeslots(QListWidgetItem *item) {
     TimeslotChg* tsChg = (TimeslotChg*) item->data(Qt::UserRole).toLongLong();
     UpdateTimeslotDialog dialog(tsChg->end);
     dialog.exec();
 
-    update_timeslotsList();
+    update_timeslotsList(tsChg->start->getId());
     return true;
 }
 
 bool LastChanges::change_timeslotsList() {
+    // Cleaning
     free_timeslots();
     ui->list_timeslots->clear();
+    m_students.clear();
+
+    // Get the kholleur
     Kholleur* khll = (Kholleur*) ui->comboBox_kholleurs->currentData().toLongLong();
-
-    //QMessageBox::information(NULL, "INFO", m_monday->toString("yyyy-MM-dd"));
-
     // Get the list of timeslots
     QSqlQuery query(*m_db);
     query.prepare("SELECT id, time_start, time, time_end, id_kholleurs, date, pupils FROM tau_timeslots "
@@ -144,6 +135,33 @@ bool LastChanges::change_timeslotsList() {
                 + tsChg->start->getTime_start().toString("HH:mm") + " >> " + tsChg->start->getTime().toString("HH:mm") + " >> " + tsChg->start->getTime_end().toString("HH:mm")
                 + ", " + QString::number(tsChg->start->getPupils()) + (tsChg->start->getPupils() <= 1 ? " élève" : " élèves"), ui->list_timeslots);
         item->setData(Qt::UserRole, (qulonglong) tsChg);
+
+        QSqlQuery queryStudents(*m_db);
+        queryStudents.prepare("SELECT S.`id`, S.`name`, S.`first_name`, S.`email` "
+                      "FROM `tau_kholles` AS K "
+                      "JOIN `tau_users` AS S "
+                        "ON K.`id_users` = S.`id` "
+                      "WHERE K.`id_timeslots` = :id_timeslots "
+                      "ORDER BY S.`name`, S.`first_name`");
+        queryStudents.bindValue(":id_timeslots", tsChg->start->getId());
+        queryStudents.exec();
+
+        while(queryStudents.next()) {
+            Student* stdnt = new Student();
+            stdnt->setId(queryStudents.value(0).toInt());
+            stdnt->setName(queryStudents.value(1).toString());
+            stdnt->setFirst_name(queryStudents.value(2).toString());
+            stdnt->setEmail(queryStudents.value(3).toString());
+
+            StudentKholleChg* kholleChg = new StudentKholleChg();
+            kholleChg->stdnt = stdnt;
+            kholleChg->tsChg = tsChg;
+            kholleChg->numTs = num;
+            kholleChg->statusMessage = compatible(stdnt, tsChg->end);
+            kholleChg->status = (kholleChg->statusMessage == "") ? Keep : NotKeep;
+
+            m_students.append(kholleChg);
+        }
     }
 
     update_students();
@@ -151,7 +169,7 @@ bool LastChanges::change_timeslotsList() {
     return true;
 }
 
-bool LastChanges::update_timeslotsList() {
+bool LastChanges::update_timeslotsList(int idTs) {
     for(int i=0; i<ui->list_timeslots->count(); i++) {
         QListWidgetItem* item = ui->list_timeslots->item(i);
         TimeslotChg* tsChg = (TimeslotChg*) item->data(Qt::UserRole).toLongLong();
@@ -169,75 +187,53 @@ bool LastChanges::update_timeslotsList() {
         }
     }
 
-    update_students();
+    update_students(idTs);
     return true;
 }
 
-bool LastChanges::update_students() {
-    free_students();
+bool LastChanges::update_students(int idTs) {
     ui->tableWidget_student->clear();
-    int nbRows = 0;
-    // Je sais c'est horrible...
-    for(int i=0; i<ui->list_timeslots->count(); i++) {
-        QListWidgetItem* item = ui->list_timeslots->item(i);
-        TimeslotChg* tsChg = (TimeslotChg*) item->data(Qt::UserRole).toLongLong();
-        QSqlQuery query(*m_db);
-        query.prepare("SELECT COUNT(*) "
-                      "FROM `tau_kholles` AS K "
-                      "JOIN `tau_users` AS S "
-                        "ON K.`id_users` = S.`id` "
-                      "WHERE K.`id_timeslots` = :id_timeslots "
-                      "ORDER BY S.`name`, S.`first_name`");
-        query.bindValue(":id_timeslots", tsChg->start->getId());
-        query.exec();
-        if(query.next())
-            nbRows += query.value(0).toInt();
-    }
-    ui->tableWidget_student->setRowCount(nbRows);
+    ui->tableWidget_student->setRowCount(m_students.count());
     ui->tableWidget_student->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    int numStudent = 0;
-    for(int i=0; i<ui->list_timeslots->count(); i++) {
-        QListWidgetItem* item = ui->list_timeslots->item(i);
-        TimeslotChg* tsChg = (TimeslotChg*) item->data(Qt::UserRole).toLongLong();
-        Timeslot* initial = tsChg->start;
-        Timeslot* final = tsChg->end;
-        QSqlQuery query(*m_db);
-        query.prepare("SELECT S.`id`, S.`name`, S.`first_name`, S.`email` "
-                      "FROM `tau_kholles` AS K "
-                      "JOIN `tau_users` AS S "
-                        "ON K.`id_users` = S.`id` "
-                      "WHERE K.`id_timeslots` = :id_timeslots "
-                      "ORDER BY S.`name`, S.`first_name`");
-        query.bindValue(":id_timeslots", initial->getId());
-        query.exec();
-        //QMessageBox::information(NULL, QString::number(tsChg->start->getId()), query.lastError().text());
 
-        while(query.next()) {
-            //QMessageBox::information(NULL, QString::number(tsChg->start->getId()), "OK");
-            Student* stdnt = new Student();
-            stdnt->setId(query.value(0).toInt());
-            stdnt->setName(query.value(1).toString());
-            stdnt->setFirst_name(query.value(2).toString());
-            stdnt->setEmail(query.value(3).toString());
+    for(int numRow=0; numRow<m_students.count(); numRow++) {
+        Timeslot* final = m_students[numRow]->tsChg->end;
 
-            QTableWidgetItem* left = new QTableWidgetItem(stdnt->getName() + " " + stdnt->getFirst_name() + " #"+QString::number(i));
-            QTableWidgetItem* right = new QTableWidgetItem();
-            if(final->isDeleted())
+        QTableWidgetItem* left = new QTableWidgetItem(m_students[numRow]->stdnt->getName() + " " + m_students[numRow]->stdnt->getFirst_name() + " #"+QString::number(m_students[numRow]->numTs));
+        QTableWidgetItem* right = new QTableWidgetItem();
+
+        if(idTs < 0 || idTs == m_students[numRow]->tsChg->start->getId()) {
+            if(final->isDeleted()) {
                 left->setIcon(QIcon(QPixmap(":/images/warning.png")));
-            else{
-                QString res = compatible(stdnt, final);
-                if(res == "")
+                m_students[numRow]->status = ImpossibleToKeep;
+            } else {
+                m_students[numRow]->statusMessage = compatible(m_students[numRow]->stdnt, final);
+                if(m_students[numRow]->statusMessage == "") {
                     left->setIcon(QIcon(QPixmap(":/images/ok.png")));
-                else {
+                    m_students[numRow]->status = Keep;
+                } else {
                     left->setIcon(QIcon(QPixmap(":/images/error.png")));
-                    right->setText(res);
+                    right->setText(m_students[numRow]->statusMessage);
+                    m_students[numRow]->status = NotKeep;
                 }
             }
-            delete stdnt;
-            ui->tableWidget_student->setItem(numStudent, 0, left);
-            ui->tableWidget_student->setItem(numStudent, 1, right);
-            numStudent++;
+        } else {
+            switch(m_students[numRow]->status) {
+            case Keep:
+                left->setIcon(QIcon(QPixmap(":/images/ok.png")));
+                break;
+            case NotKeep:
+                left->setIcon(QIcon(QPixmap(":/images/error.png")));
+                break;
+            case ImpossibleToKeep:
+                left->setIcon(QIcon(QPixmap(":/images/warning.png")));
+                break;
+            }
+            right->setText(m_students[numRow]->statusMessage);
         }
+
+        ui->tableWidget_student->setItem(numRow, 0, left);
+        ui->tableWidget_student->setItem(numRow, 1, right);
     }
 
     return true;
@@ -356,6 +352,95 @@ QString LastChanges::compatible(Student* stdnt, Timeslot *timeslot) {
     return "";
 }
 
+bool LastChanges::save_timeslotsChanges() {
+    int res = QMessageBox::warning(NULL, "Avertissement", "Vous êtes sur le point d'enregistrer toutes les modifications. <br />"
+                                                          "Toutes les kholles avec le status d'avertissement ou d'erreur seront supprimées. <br />"
+                                                          "Voulez-vous continuez ?", QMessageBox::Yes | QMessageBox::Cancel);
+    if(res != QMessageBox::Yes)
+        return false;
+
+    QSqlQuery query(*m_db);
+    int numStudents = 0;
+    for(int i=0; i<ui->list_timeslots->count(); i++) {
+        QListWidgetItem* item = ui->list_timeslots->item(i);
+        TimeslotChg* tsChg = (TimeslotChg*) item->data(Qt::UserRole).toLongLong();
+        Timeslot* initial = tsChg->start;
+        Timeslot* final = tsChg->end;
+
+        query.prepare("SELECT S.`id` "
+                      "FROM `tau_kholles` AS K "
+                      "JOIN `tau_users` AS S "
+                        "ON K.`id_users` = S.`id` "
+                      "WHERE K.`id_timeslots` = :id_timeslots "
+                      "ORDER BY S.`name`, S.`first_name`");
+        query.bindValue(":id_timeslots", initial->getId());
+        query.exec();
+
+        while(query.next()) {
+            int idStudent = query.value(0).toInt();
+            if(final->isDeleted() || m_students[numStudents]->status != Keep) {
+                QSqlQuery queryRemove(*m_db);
+                queryRemove.prepare("DELETE FROM `tau_kholles` WHERE `id_timeslots` = :id_timeslots AND `id_users` = :id_users");
+                queryRemove.bindValue(":id_timeslots", final->getId());
+                queryRemove.bindValue(":id_users", idStudent);
+                queryRemove.exec();
+            }
+
+            numStudents++;
+        }
+
+        if(final->isDeleted()) {
+            query.prepare("DELETE FROM `tau_kholles` WHERE `id_timeslots` = :id_timeslots");
+            query.bindValue(":id", final->getId());
+            query.exec();
+            query.prepare("DELETE FROM `tau_timeslots` WHERE `id` = :id");
+            query.bindValue(":id", final->getId());
+            query.exec();
+        } else {
+            query.prepare("UPDATE `tau_timeslots` SET `date`=:date, `time_start`=:time_start, `time`=:time, `time_end`=:time_end WHERE `id`=:id");
+            query.bindValue(":date", final->getDate().toString("yyyy-MM-dd"));
+            query.bindValue(":time_start", final->getTime_start().toString("hh:mm:ss"));
+            query.bindValue(":time", final->getTime().toString("hh:mm:ss"));
+            query.bindValue(":time_end", final->getTime_end().toString("hh:mm:ss"));
+            query.bindValue(":id", final->getId());
+            query.exec();
+        }
+    }
+
+    change_timeslotsList();
+    QMessageBox::information(NULL, "Succès", "Toutes les changements d'horaires de kholles ont été sauvegardés...");
+    return true;
+}
+
+bool LastChanges::change_status_student(QTableWidgetItem* item) {
+    int row = item->row();
+    switch(m_students[row]->status) {
+    case Keep:
+        m_students[row]->status = NotKeep;
+        ui->tableWidget_student->item(row, 0)->setIcon(QIcon(QPixmap(":/images/error.png")));
+        break;
+    case NotKeep:
+        m_students[row]->status = Keep;
+        ui->tableWidget_student->item(row, 0)->setIcon(QIcon(QPixmap(":/images/ok.png")));
+        break;
+    case ImpossibleToKeep:
+        QMessageBox::critical(NULL, "Echec", "Impossible de garder cette kholle. L'horaire de kholle a été supprimé...");
+        break;
+    default:
+        break;
+    }
+    return true;
+}
+
+bool LastChanges::save_timeslotsChanges_Interface() {
+    if(save_timeslotsChanges()) {
+        InterfaceDialog dialog(m_db, m_id_week, *m_monday);
+        dialog.exec();
+        change_timeslotsList();
+    }
+    return true;
+}
+
 bool LastChanges::update_khollesManager() {
     ui->comboBox_subjects->setEnabled(ui->radioButton_subject->isChecked());
     return true;
@@ -412,3 +497,4 @@ bool LastChanges::delete_kholles() {
 
     return true;
 }
+
