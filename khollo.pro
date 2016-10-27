@@ -29,7 +29,8 @@ FORMS += \
     reviewdialog.ui \
     managers/lastchanges.ui \
     managers/updatetimeslotdialog.ui \
-    managers/groupsswappingsmanager.ui
+    managers/groupsswappingsmanager.ui \
+    notepad.ui
 
 HEADERS += \
     mainwindow.h \
@@ -73,7 +74,8 @@ HEADERS += \
     managers/lastchanges.h \
     managers/updatetimeslotdialog.h \
     kscopemanager.h \
-    managers/groupsswappingsmanager.h
+    managers/groupsswappingsmanager.h \
+    notepad.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -118,7 +120,8 @@ SOURCES += \
     managers/lastchanges.cpp \
     managers/updatetimeslotdialog.cpp \
     kscopemanager.cpp \
-    managers/groupsswappingsmanager.cpp
+    managers/groupsswappingsmanager.cpp \
+    notepad.cpp
 DISTFILES +=
 
 RESOURCES += \

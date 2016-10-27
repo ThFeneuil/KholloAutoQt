@@ -361,13 +361,14 @@ bool LastChanges::save_timeslotsChanges() {
 
     QSqlQuery query(*m_db);
     int numStudents = 0;
+    QString textNotepad = "";
     for(int i=0; i<ui->list_timeslots->count(); i++) {
         QListWidgetItem* item = ui->list_timeslots->item(i);
         TimeslotChg* tsChg = (TimeslotChg*) item->data(Qt::UserRole).toLongLong();
         Timeslot* initial = tsChg->start;
         Timeslot* final = tsChg->end;
 
-        query.prepare("SELECT S.`id` "
+        query.prepare("SELECT S.`id`, S.`name`, S.`first_name` "
                       "FROM `tau_kholles` AS K "
                       "JOIN `tau_users` AS S "
                         "ON K.`id_users` = S.`id` "
@@ -377,13 +378,19 @@ bool LastChanges::save_timeslotsChanges() {
         query.exec();
 
         while(query.next()) {
-            int idStudent = query.value(0).toInt();
+            Student stdnt;
+            stdnt.setId(query.value(0).toInt());
+            stdnt.setName(query.value(1).toString());
+            stdnt.setFirst_name(query.value(2).toString());
+
             if(final->isDeleted() || m_students[numStudents]->status != Keep) {
                 QSqlQuery queryRemove(*m_db);
                 queryRemove.prepare("DELETE FROM `tau_kholles` WHERE `id_timeslots` = :id_timeslots AND `id_users` = :id_users");
                 queryRemove.bindValue(":id_timeslots", final->getId());
-                queryRemove.bindValue(":id_users", idStudent);
+                queryRemove.bindValue(":id_users", stdnt.getId());
                 queryRemove.exec();
+
+                textNotepad += stdnt.getName() + " " + stdnt.getFirst_name() + ": kholle avec " + ui->comboBox_kholleurs->currentText() + "\n";
             }
 
             numStudents++;
@@ -408,7 +415,14 @@ bool LastChanges::save_timeslotsChanges() {
     }
 
     change_timeslotsList();
-    QMessageBox::information(NULL, "Succès", "Toutes les changements d'horaires de kholles ont été sauvegardés...");
+    res = QMessageBox::information(NULL, "Succès", "Toutes les changements d'horaires de kholles ont été sauvegardés.<br />"
+                                "Voulez-vous garder les kholles supprimées dans un bloc-note ?", QMessageBox::Yes | QMessageBox::No);
+    if(res == QMessageBox::Yes) {
+        if(textNotepad == "")
+            textNotepad = "Aucune kholle n'a été supprimée...";
+        Notepad::add("Outils de dépannage", "====== Outis de dépannage (" + QTime::currentTime().toString("hh:mm:ss") + ") ======\n" + textNotepad);
+    }
+
     return true;
 }
 

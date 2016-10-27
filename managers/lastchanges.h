@@ -12,7 +12,7 @@
 #include "storedData/kholleur.h"
 #include "storedData/timeslot.h"
 #include "storedData/student.h"
-
+#include "notepad.h"
 
 namespace Ui {
 class LastChanges;
