@@ -9,6 +9,8 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
 #include <QStandardPaths>
 #include <QPdfWriter>
 #include <QPainter>
@@ -77,6 +79,7 @@ private:
     QObject *m_window;
     QSqlDatabase *m_db;
     DataBase *m_dbase;
+    QFile *log_file;
     QMap<int, Timeslot*> timeslots;
     QMap<int, Subject*> subjects;
     QMap<int, Kholleur*> kholleurs;
@@ -85,7 +88,7 @@ private:
 
     QMap<int, QMap<int, QList<Timeslot*> > > poss;
     int profondeur;
-    working_index *last_index;
+    working_index last_index;
     QList<Kholle*> kholloscope;
 
     bool m_abort;

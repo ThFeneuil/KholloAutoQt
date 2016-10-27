@@ -16,7 +16,7 @@ KholloscopeWizard::KholloscopeWizard(QSqlDatabase *db, QWidget *parent) :
     m_subjects = new QList<Subject*>();
     load_subjects();
     m_input = new QMap<int, QList<Student*> >;
-    assoc_subjects = NULL;
+    assoc_subjects = new QList<Subject*>();
 
     //Add pages
     addPage(new SubjectsPage(db));
@@ -29,9 +29,7 @@ KholloscopeWizard::~KholloscopeWizard()
     delete ui;
     free_subjects();
     free_students();
-    if(assoc_subjects != NULL) {
-        delete assoc_subjects;
-    }
+    delete assoc_subjects;
     delete m_students;
     delete m_subjects;
     delete m_input;
@@ -39,10 +37,6 @@ KholloscopeWizard::~KholloscopeWizard()
 
 QList<Subject*>* KholloscopeWizard::get_assoc_subjects() {
     return assoc_subjects;
-}
-
-void KholloscopeWizard::set_assoc_subjects(QList<Subject*> *list) {
-    assoc_subjects = list;
 }
 
 void KholloscopeWizard::load_students() {
@@ -100,10 +94,6 @@ void KholloscopeWizard::free_subjects() {
 
 QList<Subject*>* KholloscopeWizard::get_subjects() {
     return m_subjects;
-}
-
-void KholloscopeWizard::set_input(QMap<int, QList<Student*> > *input) {
-    m_input = input;
 }
 
 QMap<int, QList<Student*> > *KholloscopeWizard::get_input() {

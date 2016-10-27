@@ -10,7 +10,6 @@ UsersPage::UsersPage(QSqlDatabase *db, QWidget *parent) :
 
     //DB
     m_db = db;
-    list_selected_subjects = new QList<Subject*>();
 }
 
 UsersPage::~UsersPage()
@@ -21,6 +20,8 @@ UsersPage::~UsersPage()
 void UsersPage::initializePage() {
     //Clear the page
     ui->tabWidget->clear();
+
+    list_selected_subjects = ((KholloscopeWizard*) wizard())->get_assoc_subjects();
 
     //Get the selected subjects
     get_selected_subjects();
@@ -35,7 +36,6 @@ void UsersPage::initializePage() {
 
         connect(list, SIGNAL(itemSelectionChanged()), this, SLOT(selection_changed()));
     }
-    ((KholloscopeWizard*) wizard())->set_assoc_subjects(list_selected_subjects);
 
     QDate nextMonday = QDate::currentDate();
     while(nextMonday.dayOfWeek() != 1)
