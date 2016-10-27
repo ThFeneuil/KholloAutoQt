@@ -45,7 +45,7 @@ void MainWindow::openStudentsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        StudentsManager manager(&db);
+        StudentsManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -59,7 +59,7 @@ void MainWindow::openGroupsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        GroupsManager manager(&db);
+        GroupsManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -73,7 +73,7 @@ void MainWindow::openSubjectsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        SubjectsManager manager(&db);
+        SubjectsManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -87,7 +87,7 @@ void MainWindow::openKholleursManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        KholleursManager manager(&db);
+        KholleursManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -101,7 +101,7 @@ void MainWindow::openUsersGroupsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        UsersGroupsManager manager(&db);
+        UsersGroupsManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -115,7 +115,7 @@ void MainWindow::openCoursesManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        CoursesManager manager(&db);
+        CoursesManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -129,7 +129,7 @@ void MainWindow::openGroupsSwappingsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        GroupsSwappingsManager manager(&db);
+        GroupsSwappingsManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -144,10 +144,10 @@ void MainWindow::openTimeslotsManager() {
     if(db.isOpen()) {
         // Open the manager
         QDate monday;
-        IntroTimeslots intro(&monday);
+        IntroTimeslots intro(&monday, this);
         if(intro.exec() == IntroTimeslots::Accepted) {
             //Open TimeslotsManager with this date and DB connection
-            TimeslotsManager manager(&db, monday);
+            TimeslotsManager manager(&db, monday, this);
             manager.exec();
         }
     }
@@ -162,7 +162,7 @@ void MainWindow::openEventsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        EventsManager manager(&db);
+        EventsManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -223,7 +223,7 @@ void MainWindow::openReview() {
 
     if(db.isOpen()) {
         // Open the manager
-        ReviewDialog dialog(&db);
+        ReviewDialog dialog(&db, this);
         dialog.exec();
     }
     else {
@@ -250,12 +250,12 @@ void MainWindow::openLastChanges() {
 }
 
 void MainWindow::openAboutIt() {
-    AboutItDialog dialog;
+    AboutItDialog dialog(this);
     dialog.exec();
 }
 
 void MainWindow::openHelp(){
-    ContactDialog dialog;
+    ContactDialog dialog(this);
     dialog.exec();
 }
 

@@ -216,7 +216,7 @@ void TimeslotsManager::copyTimeslots() {
     Kholleur* k = (Kholleur*) selection[0]->data(Qt::UserRole).toULongLong();
 
     //Open dialog
-    CopyTimeslots dialog(m_db, m_date, false, k->getId());
+    CopyTimeslots dialog(m_db, m_date, false, k->getId(), this);
     dialog.exec();
 
     //Update
@@ -225,7 +225,7 @@ void TimeslotsManager::copyTimeslots() {
 
 void TimeslotsManager::copyAllTimeslots() {
     //Open dialog with all = true
-    CopyTimeslots dialog(m_db, m_date);
+    CopyTimeslots dialog(m_db, m_date, true, 0, this);
     dialog.exec();
 
     //Get selection

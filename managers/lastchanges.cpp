@@ -81,7 +81,7 @@ bool LastChanges::free_timeslots() {
 
 bool LastChanges::change_timeslots(QListWidgetItem *item) {
     TimeslotChg* tsChg = (TimeslotChg*) item->data(Qt::UserRole).toLongLong();
-    UpdateTimeslotDialog dialog(tsChg->end);
+    UpdateTimeslotDialog dialog(tsChg->end, this);
     dialog.exec();
 
     update_timeslotsList(tsChg->start->getId());
