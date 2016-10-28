@@ -353,7 +353,7 @@ QString LastChanges::compatible(Student* stdnt, Timeslot *timeslot) {
 }
 
 bool LastChanges::save_timeslotsChanges() {
-    int res = QMessageBox::warning(NULL, "Avertissement", "Vous êtes sur le point d'enregistrer toutes les modifications. <br />"
+    int res = QMessageBox::warning(this, "Avertissement", "Vous êtes sur le point d'enregistrer toutes les modifications. <br />"
                                                           "Toutes les kholles avec le status d'avertissement ou d'erreur seront supprimées. <br />"
                                                           "Voulez-vous continuez ?", QMessageBox::Yes | QMessageBox::Cancel);
     if(res != QMessageBox::Yes)
@@ -415,7 +415,7 @@ bool LastChanges::save_timeslotsChanges() {
     }
 
     change_timeslotsList();
-    res = QMessageBox::information(NULL, "Succès", "Toutes les changements d'horaires de kholles ont été sauvegardés.<br />"
+    res = QMessageBox::information(this, "Succès", "Toutes les changements d'horaires de kholles ont été sauvegardés.<br />"
                                 "Voulez-vous garder les kholles supprimées dans un bloc-note ?", QMessageBox::Yes | QMessageBox::No);
     if(res == QMessageBox::Yes) {
         if(textNotepad == "")
@@ -438,7 +438,7 @@ bool LastChanges::change_status_student(QTableWidgetItem* item) {
         ui->tableWidget_student->item(row, 0)->setIcon(QIcon(QPixmap(":/images/ok.png")));
         break;
     case ImpossibleToKeep:
-        QMessageBox::critical(NULL, "Echec", "Impossible de garder cette kholle. L'horaire de kholle a été supprimé...");
+        QMessageBox::critical(this, "Echec", "Impossible de garder cette kholle. L'horaire de kholle a été supprimé...");
         break;
     default:
         break;
@@ -448,7 +448,7 @@ bool LastChanges::change_status_student(QTableWidgetItem* item) {
 
 bool LastChanges::save_timeslotsChanges_Interface() {
     if(save_timeslotsChanges()) {
-        InterfaceDialog dialog(m_db, m_id_week, *m_monday);
+        InterfaceDialog dialog(m_db, m_id_week, *m_monday, this);
         dialog.exec();
         change_timeslotsList();
     }
@@ -478,9 +478,9 @@ bool LastChanges::delete_kholles() {
                         "Vous ne pourrez pas revenir en arrière !!";
     }
 
-    int res = QMessageBox::warning(NULL, "Suppression de kholles", confirmation1, QMessageBox::Yes | QMessageBox::Cancel);
+    int res = QMessageBox::warning(this, "Suppression de kholles", confirmation1, QMessageBox::Yes | QMessageBox::Cancel);
     if(res == QMessageBox::Yes) {
-        res = QMessageBox::warning(NULL, "Suppression de kholles", confirmation2, QMessageBox::Yes | QMessageBox::Cancel);
+        res = QMessageBox::warning(this, "Suppression de kholles", confirmation2, QMessageBox::Yes | QMessageBox::Cancel);
         if(res == QMessageBox::Yes) {
             QSqlQuery qDelete(*m_db);
             if(onlySubject) {
@@ -499,11 +499,11 @@ bool LastChanges::delete_kholles() {
             qDelete.exec();
             int nbDeletedKholle = qDelete.numRowsAffected();
             if(nbDeletedKholle < 0)
-                QMessageBox::critical(NULL, "Echec de la suppression", "La suppression a échoué : " + QString::number(nbDeletedKholle) + " kholles ont été supprimé");
+                QMessageBox::critical(this, "Echec de la suppression", "La suppression a échoué : " + QString::number(nbDeletedKholle) + " kholles ont été supprimé");
             else if(nbDeletedKholle == 0 || nbDeletedKholle == 1)
-                QMessageBox::information(NULL, "Suppression effectuée", "La suppression des kholles a été effectuée : " + QString::number(nbDeletedKholle) + " kholle a été supprimée");
+                QMessageBox::information(this, "Suppression effectuée", "La suppression des kholles a été effectuée : " + QString::number(nbDeletedKholle) + " kholle a été supprimée");
             else
-                QMessageBox::information(NULL, "Suppression effectuée", "La suppression des kholles a été effectuée : " + QString::number(nbDeletedKholle) + " kholles ont été supprimées");
+                QMessageBox::information(this, "Suppression effectuée", "La suppression des kholles a été effectuée : " + QString::number(nbDeletedKholle) + " kholles ont été supprimées");
         }
     }
 

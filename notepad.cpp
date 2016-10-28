@@ -1,5 +1,6 @@
 #include "notepad.h"
 #include "ui_notepad.h"
+#include <QMessageBox>
 
 QMap<QString, NotepadDialog*>* Notepad::m_notepads = new QMap<QString, NotepadDialog*>();
 
@@ -17,11 +18,10 @@ NotepadDialog* Notepad::add(QString label, QString text) {
         pad->addTextAtTheEnd(text);
         pad->show();
         pad->raise();
-        pad->setFocus();
         pad->activateWindow();
         return pad;
     } else {
-        NotepadDialog* pad = new NotepadDialog(text);
+        NotepadDialog* pad = new NotepadDialog(text, label);
         pad->show();
         pad->raise();
         pad->activateWindow();
@@ -31,16 +31,27 @@ NotepadDialog* Notepad::add(QString label, QString text) {
     return NULL;
 }
 
-NotepadDialog::NotepadDialog(QString text, QWidget *parent) :
+bool Notepad::remove(QString label) {
+    if(m_notepads->contains(label)) {
+        delete m_notepads->value(label);
+        m_notepads->remove(label);
+        return true;
+    }
+    return false;
+}
+
+NotepadDialog::NotepadDialog(QString text, QString label, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::NotepadDialog)
 {
     ui->setupUi(this);
     ui->textEdit->setPlainText(text);
+    m_label = label;
+
+    connect(this, SIGNAL(finished(int)), this, SLOT(close()));
 }
 
-NotepadDialog::~NotepadDialog()
-{
+NotepadDialog::~NotepadDialog() {
     delete ui;
 }
 
@@ -52,6 +63,19 @@ void NotepadDialog::setText(QString text) {
     ui->textEdit->setPlainText(text);
 }
 
+void NotepadDialog::setLabel(QString label) {
+    m_label = label;
+}
+
 QString NotepadDialog::text() const {
     return ui->textEdit->toPlainText();
+}
+
+QString NotepadDialog::label() const {
+    return m_label;
+}
+
+void NotepadDialog::close() {
+    if(m_label != "")
+        Notepad::remove(m_label);
 }
