@@ -49,10 +49,12 @@ public:
 
     QList<Subject *> *testAvailability();
 
+    int weeksTo(Timeslot* ts1, Timeslot* ts2);
     float proba(Student* user, Timeslot* timeslot);
+    QMap<int, float> *corrected_proba(Student* user, QList<Timeslot *> list);
 
     bool compatible(int id_user, Timeslot* timeslot);
-    void quickSort(QList<Timeslot*> *list, int i, int j, Student *user);
+    void quickSort(QList<Timeslot*> *list, int i, int j, QMap<int, float> *probas);
     void constructPoss();
 
     QMap<int, QList<Timeslot*> > *updatePoss(int id_user, Timeslot *current);
