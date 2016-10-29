@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QByteArray>
 #include <QTimer>
+#include <QtGlobal>
 #include "managers/studentsmanager.h"
 #include "managers/groupsmanager.h"
 #include "managers/subjectsmanager.h"
@@ -35,6 +36,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+
 public slots:
     void openStudentsManager();
     void openGroupsManager();
@@ -55,6 +59,7 @@ public slots:
 
     void createKhollo();
     void openKhollo();
+    void openKhollo(QString filename);
     void updateWindow();
     void record(bool start = true);
     void updateRecord();
@@ -67,6 +72,7 @@ private:
     KScopeManager kscopemanager;
     QTimer* m_timer;
     int m_idRecord;
+    QStringList args;
 };
 
 #endif // MAINWINDOW_H

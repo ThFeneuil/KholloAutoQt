@@ -32,11 +32,41 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(triggerInterface(QDate,int)), this, SLOT(openInterfaceWithDate(QDate,int)));
 
     updateWindow();
+
+#ifndef Q_WS_MAC
+    // Ouvrir directement un fichier sur OS autre que Mac
+    args = QCoreApplication::arguments();
+    if(args.count() > 1) {
+        QString suffix = QFileInfo(args[1]).suffix().toUpper();
+        // Check the file suffic
+        if(suffix == "KSCOPE") {
+            openKhollo(args[1]); // Try to open the file
+        } else {
+            QMessageBox::critical(this, "Fichier non pris en charge", "Erreur : Fichier " + QFileInfo(args[1]).suffix().toUpper() + " non pris en charge.");
+        }
+    }
+#endif
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+#ifdef Q_WS_MAC
+    // Pour détecter si l'utilisateur ouvre directement un fichier sous Mac
+    if(event->type() == QEvent::FileOpen) {
+        // Si l'event FileOpen a été appelé, on effectue nos opérations (ouvrir le fichier)
+        openKhollo(((QFileOpenEvent*)event)->file());
+        return true;
+    } else {
+        // Sinon, le programme s'est exécuté à partir de son icône et non de celle d'un autre fichier s'ouvrant avec lui
+        return QObject::eventFilter(obj, event);
+    }
+#else
+    return QObject::eventFilter(obj, event);
+#endif
 }
 
 void MainWindow::openStudentsManager() {
@@ -319,15 +349,20 @@ void MainWindow::openKhollo() {
         return;
     }
 
+    openKhollo(fileDB);
+    return;
+}
+
+void MainWindow::openKhollo(QString filename) {
     //Save directory in preferences
-    QString dirpath = QFileInfo(fileDB).absoluteDir().absolutePath();
+    QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
     QFile pref_file(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
     if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)){
         QTextStream out(&pref_file);
         out << dirpath;
     }
 
-    kscopemanager.openFile(fileDB);
+    kscopemanager.openFile(filename);
     updateWindow();
     record(QSqlDatabase::database().isOpen());
     return;

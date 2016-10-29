@@ -237,7 +237,7 @@
   </action>
   <action name="action_Kholles_LastChanges">
    <property name="text">
-    <string>&amp;Outil de dépannage</string>
+    <string>&amp;Outils de dépannage</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
