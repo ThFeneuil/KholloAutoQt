@@ -160,6 +160,19 @@ QList<Subject*>* GeneratePage::testAvailability() {
     return result;
 }
 
+int GeneratePage::weeksTo(Timeslot *ts1, Timeslot *ts2) {
+    //Get the corresponding mondays to have number of weeks between the two dates
+    QDate d1 = ts1->getDate();
+    while(d1.dayOfWeek() != 1)
+        d1 = d1.addDays(-1);
+
+    QDate d2 = ts2->getDate();
+    while(d2.dayOfWeek() != 1)
+        d2 = d2.addDays(-1);
+
+    return int(abs(d1.daysTo(d2)) / 7);
+}
+
 float GeneratePage::proba(Student *user, Timeslot *timeslot) {
     /** Calculates a score for this (user, timeslot) couple
         Attention ! The Student and Timeslot need to have their "kholleur", "kholles", etc. properties set (in DataBase) **/
@@ -183,17 +196,38 @@ float GeneratePage::proba(Student *user, Timeslot *timeslot) {
         if(ts->getId_kholleurs() == timeslot->getId_kholleurs()) { //If it was the same kholleur
             this_kholleur++;
 
-            if(ts->getDate() >= m_date.addDays(-21) && ts->getDate() <= m_date.addDays(28)) { //If it was within certain time limits
-                p -= 40*pow(2, 28-abs(ts->getDate().daysTo(timeslot->getDate())));
+            if(ts->getDate() >= m_date.addDays(-21) && ts->getDate() <= m_date.addDays(27)) { //If it was within certain time limits
+                p -= 40*pow(2, 3-weeksTo(ts, timeslot));
+//                p -= 40*pow(2, 28-abs(ts->getDate().daysTo(timeslot->getDate())));
             }
         }
     }
 
     p -= 20 * this_kholleur * kholleur_total;
     p += 20 * kholles_total;
-    p += 1000;
 
     return p;
+}
+
+QMap<int, float>* GeneratePage::corrected_proba(Student *user, QList<Timeslot*> list) {
+    /** Calculates the probability for this user and list of timeslots, taking into account the average probability for this user
+        Attention, user and timeslots from DataBase !**/
+    QMap<int, float> *probas = new QMap<int, float>(); //Result
+    int i;
+    float sum = 0;
+    for(i = 0; i < list.length(); i++) {
+        probas->insert(list[i]->getId(), proba(user, list[i]));
+        sum += probas->value(list[i]->getId());
+    }
+
+    float corr = 1000 - (sum / list.length()); //The correction to be applied...
+
+    for(i = 0; i < list.length(); i++) {
+        int id = list[i]->getId();
+        probas->insert(id, probas->value(id) + corr);
+    }
+
+    return probas;
 }
 
 bool GeneratePage::compatible(int id_user, Timeslot *timeslot) {
@@ -258,7 +292,7 @@ bool GeneratePage::compatible(int id_user, Timeslot *timeslot) {
     return true;
 }
 
-void GeneratePage::quickSort(QList<Timeslot *> *list, int i, int j, Student* user) {
+void GeneratePage::quickSort(QList<Timeslot *> *list, int i, int j, QMap<int, float> *probas) {
     /** QuickSort of a QList<Timeslot*> based on the value of the probabilities
         Attention ! Student must have "kholles" and other properties set (from DataBase) **/
     if(i >= j)
@@ -267,7 +301,7 @@ void GeneratePage::quickSort(QList<Timeslot *> *list, int i, int j, Student* use
     int pivot_index = i;
     int k;
     for(k = i+1; k <= j; k++) {
-        if(proba(user, list->at(k)) > proba(user, list->at(pivot_index))) {
+        if(probas->value(list->at(k)->getId()) > probas->value(list->at(pivot_index)->getId())) {
             Timeslot* pivot = list->at(pivot_index);
             list->replace(pivot_index, list->at(k));
             list->replace(k, list->at(pivot_index+1));
@@ -276,8 +310,8 @@ void GeneratePage::quickSort(QList<Timeslot *> *list, int i, int j, Student* use
         }
     }
 
-    quickSort(list, i, pivot_index-1, user);
-    quickSort(list, pivot_index+1, j, user);
+    quickSort(list, i, pivot_index-1, probas);
+    quickSort(list, pivot_index+1, j, probas);
 }
 
 void GeneratePage::constructPoss() {
@@ -290,7 +324,7 @@ void GeneratePage::constructPoss() {
     //Get input
     QMap<int, QList<Student*> > *input = ((KholloscopeWizard*) wizard())->get_input();
 
-    int i, j;
+    int i, j, k;
     for(i = 0; i < selected_subjects->length(); i++) { //For every selected subject
         //Create a new map
         QMap<int, QList<Timeslot*> > map;
@@ -310,13 +344,17 @@ void GeneratePage::constructPoss() {
                         && ts->getDate() <= m_date.addDays(6)
                         && compatible(users[j]->getId(), ts)) { //Add the compatible timeslots
                     new_list.append(ts);
-
-                    //Log the probability for this timeslot
-                    if(log_file != NULL) {
-                        out << users[j]->getName() << ", " << selected_subjects->at(i)->getShortName() << ", " << ts->kholleur()->getName() << ", " << ts->getId() << " : ";
-                        out << proba(m_dbase->listStudents()->value(users[j]->getId()), ts) << "\n";
-                    }
                 }
+            }
+
+            //Log the probability for these timeslots
+            if(log_file != NULL) {
+                QMap<int, float> *probas = corrected_proba(m_dbase->listStudents()->value(users[j]->getId()), new_list);
+                for(k = 0; k < new_list.length(); k++) {
+                    out << users[j]->getName() << ", " << selected_subjects->at(i)->getShortName() << ", " << new_list[k]->kholleur()->getName() << ", " << new_list[k]->getId() << " : ";
+                    out << probas->value(new_list[k]->getId()) << "\n";
+                }
+                delete probas;
             }
 
             // No sorting here !
@@ -399,14 +437,21 @@ int GeneratePage::listMax(QList<Timeslot *> list, Student* user) {
     bool is_empty = true;
     int max = 0;
 
+    QMap<int, float> *probas = corrected_proba(user, list);
+
     for(i = 0; i < list.length(); i++) {
+        float p = probas->value(list[i]->getId());
+        if(i == 0 || p > max)
+            max = p;
         if(list[i]->getPupils() > 0) {
-            float p = proba(user, list[i]);
+            /*float p = probas->value(list[i]->getId());
             if(is_empty || p > max)
-                max = p;
+                max = p;*/
             is_empty = false;
         }
     }
+
+    delete probas;
 
     if(is_empty)
         return 1000000;
@@ -495,7 +540,9 @@ bool GeneratePage::generate() {
     poss.insert(index->current_subject, map);
 
     //Sort the possibilities
-    quickSort(&loop, 0, loop.length() - 1, m_dbase->listStudents()->value(index->current_student));
+    QMap<int, float> *probas = corrected_proba(m_dbase->listStudents()->value(index->current_student), loop);
+    quickSort(&loop, 0, loop.length() - 1, probas);
+    delete probas;
 
     //QMessageBox::information(this, "OK", QString::number(index->current_student));
     //QMessageBox::information(this, "OK", QString::number(loop.length()));
@@ -585,18 +632,8 @@ int GeneratePage::nearestKholle(Student *user, Timeslot *timeslot) {
 
     if(min == -1)
         return (-1);
-    else {
-        //Get the corresponding mondays to have number of weeks between the two dates
-        QDate d1 = m->getDate();
-        while(d1.dayOfWeek() != 1)
-            d1 = d1.addDays(-1);
-
-        QDate d2 = timeslot->getDate();
-        while(d2.dayOfWeek() != 1)
-            d2 = d2.addDays(-1);
-
-        return int(abs(d1.daysTo(d2)) / 7);
-    }
+    else
+        return weeksTo(m, timeslot);
 }
 
 void GeneratePage::display() {
