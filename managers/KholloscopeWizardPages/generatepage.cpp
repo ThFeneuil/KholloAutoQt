@@ -563,7 +563,11 @@ bool GeneratePage::generate() {
 
             //Recursive call
             if(generate()) { //If true = we are finished
+                resetPoss(index->current_student, old);
                 delete old;
+                map = poss.value(index->current_subject);
+                map.insert(index->current_student, loop);
+                poss.insert(index->current_subject, map);
                 free(index);
                 return true;
             }
@@ -593,16 +597,24 @@ bool GeneratePage::generate() {
 }
 
 void GeneratePage::finished() {
-    display();
-    m_box->hide();
-
-    if(!m_watcher.future().result())
-        displayBlocking();
+    /** Called when the background process finishes **/
 
     if(log_file != NULL) {
         delete log_file;
         log_file = NULL;
     }
+    setStatus();
+
+    if(!m_watcher.future().result())
+        displayBlocking();
+    else {
+        exchange(0, true, 40);
+        exchange(0, false, 15);
+    }
+
+    display();
+    m_box->hide();
+
 }
 
 void GeneratePage::abort() {
@@ -611,6 +623,7 @@ void GeneratePage::abort() {
     //display();
     //m_box->hide();
 }
+
 
 int GeneratePage::nearestKholle(Student *user, Timeslot *timeslot) {
     /** Number of weeks to nearest Kholle with the same Kholleur. (-1) if no such Kholle
@@ -636,6 +649,81 @@ int GeneratePage::nearestKholle(Student *user, Timeslot *timeslot) {
         return weeksTo(m, timeslot);
 }
 
+void GeneratePage::setStatus() {
+    /** Set the status of the generated kholles **/
+
+    int i;
+    for(i = 0; i < kholloscope.length(); i++) {
+        int weeks = nearestKholle(m_dbase->listStudents()->value(kholloscope[i]->getId_students()), m_dbase->listTimeslots()->value(kholloscope[i]->getId_timeslots()));
+        if(weeks == -1 || weeks > 3)
+            kholloscope[i]->setStatus(Kholle::OK);
+        else if(weeks <= 1)
+            kholloscope[i]->setStatus(Kholle::Error);
+        else
+            kholloscope[i]->setStatus(Kholle::Warning);
+
+        kholloscope[i]->setWeeks(weeks);
+    }
+}
+
+bool GeneratePage::exchange(int index, bool only_warnings, int score_limit) {
+    /** Exchange timeslots between people in the kholloscope to improve score **/
+
+    if(index >= kholloscope.length())
+        return true;
+
+    if(only_warnings) {
+        while(index < kholloscope.length() && kholloscope[index]->status() == Kholle::OK)
+            index++;
+        if(index == kholloscope.length())
+            return true;
+    }
+
+    Kholle* current = kholloscope[index];
+    Timeslot* t_current = m_dbase->listTimeslots()->value(current->getId_timeslots());
+    Student* s_current = m_dbase->listStudents()->value(current->getId_students());
+
+    int i;
+    for(i = 0; i < kholloscope.length(); i++) {
+        if(i == index)
+            continue;
+
+        Kholle* k = kholloscope[i];
+        Timeslot* t = m_dbase->listTimeslots()->value(k->getId_timeslots());
+        Student* s = m_dbase->listStudents()->value(k->getId_students());
+        if(m_downgraded.contains(s->getId()) && m_downgraded.value(s->getId()))
+            continue;
+
+        if(t_current->kholleur()->getId_subjects() == t->kholleur()->getId_subjects()) {
+            if(compatible(s_current->getId(), t)
+                    && compatible(s->getId(), t_current)) {
+                QMap<int, float> *p_current = corrected_proba(s_current, poss.value(t_current->kholleur()->getId_subjects()).value(s_current->getId()));
+                QMap<int, float> *p = corrected_proba(s, poss.value(t->kholleur()->getId_subjects()).value(s->getId()));
+
+                int n1 = nearestKholle(s_current, t);
+                int n2 = nearestKholle(s, t_current);
+
+                if(p_current->value(t->getId()) - p_current->value(t_current->getId()) >= score_limit
+                        && p->value(t_current->getId()) - p->value(t->getId()) >= -score_limit
+                        && (n1 == -1 || n1 > 3)
+                        && (n2 == -1 || n2 > 3)) {
+                    current->setId_timeslots(t->getId());
+                    current->setWeeks(n1);
+                    current->setStatus(Kholle::OK);
+                    k->setId_timeslots(t_current->getId());
+                    k->setWeeks(n2);
+                    k->setStatus(Kholle::OK);
+                    m_downgraded.insert(s->getId(), true);
+                    m_downgraded.insert(s_current->getId(), false);
+                    break;
+                }
+            }
+        }
+    }
+
+    return exchange(index + 1, only_warnings, score_limit);
+}
+
 void GeneratePage::display() {
     /** To display in the list **/
     ui->tableWidget->clear();
@@ -648,26 +736,33 @@ void GeneratePage::display() {
         Subject* subject = timeslot->kholleur()->subject();
         Kholleur* kholleur = timeslot->kholleur();
 
-        int weeks = nearestKholle(student, timeslot);
+        int weeks = kholloscope[i]->weeks();
         QTableWidgetItem *left = new QTableWidgetItem(student->getName() + ", " + subject->getShortName() + " :");
 
-        if(weeks == -1) {
-            QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", jamais");
-            ui->tableWidget->setItem(i, 1, right);
+        if(kholloscope[i]->status() == Kholle::OK) {
             left->setIcon(QIcon(QPixmap(":/images/ok.png")));
+
+            if(weeks == -1) {
+                QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", jamais");
+                ui->tableWidget->setItem(i, 1, right);
+            }
+            else {
+                QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaines");
+                ui->tableWidget->setItem(i, 1, right);
+            }
+
         }
-        else if(weeks <= 1) {
+        else if(kholloscope[i]->status() == Kholle::Error) {
+            left->setIcon(QIcon(QPixmap(":/images/error.png")));
+
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaine");
             ui->tableWidget->setItem(i, 1, right);
-            left->setIcon(QIcon(QPixmap(":/images/error.png")));
         }
         else {
+            left->setIcon(QIcon(QPixmap(":/images/warning.png")));
+
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaines");
             ui->tableWidget->setItem(i, 1, right);
-            if(weeks <= 3)
-                left->setIcon(QIcon(QPixmap(":/images/warning.png")));
-            else
-                left->setIcon(QIcon(QPixmap(":/images/ok.png")));
         }
         ui->tableWidget->setItem(i, 0, left);
     }

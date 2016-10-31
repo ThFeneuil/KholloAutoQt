@@ -8,6 +8,8 @@ Kholle::Kholle()
 
     m_student = NULL;
     m_timeslot = NULL;
+    m_status = OK;
+    m_weeks = 0;
 }
 
 Kholle::~Kholle() {
@@ -32,6 +34,12 @@ Student* Kholle::student() const {
 Timeslot* Kholle::timeslot() const {
     return m_timeslot;
 }
+int Kholle::status() const {
+    return m_status;
+}
+int Kholle::weeks() const {
+    return m_weeks;
+}
 
 
 //Setters
@@ -51,4 +59,10 @@ void Kholle::setStudent(Student* stud) {
 }
 void Kholle::setTimeslot(Timeslot* slot) {
     m_timeslot = slot;
+}
+void Kholle::setStatus(Status status) {
+    m_status = status;
+}
+void Kholle::setWeeks(int weeks) {
+    m_weeks = weeks;
 }

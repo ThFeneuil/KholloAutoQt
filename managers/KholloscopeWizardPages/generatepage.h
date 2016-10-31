@@ -64,6 +64,9 @@ public:
     working_index *findMax();
     bool generate();
 
+    void setStatus();
+    bool exchange(int index, bool only_warnings, int score_limit);
+
     void msg_display();
     int nearestKholle(Student*, Timeslot*);
     void display();
@@ -92,6 +95,8 @@ private:
     int profondeur;
     working_index last_index;
     QList<Kholle*> kholloscope;
+
+    QMap<int, bool> m_downgraded;
 
     bool m_abort;
     QFutureWatcher<bool> m_watcher;

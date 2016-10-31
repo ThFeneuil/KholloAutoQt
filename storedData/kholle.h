@@ -9,9 +9,12 @@ class Timeslot;
 
 class Kholle
 {
+
 public:
     Kholle();
     ~Kholle();
+
+    enum Status {OK, Warning, Error}; //Generation
 
     //Getters
     int getId() const;
@@ -19,6 +22,8 @@ public:
     int getId_timeslots() const;
     Student* student() const; // Interface
     Timeslot* timeslot() const; // Interface
+    int status() const; //Generation
+    int weeks() const; //Generation
 
     //Setters
     void setId(int id);
@@ -26,6 +31,8 @@ public:
     void setId_timeslots(int id_timeslots);
     void setStudent(Student* stud); // Interface
     void setTimeslot(Timeslot* slot); // Interface
+    void setStatus(Status status); //Generation
+    void setWeeks(int weeks); //Generation
 
 private:
     int m_id;
@@ -35,6 +42,10 @@ private:
     // Interface
     Student* m_student;
     Timeslot* m_timeslot;
+
+    //Generation
+    Status m_status;
+    int m_weeks;
 };
 
 #endif // Kholle_H
