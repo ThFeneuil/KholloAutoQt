@@ -22,7 +22,7 @@ class LastChanges : public QDialog
 {
     Q_OBJECT
 
-enum Status {Keep, NotKeep, ImpossibleToKeep};
+enum Status {OK, Remove, Keep, NotKeep, ImpossibleToKeep};
 
 struct TimeslotChg {
     Timeslot* start;
@@ -49,7 +49,7 @@ public slots:
     bool update_timeslotsList(int idTs = -1);
     bool update_students(int idTs = -1);
     bool save_timeslotsChanges();
-    bool save_timeslotsChanges_Interface();
+    bool open_interface();
     bool change_status_student(QTableWidgetItem* item);
 
     bool update_khollesManager();

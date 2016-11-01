@@ -57,7 +57,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 subjects->addItem(list_subjects[j]->getShortName(), list_subjects[j]->getId());
             }
             subjects->setEnabled(false);
-            connect(subjects, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
+            connect(subjects, SIGNAL(activated(int)), this, SLOT(courses_changed()));
 
             QComboBox *teachers = new QComboBox();
             teachers->addItem("");
@@ -65,7 +65,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 teachers->addItem(list_teachers[j]->getName(), list_teachers[j]->getId());
             }
             teachers->setEnabled(false);
-            connect(teachers, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
+            connect(teachers, SIGNAL(activated(int)), this, SLOT(courses_changed()));
 
             layout->setContentsMargins(5, 5, 5, 5);
             layout->setSpacing(2);
@@ -83,7 +83,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 subjects->addItem(list_subjects[j]->getShortName(), list_subjects[j]->getId());
             }
             subjects->setEnabled(false);
-            connect(subjects, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
+            connect(subjects, SIGNAL(activated(int)), this, SLOT(courses_changed()));
 
             teachers = new QComboBox();
             teachers->addItem("");
@@ -91,7 +91,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 teachers->addItem(list_teachers[j]->getName(), list_teachers[j]->getId());
             }
             teachers->setEnabled(false);
-            connect(teachers, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
+            connect(teachers, SIGNAL(activated(int)), this, SLOT(courses_changed()));
 
             layout->setContentsMargins(5, 5, 5, 5);
             layout->setSpacing(2);
@@ -195,7 +195,7 @@ bool CoursesManager::update_list_groups() {
     return true;
 }
 
-void CoursesManager::courses_changed(int i) {
+void CoursesManager::courses_changed() {
     isChanged = true;
 }
 

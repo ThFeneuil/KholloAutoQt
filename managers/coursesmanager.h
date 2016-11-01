@@ -38,7 +38,7 @@ public slots:
     bool update_courses(QGridLayout *grid, int week);
     bool save_changes();
     void onSelection_change();
-    void courses_changed(int i);
+    void courses_changed();
     void onClose_button();
     void copyToEven();
     void copyToOdd();

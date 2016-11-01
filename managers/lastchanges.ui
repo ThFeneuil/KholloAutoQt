@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>507</width>
+    <width>550</width>
     <height>550</height>
    </rect>
   </property>
@@ -115,7 +115,7 @@
           </size>
          </property>
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic; color:#ff0000;&quot;&gt;Les élèves avec une erreur perdront leur kholle lors de la validation de l'échange des horaires.&lt;br/&gt;Double-cliquer sur un élève pour forcer l'enregistrement de sa kholle malgré son emploi du temps.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic; color:#ff0000;&quot;&gt;Les élèves qui n'ont pas un symbole OK perdront leur kholle lors de la validation de l'échange des horaires.&lt;br/&gt;Double-cliquer sur un élève pour enlever une kholle valide ou pour forcer l'enregistrement d'une kholle.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -145,9 +145,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_valid_interface">
+          <widget class="QPushButton" name="pushButton_interface">
            <property name="text">
-            <string>Valider et ouvrir l'interface</string>
+            <string>Interface</string>
            </property>
           </widget>
          </item>

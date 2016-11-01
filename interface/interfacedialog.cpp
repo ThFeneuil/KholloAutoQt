@@ -19,6 +19,12 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
     m_id_week = id_week;
     m_monday = monday;
     m_doubleSelectedItem = NULL;
+    QString textWeekLabel = "Semaine : " + m_monday.toString("dd/MM/yyyy");
+    if(m_id_week == 1)
+        textWeekLabel += " (Paire)";
+    else if(m_id_week == 2)
+        textWeekLabel += " (Impaire)";
+    ui->label_week->setText("<html><head/><body><p align=\"center\"><span style=\" color:#005500;\">"+textWeekLabel+"</span></p></body></html>");
 
     /// To load the DB in the RAM (DataBase object) selecting the courses and the timeslots of the selected week
     m_dbase = new DataBase(m_db);

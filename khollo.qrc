@@ -9,5 +9,6 @@
         <file>images/error.png</file>
         <file>images/ok.png</file>
         <file>images/warning.png</file>
+        <file>images/delete.png</file>
     </qresource>
 </RCC>

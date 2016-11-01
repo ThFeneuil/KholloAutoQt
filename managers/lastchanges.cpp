@@ -43,7 +43,7 @@ LastChanges::LastChanges(QSqlDatabase *db, int id_week, QDate *monday, QWidget *
     connect(ui->tableWidget_student, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(change_status_student(QTableWidgetItem*)));
 
     connect(ui->pushButton_valid, SIGNAL(clicked(bool)), this, SLOT(save_timeslotsChanges()));
-    connect(ui->pushButton_valid_interface, SIGNAL(clicked(bool)), this, SLOT(save_timeslotsChanges_Interface()));
+    connect(ui->pushButton_interface, SIGNAL(clicked(bool)), this, SLOT(open_interface()));
     connect(ui->pushButton_reset, SIGNAL(clicked(bool)), this, SLOT(change_timeslotsList()));
     change_timeslotsList();
 
@@ -96,6 +96,8 @@ bool LastChanges::change_timeslotsList() {
 
     // Get the kholleur
     Kholleur* khll = (Kholleur*) ui->comboBox_kholleurs->currentData().toLongLong();
+    if(! khll)
+        return false;
     // Get the list of timeslots
     QSqlQuery query(*m_db);
     query.prepare("SELECT id, time_start, time, time_end, id_kholleurs, date, pupils FROM tau_timeslots "
@@ -158,7 +160,7 @@ bool LastChanges::change_timeslotsList() {
             kholleChg->tsChg = tsChg;
             kholleChg->numTs = num;
             kholleChg->statusMessage = compatible(stdnt, tsChg->end);
-            kholleChg->status = (kholleChg->statusMessage == "") ? Keep : NotKeep;
+            kholleChg->status = (kholleChg->statusMessage == "") ? OK : NotKeep;
 
             m_students.append(kholleChg);
         }
@@ -210,7 +212,7 @@ bool LastChanges::update_students(int idTs) {
                 m_students[numRow]->statusMessage = compatible(m_students[numRow]->stdnt, final);
                 if(m_students[numRow]->statusMessage == "") {
                     left->setIcon(QIcon(QPixmap(":/images/ok.png")));
-                    m_students[numRow]->status = Keep;
+                    m_students[numRow]->status = OK;
                 } else {
                     left->setIcon(QIcon(QPixmap(":/images/error.png")));
                     right->setText(m_students[numRow]->statusMessage);
@@ -219,8 +221,12 @@ bool LastChanges::update_students(int idTs) {
             }
         } else {
             switch(m_students[numRow]->status) {
+            case OK:
             case Keep:
                 left->setIcon(QIcon(QPixmap(":/images/ok.png")));
+                break;
+            case Remove:
+                left->setIcon(QIcon(QPixmap(":/images/delete.png")));
                 break;
             case NotKeep:
                 left->setIcon(QIcon(QPixmap(":/images/error.png")));
@@ -354,7 +360,7 @@ QString LastChanges::compatible(Student* stdnt, Timeslot *timeslot) {
 
 bool LastChanges::save_timeslotsChanges() {
     int res = QMessageBox::warning(this, "Avertissement", "Vous êtes sur le point d'enregistrer toutes les modifications. <br />"
-                                                          "Toutes les kholles avec le status d'avertissement ou d'erreur seront supprimées. <br />"
+                                                          "Toutes les kholles sans le status OK seront supprimées. <br />"
                                                           "Voulez-vous continuez ?", QMessageBox::Yes | QMessageBox::Cancel);
     if(res != QMessageBox::Yes)
         return false;
@@ -383,7 +389,7 @@ bool LastChanges::save_timeslotsChanges() {
             stdnt.setName(query.value(1).toString());
             stdnt.setFirst_name(query.value(2).toString());
 
-            if(final->isDeleted() || m_students[numStudents]->status != Keep) {
+            if(final->isDeleted() || (m_students[numStudents]->status != Keep && m_students[numStudents]->status != OK)) {
                 QSqlQuery queryRemove(*m_db);
                 queryRemove.prepare("DELETE FROM `tau_kholles` WHERE `id_timeslots` = :id_timeslots AND `id_users` = :id_users");
                 queryRemove.bindValue(":id_timeslots", final->getId());
@@ -429,6 +435,14 @@ bool LastChanges::save_timeslotsChanges() {
 bool LastChanges::change_status_student(QTableWidgetItem* item) {
     int row = item->row();
     switch(m_students[row]->status) {
+    case OK:
+        m_students[row]->status = Remove;
+        ui->tableWidget_student->item(row, 0)->setIcon(QIcon(QPixmap(":/images/delete.png")));
+        break;
+    case Remove:
+        m_students[row]->status = OK;
+        ui->tableWidget_student->item(row, 0)->setIcon(QIcon(QPixmap(":/images/ok.png")));
+        break;
     case Keep:
         m_students[row]->status = NotKeep;
         ui->tableWidget_student->item(row, 0)->setIcon(QIcon(QPixmap(":/images/error.png")));
@@ -446,13 +460,10 @@ bool LastChanges::change_status_student(QTableWidgetItem* item) {
     return true;
 }
 
-bool LastChanges::save_timeslotsChanges_Interface() {
-    if(save_timeslotsChanges()) {
-        InterfaceDialog dialog(m_db, m_id_week, *m_monday, this);
-        dialog.exec();
-        change_timeslotsList();
-    }
-    return true;
+bool LastChanges::open_interface() {
+    InterfaceDialog dialog(m_db, m_id_week, *m_monday, this);
+    dialog.exec();
+    return change_timeslotsList();
 }
 
 bool LastChanges::update_khollesManager() {
