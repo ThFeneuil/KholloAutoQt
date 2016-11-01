@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -52,6 +55,8 @@
     </property>
     <addaction name="action_File_Create"/>
     <addaction name="action_File_Open"/>
+    <addaction name="separator"/>
+    <addaction name="action_File_Settings"/>
     <addaction name="separator"/>
     <addaction name="action_File_Quit"/>
    </widget>
@@ -246,6 +251,11 @@
   <action name="action_Schedule_Swapping_Groups">
    <property name="text">
     <string>Echange de &amp;groupes</string>
+   </property>
+  </action>
+  <action name="action_File_Settings">
+   <property name="text">
+    <string>P&amp;aramètres</string>
    </property>
   </action>
  </widget>

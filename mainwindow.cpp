@@ -8,6 +8,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     m_idRecord = -1;
 
+    connect(ui->action_File_Create, SIGNAL(triggered()), this, SLOT(createKhollo()));
+    connect(ui->action_File_Open, SIGNAL(triggered()), this, SLOT(openKhollo()));
+    connect(ui->action_File_Settings, SIGNAL(triggered()), this, SLOT(openSettings()));
     connect(ui->action_File_Quit, SIGNAL(triggered()), this, SLOT(close()));
     connect(ui->action_DB_Students, SIGNAL(triggered()), this, SLOT(openStudentsManager()));
     connect(ui->action_DB_Groups, SIGNAL(triggered()), this, SLOT(openGroupsManager()));
@@ -26,8 +29,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_AboutIt, SIGNAL(triggered()), this, SLOT(openAboutIt()));
 
 
-    connect(ui->action_File_Create, SIGNAL(triggered()), this, SLOT(createKhollo()));
-    connect(ui->action_File_Open, SIGNAL(triggered()), this, SLOT(openKhollo()));
 
     connect(this, SIGNAL(triggerInterface(QDate,int)), this, SLOT(openInterfaceWithDate(QDate,int)));
 
@@ -289,19 +290,16 @@ void MainWindow::openHelp(){
     dialog.exec();
 }
 
+void MainWindow::openSettings() {
+    SettingsDialog dialog(this);
+    dialog.exec();
+}
 
 void MainWindow::createKhollo() {
     record(false);
     //Try to load directory preferences
-    QString pref_path;
-    QFile read(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
-    if(read.exists() && read.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&read);
-        pref_path = in.readLine();
-    }
-
-    if(pref_path == "" || !QDir(pref_path).exists())
-        pref_path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    Preferences pref;
+    QString pref_path = pref.dir();
 
     //Get file name
     QString filename = QFileDialog::getSaveFileName(this, "Enregistrer sous...",
@@ -314,11 +312,7 @@ void MainWindow::createKhollo() {
 
     //Save directory in preferences
     QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
-    QFile pref_file(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
-    if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)){
-        QTextStream out(&pref_file);
-        out << dirpath;
-    }
+    pref.setDir(dirpath);
 
     if(kscopemanager.createFile(filename))
         QMessageBox::information(NULL, "Succès", "Votre kholloscope a été créé.<br />Vous pouvez dès maintenant l'utiliser. :p");
@@ -331,15 +325,8 @@ void MainWindow::createKhollo() {
 void MainWindow::openKhollo() {
     record(false);
     //Try to load directory preferences
-    QString pref_path;
-    QFile read(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
-    if(read.exists() && read.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&read);
-        pref_path = in.readLine();
-    }
-
-    if(pref_path == "" || !QDir(pref_path).exists())
-        pref_path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    Preferences pref;
+    QString pref_path = pref.dir();
 
     //Get file name
     QString fileDB = QFileDialog::getOpenFileName(this, "Ouvrir un fichier", pref_path + QDir::separator(), "KSCOPE (*.kscope)");
@@ -356,11 +343,7 @@ void MainWindow::openKhollo() {
 void MainWindow::openKhollo(QString filename) {
     //Save directory in preferences
     QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
-    QFile pref_file(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
-    if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)){
-        QTextStream out(&pref_file);
-        out << dirpath;
-    }
+    Preferences pref; pref.setDir(dirpath);
 
     kscopemanager.openFile(filename);
     updateWindow();

@@ -23,6 +23,7 @@
 #include "contactdialog.h"
 #include "reviewdialog.h"
 #include "kscopemanager.h"
+#include "settingsdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -60,6 +61,7 @@ public slots:
     void createKhollo();
     void openKhollo();
     void openKhollo(QString filename);
+    void openSettings();
     void updateWindow();
     void record(bool start = true);
     void updateRecord();

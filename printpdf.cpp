@@ -30,32 +30,33 @@ int PrintPDF::longestKholleur(QFontMetrics font, QMap<int, Kholleur*> *kholleurs
 
 void PrintPDF::printKholles(QList<Student *> *students, QMap<int, Kholleur *> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QMap<int, Kholle *> *kholloscope) {
     //Try to load directory preferences
-    QString pref_path;
-    QFile read(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
-    if(read.exists() && read.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&read);
-        pref_path = in.readLine();
-    }
-
-    if(pref_path == "" || !QDir(pref_path).exists())
-        pref_path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    Preferences pref;
+    QString pref_path = pref.dir();
 
     //Get file name
     QString filename = QFileDialog::getSaveFileName(NULL, "Enregistrer sous...",
                                                     pref_path + QDir::separator() + "Kholloscope_" + monday_date.toString("yyyyMMdd"),  "PDF (*.pdf)");
-    //QMessageBox::information(this, "OK", filename);
 
     if(filename == "")
         return;
 
     //Save directory in preferences
     QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
-    QFile pref_file(QCoreApplication::applicationDirPath() + QDir::separator() + "dir_preferences.pref");
-    if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)){
-        QTextStream out(&pref_file);
-        out << dirpath;
-    }
+    pref.setDir(dirpath);
 
+    switch(pref.formatPDF()) {
+        case Preferences::StudentsDays:
+            if(printKholles1(students, kholleurs, timeslots, monday_date, kholloscope, filename))
+                QMessageBox::information(NULL, "Succès", "Fichier PDF généré.");
+            break;
+        case Preferences::StudentsSubjects:
+            if(printKholles2(students, kholleurs, timeslots, monday_date, kholloscope, filename))
+                QMessageBox::information(NULL, "Succès", "Fichier PDF généré.");
+            break;
+    }
+}
+
+bool PrintPDF::printKholles1(QList<Student *> *students, QMap<int, Kholleur *> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QMap<int, Kholle *> *kholloscope, QString filename) {
     //Create the PDF Writer
     QPdfWriter writer(filename);
     writer.setPageSize(QPdfWriter::A3);
@@ -66,7 +67,7 @@ void PrintPDF::printKholles(QList<Student *> *students, QMap<int, Kholleur *> *k
 
     if(!painter.begin(&writer)) {
         QMessageBox::critical(NULL, "Erreur", "Erreur lors de l'écriture du fichier. Le fichier est peut-être ouvert ?");
-        return;
+        return false;
     }
 
     //Get size in default units
@@ -203,4 +204,249 @@ void PrintPDF::printKholles(QList<Student *> *students, QMap<int, Kholleur *> *k
     }
 
     painter.end();
+    return true;
+}
+
+bool PrintPDF::printKholles2(QList<Student *> *students, QMap<int, Kholleur *> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QMap<int, Kholle *> *kholloscope, QString filename) {
+    /// Create the PDF Writer
+    QPdfWriter writer(filename);
+    writer.setPageSize(QPdfWriter::A3);
+    writer.setPageOrientation(QPageLayout::Portrait);
+    writer.setPageMargins(QMarginsF(15, 15, 15, 15), QPageLayout::Millimeter);
+
+    QPainter painter;
+
+    if(!painter.begin(&writer)) {
+        QMessageBox::critical(NULL, "Erreur", "Erreur lors de l'écriture du fichier. Le fichier est peut-être ouvert ?");
+        return false;
+    }
+
+    //Get size in default units
+    int width = writer.width();
+    int height = writer.height();
+
+    //Paint here
+    painter.setPen(QPen(QBrush(Qt::black), 5));
+    QFont normal_font = painter.font();
+
+    /// Creation of the list of subjects
+    QMap<int, Subject*> subjects_map;
+    foreach(Kholle* k, *kholloscope) {
+        Subject* s = timeslots->value(k->getId_timeslots())->kholleur()->subject();
+        if(! subjects_map.contains(s->getId()))
+            subjects_map.insert(s->getId(), s);
+    }
+    QList<int> subjects_list;
+    QString maxSubjects = "";
+    int maxWidthSubjects = 0;
+    foreach(Subject* s, subjects_map) {
+        subjects_list.append(s->getId());
+        int width = QFontMetrics(normal_font).width(s->getName());
+        if(width > maxWidthSubjects) {
+            maxWidthSubjects = width;
+            maxSubjects = s->getName();
+        }
+    }
+    int nbColumns = subjects_list.length() + 1;
+
+    /// Creation of the grid
+    // Initialisation
+    QList<QList<QList<Kholle*>*>*>* grid = new QList<QList<QList<Kholle*>*>*>();
+    for(int i=0; i<students->length(); i++) {
+        grid->append(new QList<QList<Kholle*>*>);
+        for(int j=0; j<subjects_list.length(); j++)
+            grid->at(i)->append(new QList<Kholle*>);
+    }
+
+    QMap<int, int> assoc_students; //assoc table between student ids and their index in the alphabetical order list
+    QMap<int, int> assoc_subjects; //assoc table between subject ids and their index in the ordered list
+    for(int i = 0; i < students->length(); i++)
+        assoc_students.insert(students->at(i)->getId(), i);
+    for(int i = 0; i < subjects_list.length(); i++)
+        assoc_subjects.insert(subjects_list[i], i);
+
+    // Filling of the grid
+    foreach(Kholle* k, *kholloscope) {
+        int id_stdnt = k->getId_students();
+        int id_subject = timeslots->value(k->getId_timeslots())->kholleur()->getId_subjects();
+        grid->at(assoc_students[id_stdnt])->at(assoc_subjects[id_subject])->append(k);
+    }
+
+    //Number of rows (one student can be have many rows)
+    int num_rows = 3;
+    for(int i = 0; i < students->length(); i++) {
+        int height = heightStudent(i, grid);
+        num_rows += (height >= 1) ? height : 1;
+    }
+    int row_height = height / num_rows;
+
+    /// Create the stardard font
+    normal_font.setPointSize(1);
+    while(QFontMetrics(normal_font).lineSpacing() <= row_height &&
+          averageWidthStudents(QFontMetrics(normal_font), students) * 1.3 <= width/nbColumns &&
+          QFontMetrics(normal_font).width(" " + maxSubjects + " ") <= width/nbColumns)
+        normal_font.setPointSize(normal_font.pointSize() + 1);
+    normal_font.setPointSize(normal_font.pointSize() - 1);
+
+    QFontMetrics font = painter.fontMetrics();
+
+    /// Write title
+    writeTitle(&painter, width, 2*row_height, monday_date);
+    if(subjects_list.length() > 0) {
+        //Get font metrics
+        painter.setFont(normal_font);
+        font = painter.fontMetrics();
+
+        // Width of the columns (Name and others)
+        int name_width = averageWidthStudents(QFontMetrics(normal_font), students) * 1.4;
+        int cell_width = (width - name_width) / (nbColumns - 1);
+
+        /// Create First row of the kholloscope (with subjects)
+        // Horizontal line
+        painter.drawLine(0, 2*row_height, name_width + (nbColumns-1)*cell_width, 2*row_height);
+        painter.drawLine(0, 3*row_height, name_width + (nbColumns-1)*cell_width, 3*row_height);
+
+        // Write subjects
+        painter.setFont(normal_font);
+        font = painter.fontMetrics();
+        for(int i=0; i<subjects_list.count(); i++) {
+            Subject* s = subjects_map[subjects_list[i]];
+            painter.drawText(name_width + (2*i+1)*cell_width/2 - font.width(" " + s->getName() + " ")/2,
+                             2*row_height + (row_height - QFontMetrics(normal_font).height()) / 2 + font.ascent() + font.leading()/2,
+                             " " + s->getName() + " ");
+        }
+
+
+        /// Write the kholles
+        int numRow = 0;
+        QStringList initDays;
+        initDays << "" << "Lu" << "Ma" << "Me" << "Je" << "Ve" << "Sa" << "Di";
+        int height_lastLine = 2*row_height;
+        for(int i = 0; i < students->length(); i++) {
+            // For each student
+            int nbRowsStudent = 0;
+            for(int j=0; j < grid->at(i)->count(); j++) {
+                int nbRowsSubject = 0;
+                QList<Kholle*> *list = grid->at(i)->at(j);
+                for(int k = 0; k < list->length(); k++) {
+                    // Generate the text of the kholle
+                    Timeslot* ts = timeslots->value(list->at(k)->getId_timeslots());
+                    QString text = " " + initDays[timeslots->value(list->at(k)->getId_timeslots())->getDate().dayOfWeek()] + " " + ts->getTime_start().toString("HH:mm") +
+                                    " - " + kholleurs->value(timeslots->value(list->at(k)->getId_timeslots())->getId_kholleurs())->getName() + " ";
+
+                    // Choose a adapted font
+                    QFont kholle_font = QFont(normal_font);
+                    while(QFontMetrics(kholle_font).width(text) > cell_width)
+                        kholle_font.setPointSize(kholle_font.pointSize() - 1);
+                    painter.setFont(kholle_font);
+
+                    // Display the kholle
+                    painter.drawText(name_width + j*cell_width,
+                                     (3+numRow+k)*row_height + (row_height - QFontMetrics(kholle_font).height()) / 2 + QFontMetrics(kholle_font).ascent() + QFontMetrics(kholle_font).leading()/2,
+                                     text);
+                    nbRowsSubject++;
+
+                }
+                if(nbRowsSubject > nbRowsStudent)
+                    nbRowsStudent = nbRowsSubject;
+            }
+            // Write the student name and draw a horizontal line
+            nbRowsStudent = (nbRowsStudent > 0) ? nbRowsStudent : 1;
+            painter.setFont(normal_font);
+            painter.drawText(0, (3+numRow)*row_height + (nbRowsStudent-1)*row_height/2 + (row_height - QFontMetrics(normal_font).height()) / 2 + nbRowsStudent+ font.ascent() + font.leading()/2,
+                             displayStudent(students->at(i), name_width, normal_font));
+            numRow += nbRowsStudent;
+            painter.drawLine(0, (3+numRow)*row_height, name_width + (nbColumns-1)*cell_width, (3+numRow)*row_height);
+            height_lastLine = (3+numRow)*row_height;
+        }
+
+        /// Draw the vertical lines
+        painter.drawLine(0, 2*row_height, 0, height_lastLine);
+        for(int i=0; i<=subjects_list.count(); i++)
+            painter.drawLine(name_width + i*cell_width, 2*row_height, name_width + i*cell_width, height_lastLine);
+    } else {
+        painter.setFont(normal_font);
+        QString textInfo = "Pas de kholles cette semaine...";
+        painter.drawText((width-QFontMetrics(normal_font).width(textInfo))/2, (height-QFontMetrics(normal_font).height())/2, textInfo);
+    }
+
+    /// Delete the GRID
+    while(!grid->isEmpty()) {
+        QList<QList<Kholle*>*> *column = grid->takeFirst();
+        while(!column->isEmpty()) {
+            QList<Kholle*> *kholles = column->takeFirst();
+            kholles->clear(); //Only clear, don't delete Kholles, they will be free'd in destructor
+            delete kholles;
+        }
+        delete column;
+    }
+
+    painter.end();
+    return true;
+}
+
+int PrintPDF::heightStudent(int numStudent, QList<QList<QList<Kholle*>*>*>* grid) {
+    QList<QList<Kholle*>*>* subjects = grid->at(numStudent);
+    int height = 0;
+    for(int i=0; i<subjects->length(); i++) {
+        if(height < subjects->at(i)->length())
+            height = subjects->at(i)->length();
+    }
+    return height;
+}
+
+QString PrintPDF::longestUserWithSpaces(QFontMetrics font, QList<Student *> *students) {
+    int max = 0;
+    QString textMax = "";
+    for(int i = 0; i < students->length(); i++) {
+        QString text = " " + students->at(i)->getName() + "  " + students->at(i)->getFirst_name() + " ";
+        int width = font.width(text);
+        if(width > max) {
+            max = width;
+            textMax = text;
+        }
+    }
+    return textMax;
+}
+
+double PrintPDF::averageWidthStudents(QFontMetrics font, QList<Student *> *students) {
+    int sum = 0;
+    for(int i = 0; i < students->length(); i++) {
+        QString text = " " + students->at(i)->getName() + "  " + students->at(i)->getFirst_name() + " ";
+        sum += font.width(text);
+    }
+    return (sum/students->length());
+}
+
+bool PrintPDF::writeTitle(QPainter* painter, int width, int maxHeight, QDate monday, double ratio) {
+    QString title = "Semaine du lundi " + monday.toString("dd/MM/yyyy") + " au samedi " + monday.addDays(5).toString("dd/MM/yyyy");
+
+    QFont title_font = painter->font();
+    title_font.setBold(true);
+    if(QFontMetrics(title_font).lineSpacing() > maxHeight || QFontMetrics(title_font).width(title) > width*ratio) {
+        while(QFontMetrics(title_font).lineSpacing() > maxHeight || QFontMetrics(title_font).width(title) > width*ratio)
+            title_font.setPointSize(title_font.pointSize() - 1);
+    }
+
+    if(QFontMetrics(title_font).lineSpacing() < maxHeight && QFontMetrics(title_font).width(title) < width*ratio) {
+        while(QFontMetrics(title_font).lineSpacing() <= maxHeight && QFontMetrics(title_font).width(title) <= width*ratio)
+            title_font.setPointSize(title_font.pointSize() + 1);
+        title_font.setPointSize(title_font.pointSize() - 1);
+    }
+
+    //Draw the title
+    painter->setFont(title_font);
+    QFontMetrics font = painter->fontMetrics();
+    painter->drawText((width - font.width(title)) / 2, (maxHeight-font.height())/2 + font.ascent() + font.leading()/2, title);
+    return true;
+}
+
+QString PrintPDF::displayStudent(Student* s, int maxWidth, QFont font) {
+    QString standardText = " " + s->getName() + " " + s->getFirst_name() + " ";
+    QString text = standardText;
+    while(QFontMetrics(font).width(text) > maxWidth && standardText != "") {
+        standardText.resize(standardText.length()-1);
+        text = standardText + "... ";
+    }
+    return text;
 }
