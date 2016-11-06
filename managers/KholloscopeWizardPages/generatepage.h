@@ -64,12 +64,14 @@ public:
     working_index *findMax();
     bool generate();
 
+    void saveInSql();
     void setStatus();
     bool exchange(int index, bool only_warnings, int score_limit);
 
     void msg_display();
     int nearestKholle(Student*, Timeslot*);
     void display();
+    void displayCollision();
     void displayBlocking();
 
     void freeKholles();

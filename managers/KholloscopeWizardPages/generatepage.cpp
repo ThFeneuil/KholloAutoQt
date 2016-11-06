@@ -26,6 +26,7 @@ GeneratePage::GeneratePage(QSqlDatabase *db, QWidget *parent) :
 GeneratePage::~GeneratePage() {
     m_abort = true;
     m_watcher.waitForFinished();
+    m_db->rollback();
 
     delete ui;
 
@@ -109,13 +110,14 @@ void GeneratePage::cleanupPage() {
     //Abort operation
     m_abort = true;
     m_watcher.waitForFinished();
+    m_db->rollback();
 
     m_box->hide();
     disconnect(m_box, SIGNAL(finished(int)), this, SLOT(abort()));
     disconnect(&m_watcher, SIGNAL(finished()), this, SLOT(finished()));
 
     //Clear list
-    ui->tableWidget->clear();
+    ui->tableKhollo->clear();
 
     //delete m_dbase;
     //QMessageBox::information(this, "OK", "cleanupPage() called...");
@@ -603,6 +605,9 @@ void GeneratePage::finished() {
         delete log_file;
         log_file = NULL;
     }
+    m_db->transaction();
+    saveInSql();
+
     setStatus();
 
     if(!m_watcher.future().result())
@@ -611,8 +616,12 @@ void GeneratePage::finished() {
         exchange(0, true, 40);
         exchange(0, false, 15);
     }
+    m_db->rollback();
+    m_db->transaction();
+    saveInSql();
 
     display();
+    displayCollision();
     m_box->hide();
 
 }
@@ -647,6 +656,20 @@ int GeneratePage::nearestKholle(Student *user, Timeslot *timeslot) {
         return (-1);
     else
         return weeksTo(m, timeslot);
+}
+
+void GeneratePage::saveInSql() {
+    for(int i = 0; i < kholloscope.length(); i++) {
+        //Get kholle
+        Kholle* k = kholloscope[i];
+
+        //Prepare query for insertion
+        QSqlQuery query(*m_db);
+        query.prepare("INSERT INTO tau_kholles(id_users, id_timeslots) VALUES(:id_students, :id_timeslots)");
+        query.bindValue(":id_students", k->getId_students());
+        query.bindValue(":id_timeslots", k->getId_timeslots());
+        query.exec();
+    }
 }
 
 void GeneratePage::setStatus() {
@@ -726,9 +749,9 @@ bool GeneratePage::exchange(int index, bool only_warnings, int score_limit) {
 
 void GeneratePage::display() {
     /** To display in the list **/
-    ui->tableWidget->clear();
-    ui->tableWidget->setRowCount(kholloscope.length());
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->tableKhollo->clear();
+    ui->tableKhollo->setRowCount(kholloscope.length());
+    ui->tableKhollo->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     int i;
     for(i = 0; i < kholloscope.length(); i++) {
         Student* student = m_dbase->listStudents()->value(kholloscope[i]->getId_students());
@@ -744,11 +767,11 @@ void GeneratePage::display() {
 
             if(weeks == -1) {
                 QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", jamais");
-                ui->tableWidget->setItem(i, 1, right);
+                ui->tableKhollo->setItem(i, 1, right);
             }
             else {
                 QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaines");
-                ui->tableWidget->setItem(i, 1, right);
+                ui->tableKhollo->setItem(i, 1, right);
             }
 
         }
@@ -756,15 +779,52 @@ void GeneratePage::display() {
             left->setIcon(QIcon(QPixmap(":/images/error.png")));
 
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaine");
-            ui->tableWidget->setItem(i, 1, right);
+            ui->tableKhollo->setItem(i, 1, right);
         }
         else {
             left->setIcon(QIcon(QPixmap(":/images/warning.png")));
 
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaines");
-            ui->tableWidget->setItem(i, 1, right);
+            ui->tableKhollo->setItem(i, 1, right);
         }
-        ui->tableWidget->setItem(i, 0, left);
+        ui->tableKhollo->setItem(i, 0, left);
+    }
+}
+
+void GeneratePage::displayCollision() {
+    /** To display when kholles are on the same day **/
+    delete m_dbase;
+    m_dbase = new DataBase(m_db);
+    m_dbase->setConditionTimeslots("`date` >= '"+ m_date.toString("yyyy-MM-dd") +"' AND `date` < '" + m_date.addDays(7).toString("yyyy-MM-dd") + "'");
+    m_dbase->load();
+
+    ui->tableCollision->clear();
+    ui->tableCollision->setRowCount(0);
+    ui->tableCollision->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+    QStringList days;
+    days << "" << "Lundi" << "Mardi" << "Mercredi" << "Jeudi" << "Vendredi" << "Samedi" << "Dimanche";
+
+    foreach(Kholle* ki, *m_dbase->listKholles()) {
+        foreach(Kholle* kj, *m_dbase->listKholles()) {
+            if(ki->getId() <= kj->getId())
+                continue;
+            Timeslot* tsi = ki->timeslot();
+            Student* sti = ki->student();
+            Timeslot* tsj = kj->timeslot();
+            Student* stj = kj->student();
+            if(sti->getId() == stj->getId()
+                    && tsi->getDate() == tsj->getDate()) {
+                int r = ui->tableCollision->rowCount();
+                ui->tableCollision->setRowCount(r + 1);
+
+                QTableWidgetItem *left = new QTableWidgetItem(sti->getName() + ", " + tsi->kholleur()->subject()->getShortName() + " / " + tsj->kholleur()->subject()->getShortName() + " :");
+                ui->tableCollision->setItem(r, 0, left);
+
+                QTableWidgetItem *right = new QTableWidgetItem(days[tsi->getDate().dayOfWeek()] + " " + tsi->getTime_start().toString() + " / " + tsj->getTime_start().toString());
+                ui->tableCollision->setItem(r, 1, right);
+            }
+        }
     }
 }
 
@@ -797,24 +857,12 @@ void GeneratePage::saveKholles() {
     //Wait for finish if not finished
     m_watcher.waitForFinished();
 
-    int i;
-
     //Only if checkbox selected...
     if(ui->checkBox->isChecked()) {
         QMessageBox box(QMessageBox::Information, "Sauvegarde en cours", "Veuillez patienter...");
         box.show();
+        m_db->commit();
 
-        for(i = 0; i < kholloscope.length(); i++) {
-            //Get kholle
-            Kholle* k = kholloscope[i];
-
-            //Prepare query for insertion
-            QSqlQuery query(*m_db);
-            query.prepare("INSERT INTO tau_kholles(id_users, id_timeslots) VALUES(:id_students, :id_timeslots)");
-            query.bindValue(":id_students", k->getId_students());
-            query.bindValue(":id_timeslots", k->getId_timeslots());
-            query.exec();
-        }
         box.hide();
     }
 
