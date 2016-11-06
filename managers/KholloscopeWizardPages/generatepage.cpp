@@ -876,11 +876,7 @@ void GeneratePage::saveKholles() {
                 khollo->insert(k->getId(), k);
         }
 
-        //Add the generated kholles
-        int i;
-        for(i = 0; i < kholloscope.length(); i++) {
-            khollo->insertMulti(0, kholloscope[i]);
-        }
+
 
         //Print!
         //QMessageBox::information(this, "OK", QString::number(kholloscope.length()));
