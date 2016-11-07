@@ -145,10 +145,12 @@ void KholloTable::displayTable() {
             else
                 addRect(*slot->getArea(), QPen(Qt::black, 0), QBrush(Qt::red, Qt::DiagCrossPattern));
             // Display the filling of the timeslot
-            int wLoading = slot->kholles()->count()*m_sizeImg[BetweenDays]/slot->getPupils();
-            if(wLoading > m_sizeImg[BetweenDays])
-                wLoading = m_sizeImg[BetweenDays];
-            addRect(QRect(x,y,wLoading,h), QPen(Qt::blue, 1), QBrush(Qt::blue, Qt::Dense5Pattern));
+            if(slot->getPupils() > 0) {
+                int wLoading = slot->kholles()->count()*m_sizeImg[BetweenDays]/slot->getPupils();
+                if(wLoading > m_sizeImg[BetweenDays])
+                    wLoading = m_sizeImg[BetweenDays];
+                addRect(QRect(x,y,wLoading,h), QPen(Qt::blue, 1), QBrush(Qt::blue, Qt::Dense5Pattern));
+            }
             // Detect if the selected student is in the timeslot
             bool isInKholle = false;
             for(int j=0; j<slot->kholles()->count(); j++)

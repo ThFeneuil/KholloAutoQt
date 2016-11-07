@@ -37,7 +37,10 @@ bool GroupsSwappingsManager::swapGroups() {
     Group* gr2 = (Group*) ui->comboBox_group2->currentData().toLongLong();
     bool swapStudents = ui->radioButton_swapStudents->isChecked();
 
-    if(gr1->getId() == gr2->getId()) {
+    if(gr1 == NULL || gr2 == NULL) {
+        QMessageBox::critical(NULL, "Echange impossible", "Veuillez sélectionner des groupes à échanger...");
+        return false;
+    } else if(gr1->getId() == gr2->getId()) {
         QMessageBox::critical(NULL, "Echange impossible", "Vous avez sélectionné le même groupe.");
         return false;
     } else if(swapStudents) {
