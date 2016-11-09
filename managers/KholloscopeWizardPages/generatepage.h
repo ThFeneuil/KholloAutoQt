@@ -22,6 +22,7 @@
 #include "storedData/kholleur.h"
 #include "storedData/kholle.h"
 #include "database.h"
+#include "notepad.h"
 #include "managers/kholloscopewizard.h"
 #include "mainwindow.h"
 #include "printpdf.h"
@@ -80,6 +81,8 @@ public slots:
     void saveKholles();
     void finished();
     void abort();
+    void show_notepad_collisions();
+    void show_notepad_khollo();
 
 private:
     Ui::GeneratePage *ui;
@@ -99,6 +102,9 @@ private:
     QList<Kholle*> kholloscope;
 
     QMap<int, bool> m_downgraded;
+    QString timestamp;
+    QString khollo_message;
+    QString collisions_message;
 
     bool m_abort;
     QFutureWatcher<bool> m_watcher;

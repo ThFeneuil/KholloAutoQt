@@ -21,6 +21,10 @@ GeneratePage::GeneratePage(QSqlDatabase *db, QWidget *parent) :
 
     //Pointer to MainWindow
     m_window = parent;
+
+    //Connect buttons to slots
+    connect(ui->notepad_khollo, SIGNAL(clicked()), this, SLOT(show_notepad_khollo()));
+    connect(ui->notepad_collisions, SIGNAL(clicked()), this, SLOT(show_notepad_collisions()));
 }
 
 GeneratePage::~GeneratePage() {
@@ -600,6 +604,7 @@ bool GeneratePage::generate() {
 
 void GeneratePage::finished() {
     /** Called when the background process finishes **/
+    timestamp = QString::number(QDateTime::currentMSecsSinceEpoch());
 
     if(log_file != NULL) {
         delete log_file;
@@ -669,6 +674,7 @@ void GeneratePage::saveInSql() {
         query.bindValue(":id_students", k->getId_students());
         query.bindValue(":id_timeslots", k->getId_timeslots());
         query.exec();
+        kholloscope[i]->setId(query.lastInsertId().toInt());
     }
 }
 
@@ -738,6 +744,18 @@ bool GeneratePage::exchange(int index, bool only_warnings, int score_limit) {
                     k->setStatus(Kholle::OK);
                     m_downgraded.insert(s->getId(), true);
                     m_downgraded.insert(s_current->getId(), false);
+
+                    QSqlQuery query(*m_db);
+                    query.prepare("UPDATE tau_kholles SET id_timeslots=:id_ts WHERE id=:id");
+                    query.bindValue(":id", current->getId());
+                    query.bindValue(":id_ts", t->getId());
+                    query.exec();
+
+                    query.prepare("UPDATE tau_kholles SET id_timeslots=:id_ts WHERE id=:id");
+                    query.bindValue(":id", k->getId());
+                    query.bindValue(":id_ts", t_current->getId());
+                    query.exec();
+
                     break;
                 }
             }
@@ -752,8 +770,11 @@ void GeneratePage::display() {
     ui->tableKhollo->clear();
     ui->tableKhollo->setRowCount(kholloscope.length());
     ui->tableKhollo->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    int i;
-    for(i = 0; i < kholloscope.length(); i++) {
+
+    khollo_message  = "========== Génération du " + m_date.toString("dd/MM/yyyy") + " ==========\n";
+    khollo_message += "                                 Erreurs et warnings\n";
+
+    for(int i = 0; i < kholloscope.length(); i++) {
         Student* student = m_dbase->listStudents()->value(kholloscope[i]->getId_students());
         Timeslot* timeslot = m_dbase->listTimeslots()->value(kholloscope[i]->getId_timeslots());
         Subject* subject = timeslot->kholleur()->subject();
@@ -780,12 +801,16 @@ void GeneratePage::display() {
 
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaine");
             ui->tableKhollo->setItem(i, 1, right);
+
+            khollo_message += student->getName() + " " + student->getFirst_name() + " : Erreur\n";
         }
         else {
             left->setIcon(QIcon(QPixmap(":/images/warning.png")));
 
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaines");
             ui->tableKhollo->setItem(i, 1, right);
+
+            khollo_message += student->getName() + " " + student->getFirst_name() + " : Warning\n";
         }
         ui->tableKhollo->setItem(i, 0, left);
     }
@@ -797,6 +822,9 @@ void GeneratePage::displayCollision() {
     m_dbase = new DataBase(m_db);
     m_dbase->setConditionTimeslots("`date` >= '"+ m_date.toString("yyyy-MM-dd") +"' AND `date` < '" + m_date.addDays(7).toString("yyyy-MM-dd") + "'");
     m_dbase->load();
+
+    collisions_message  = "========== Génération du " + m_date.toString("dd/MM/yyyy") + " ==========\n";
+    collisions_message += "                                         Collisions\n";
 
     ui->tableCollision->clear();
     ui->tableCollision->setRowCount(0);
@@ -823,8 +851,22 @@ void GeneratePage::displayCollision() {
 
                 QTableWidgetItem *right = new QTableWidgetItem(days[tsi->getDate().dayOfWeek()] + " " + tsi->getTime_start().toString() + " / " + tsj->getTime_start().toString());
                 ui->tableCollision->setItem(r, 1, right);
+
+                collisions_message += sti->getName() + " " + sti->getFirst_name() + " : " + tsi->kholleur()->subject()->getShortName() + " / " + tsj->kholleur()->subject()->getShortName() + "\n";
             }
         }
+    }
+}
+
+void GeneratePage::show_notepad_khollo() {
+    if(timestamp != "" && khollo_message != "") {
+        Notepad::add(timestamp, khollo_message);
+    }
+}
+
+void GeneratePage::show_notepad_collisions() {
+    if(timestamp != "" && collisions_message != "") {
+        Notepad::add(timestamp, collisions_message);
     }
 }
 
