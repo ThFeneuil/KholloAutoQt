@@ -12,6 +12,7 @@
 #include <QPdfWriter>
 #include <QPainter>
 #include <QMessageBox>
+#include <QtDebug>
 #include <QCoreApplication>
 #include "storedData/student.h"
 #include "storedData/kholleur.h"
@@ -32,6 +33,7 @@ private:
     static bool writeTitle(QPainter* painter, int width, int maxHeight, QDate monday, double ratio = 4./5);
     static double averageWidthStudents(QFontMetrics font, QList<Student *> *students);
     static QString displayStudent(Student* s, int maxWidth, QFont font);
+    static void displaySPARK(QPainter* painter, int width, int height, int maxHeight, QFont normal);
 };
 
 #endif // PRINTPDF_Hs

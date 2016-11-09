@@ -336,7 +336,13 @@ void MainWindow::openKhollo() {
         return;
     }
 
-    openKhollo(fileDB);
+    QString suffix = QFileInfo(fileDB).suffix().toUpper();
+    // Check the file suffix
+    if(suffix == "KSCOPE")
+        openKhollo(fileDB); // Try to open the file
+    else
+        QMessageBox::critical(this, "Fichier non pris en charge", "Erreur : Fichier " + QFileInfo(fileDB).suffix().toUpper() + " non pris en charge.");
+
     return;
 }
 

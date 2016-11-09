@@ -43,7 +43,7 @@ bool KScopeManager::openFile(QString path) {
     else if(nbRectifications == 1)
         QMessageBox::information(NULL, "Succès", "Une anomalie a été détectée et corrigée dans votre fichier.<br />Vous pouvez, dès à présent, utiliser votre kholloscope.");
     else
-        QMessageBox::information(NULL, "Succès", QString::number(nbRectifications) + "anomalies ont été détectées et corrigées dans votre fichier.<br />Vous pouvez, dès à présent, utiliser votre kholloscope.");
+        QMessageBox::information(NULL, "Succès", QString::number(nbRectifications) + " anomalies ont été détectées et corrigées dans votre fichier.<br />Vous pouvez, dès à présent, utiliser votre kholloscope.");
 
     return true;
 }

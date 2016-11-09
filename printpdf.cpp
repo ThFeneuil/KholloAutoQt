@@ -6,6 +6,11 @@ PrintPDF::PrintPDF()
 }
 
 void PrintPDF::printKholles(QList<Student *> *students, QMap<int, Kholleur *> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QMap<int, Kholle *> *kholloscope) {
+    if(students->length() <= 0) {
+        QMessageBox::critical(NULL, "Echec", "Aucun élève n'a été sélectionné.");
+        return;
+    }
+
     //Try to load directory preferences
     Preferences pref;
     QString pref_path = pref.dir();
@@ -39,6 +44,7 @@ bool PrintPDF::printKholles_StudentsDays(QList<Student *> *students, QMap<int, K
     writer.setPageSize(QPdfWriter::A3);
     writer.setPageOrientation(QPageLayout::Landscape);
     writer.setPageMargins(QMarginsF(15, 15, 15, 15), QPageLayout::Millimeter);
+    writer.setCreator("SPARK Kholloscope");
 
     QPainter painter;
 
@@ -57,7 +63,7 @@ bool PrintPDF::printKholles_StudentsDays(QList<Student *> *students, QMap<int, K
     //Calculate line height and cell width
 
     //Number of rows
-    int num_rows = students->length() + 3;
+    int num_rows = students->length() + 3 + 1;
     int row_height = height / num_rows;
 
     //Create two fonts -> one for the normal text, one for title
@@ -92,9 +98,9 @@ bool PrintPDF::printKholles_StudentsDays(QList<Student *> *students, QMap<int, K
     int cell_width = (width - name_width) / 6;
 
     //Draw the grid
-    painter.drawLine(0, 2*row_height, 0, height);
+    painter.drawLine(0, 2*row_height, 0, height-row_height);
     for(int i=0; i<=6; i++)
-        painter.drawLine(name_width + i*cell_width, 2*row_height, name_width + i*cell_width, height);
+        painter.drawLine(name_width + i*cell_width, 2*row_height, name_width + i*cell_width, height-row_height);
 
     painter.drawLine(0, 2*row_height, width, 2*row_height);
 
@@ -156,6 +162,7 @@ bool PrintPDF::printKholles_StudentsDays(QList<Student *> *students, QMap<int, K
             painter.setFont(normal_font); //Put back normal font
         }
     }
+    displaySPARK(&painter, width, height-row_height, row_height, normal_font);
 
     //Delete QLists
     while(!kholles.isEmpty()) {
@@ -328,6 +335,7 @@ bool PrintPDF::printKholles_StudentsSubjects(QList<Student *> *students, QMap<in
     writer.setPageSize(QPdfWriter::A3);
     writer.setPageOrientation(QPageLayout::Portrait);
     writer.setPageMargins(QMarginsF(15, 15, 15, 15), QPageLayout::Millimeter);
+    writer.setCreator("SPARK Kholloscope");
 
     QPainter painter;
 
@@ -388,7 +396,7 @@ bool PrintPDF::printKholles_StudentsSubjects(QList<Student *> *students, QMap<in
     }
 
     //Number of rows (one student can be have many rows)
-    int num_rows = 3;
+    int num_rows = 3 + 1;
     for(int i = 0; i < students->length(); i++) {
         int height = heightStudent(i, grid);
         num_rows += (height >= 1) ? height : 1;
@@ -479,11 +487,18 @@ bool PrintPDF::printKholles_StudentsSubjects(QList<Student *> *students, QMap<in
         painter.drawLine(0, 2*row_height, 0, height_lastLine);
         for(int i=0; i<=subjects_list.count(); i++)
             painter.drawLine(name_width + i*cell_width, 2*row_height, name_width + i*cell_width, height_lastLine);
+
+        displaySPARK(&painter, width, height_lastLine, row_height, normal_font);
     } else {
-        painter.setFont(normal_font);
+        QFont text_font = QFont(normal_font);
+        text_font.setPointSize(40);
+        painter.setFont(text_font);
         QString textInfo = "Pas de kholles cette semaine...";
-        painter.drawText((width-QFontMetrics(normal_font).width(textInfo))/2, (height-QFontMetrics(normal_font).height())/2, textInfo);
+        painter.drawText((width-QFontMetrics(text_font).width(textInfo))/2, (height-QFontMetrics(text_font).height())/2, textInfo);
+
+        displaySPARK(&painter, width, height - row_height, row_height, text_font);
     }
+
 
     /// Delete the GRID
     while(!grid->isEmpty()) {
@@ -560,4 +575,19 @@ QString PrintPDF::displayStudent(Student* s, int maxWidth, QFont font) {
         text = standardText + "... ";
     }
     return text;
+}
+
+void PrintPDF::displaySPARK(QPainter* painter, int width, int height, int maxHeight, QFont normal) {
+    QString text = "Généré par S.P.A.R.K.";
+
+    // Choose the font
+    QFont signature_font = QFont(normal);
+    while(QFontMetrics(signature_font).lineSpacing() > maxHeight ||
+          QFontMetrics(signature_font).width(text) > width ||
+          signature_font.pointSize() > 13)
+        signature_font.setPointSize(signature_font.pointSize() - 1);
+
+    painter->setFont(signature_font);
+    QFontMetrics font = painter->fontMetrics();
+    painter->drawText(width - font.width(text), height + (maxHeight-font.height())/2 + font.ascent() + font.leading()/2, text);
 }
