@@ -131,7 +131,7 @@ RESOURCES += \
     khollo.qrc
 
 VERSION = 1.1
-QMAKE_TARGET_PRODUCT = "KholloAuto\0"
+QMAKE_TARGET_PRODUCT = "SPARK\0"
 
 win32:RC_ICONS += "images/iconApp.ico"
 macx {
