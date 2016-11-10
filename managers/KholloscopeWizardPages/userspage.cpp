@@ -30,7 +30,7 @@ void UsersPage::initializePage() {
     int i;
     for(i = 0; i < list_selected_subjects->length(); i++) {
         QListWidget *list = new QListWidget();
-        populate(list);
+        populate(list, list_selected_subjects->at(i)->getId());
         list->setSelectionMode(QAbstractItemView::MultiSelection);
         ui->tabWidget->addTab(list, list_selected_subjects->at(i)->getShortName());
 
@@ -67,16 +67,34 @@ void UsersPage::get_selected_subjects() {
 }
 
 
-void UsersPage::populate(QListWidget *list) {
+void UsersPage::populate(QListWidget *list, int id_subject) {
     //Empty the list
     list->clear();
+
+    //Make request in this subject
+    QSqlQuery query(*m_db);
+    query.prepare("SELECT K.`id_users`, COUNT(K.`id`) FROM tau_kholles AS K WHERE K.`id_timeslots` IN "
+                    "(SELECT T.`id` FROM tau_timeslots AS T JOIN tau_kholleurs AS KR ON T.`id_kholleurs` = KR.`id` WHERE KR.`id_subjects` = :id_subject) "
+                    "GROUP BY K.`id_users`;");
+    query.bindValue(":id_subject", id_subject);
+    query.exec();
+
+    QMap<int, int> number_kholles;
+
+    while(query.next()) {
+        number_kholles.insert(query.value(0).toInt(), query.value(1).toInt());
+    }
 
     //Populate list
     QList<Student*>* students = ((KholloscopeWizard*) wizard())->get_students();
 
     int i;
     for(i = 0; i < students->length(); i++) {
-        QListWidgetItem *item = new QListWidgetItem(students->at(i)->getName() + ", " + students->at(i)->getFirst_name(), list);
+        int n = 0;
+        if(number_kholles.contains(students->value(i)->getId()))
+            n = number_kholles.value(students->value(i)->getId());
+
+        QListWidgetItem *item = new QListWidgetItem("[" + QString::number(n) + "] " + students->at(i)->getName() + ", " + students->at(i)->getFirst_name(), list);
         item->setData(Qt::UserRole, (qulonglong) students->at(i));
     }
 }
