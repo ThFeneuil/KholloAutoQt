@@ -32,7 +32,15 @@ void UsersPage::initializePage() {
         QListWidget *list = new QListWidget();
         populate(list, list_selected_subjects->at(i)->getId());
         list->setSelectionMode(QAbstractItemView::MultiSelection);
-        ui->tabWidget->addTab(list, list_selected_subjects->at(i)->getShortName());
+
+        QVBoxLayout *layout = new QVBoxLayout();
+        layout->addWidget(list);
+        layout->addWidget(new QLabel("0 élève sélectionné"));
+
+        QWidget *widget = new QWidget();
+        widget->setLayout(layout);
+        ui->tabWidget->addTab(widget, list_selected_subjects->at(i)->getShortName());
+                //addTab(list, list_selected_subjects->at(i)->getShortName());
 
         connect(list, SIGNAL(itemSelectionChanged()), this, SLOT(selection_changed()));
     }
@@ -101,14 +109,23 @@ void UsersPage::populate(QListWidget *list, int id_subject) {
 
 void UsersPage::selection_changed() {
     QMap<int, QList<Student*> > *input = ((KholloscopeWizard*) wizard())->get_input();
-    int i, j;
-    for(i = 0; i < ui->tabWidget->count(); i++) {
-        QList<QListWidgetItem*> selection = ((QListWidget*)ui->tabWidget->widget(i))->selectedItems();
-        QList<Student*> students;
 
-        for(j = 0; j < selection.length(); j++) {
-            students.append((Student*) selection[j]->data(Qt::UserRole).toULongLong());
-        }
-        input->insert(list_selected_subjects->at(i)->getId(), students);
+    int i = ui->tabWidget->currentIndex();
+    if(i == -1)
+        return;
+
+    QLayout *layout = (QLayout*) ui->tabWidget->widget(i)->layout();
+    QListWidget *list = (QListWidget*) layout->itemAt(0)->widget();;
+    QLabel *label = (QLabel*) layout->itemAt(1)->widget();
+
+    QList<QListWidgetItem*> selection = list->selectedItems();
+    QList<Student*> students;
+
+    for(int j = 0; j < selection.length(); j++) {
+        students.append((Student*) selection[j]->data(Qt::UserRole).toULongLong());
     }
+    input->insert(list_selected_subjects->at(i)->getId(), students);
+
+    QString text = QString::number(selection.length()) + (selection.length() <= 1 ? " élève sélectionné" : " élèves sélectionnés");
+    label->setText(text);
 }
