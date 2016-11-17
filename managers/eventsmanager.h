@@ -8,6 +8,7 @@
 #include <QListWidget>
 #include "managers/updateeventdialog.h"
 #include "storedData/event.h"
+#include "notepad.h"
 
 namespace Ui {
 class EventsManager;
@@ -33,6 +34,7 @@ private:
     Ui::EventsManager *ui;
     QSqlDatabase *m_db;
     QQueue<Event*> queue_displayedEvents;  // Displayed events in the list "Events"
+    QAction* m_shortcutNotepad;
 };
 
 #endif // EVENTSMANAGER_H

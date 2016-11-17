@@ -12,6 +12,8 @@ LastChanges::LastChanges(QSqlDatabase *db, int id_week, QDate *monday, QWidget *
     m_monday = monday;
     m_id_week = id_week;
     days << "" << "Lundi" << "Mardi" << "Mercredi" << "Jeudi" << "Vendredi" << "Samedi";
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 
     QSqlQuery query(*m_db);
     query.exec("SELECT K.id, K.name, K.id_subjects, K.duration, K.preparation, K.pupils, S.shortName "
@@ -66,6 +68,8 @@ LastChanges::~LastChanges()
     while (!queue_displayedKholleurs.isEmpty())
         delete queue_displayedKholleurs.dequeue();
     free_timeslots();
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
 }
 
 bool LastChanges::free_timeslots() {

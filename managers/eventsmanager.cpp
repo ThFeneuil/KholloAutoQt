@@ -8,6 +8,8 @@ EventsManager::EventsManager(QSqlDatabase *db, QWidget *parent) :
     // Initialisation
     ui->setupUi(this);
     m_db = db;
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 
     // Connect the buttons
     connect(ui->list_events, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(display_event(QListWidgetItem*)));
@@ -24,6 +26,8 @@ EventsManager::EventsManager(QSqlDatabase *db, QWidget *parent) :
 EventsManager::~EventsManager() {
     delete ui;
     free_events();
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
 }
 
 bool EventsManager::free_events() {

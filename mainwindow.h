@@ -24,6 +24,7 @@
 #include "reviewdialog.h"
 #include "kscopemanager.h"
 #include "settingsdialog.h"
+#include "notepad.h"
 
 namespace Ui {
 class MainWindow;
@@ -75,6 +76,7 @@ private:
     QTimer* m_timer;
     int m_idRecord;
     QStringList args;
+    QAction* m_shortcutNotepad;
 };
 
 #endif // MAINWINDOW_H

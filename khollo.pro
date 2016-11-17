@@ -77,7 +77,8 @@ HEADERS += \
     kscopemanager.h \
     managers/groupsswappingsmanager.h \
     notepad.h \
-    settingsdialog.h
+    settingsdialog.h \
+    interface/interfaceactionsrecord.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -124,7 +125,8 @@ SOURCES += \
     kscopemanager.cpp \
     managers/groupsswappingsmanager.cpp \
     notepad.cpp \
-    settingsdialog.cpp
+    settingsdialog.cpp \
+    interface/interfaceactionsrecord.cpp
 DISTFILES +=
 
 RESOURCES += \

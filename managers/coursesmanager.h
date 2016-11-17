@@ -13,6 +13,7 @@
 #include "storedData/subject.h"
 #include "storedData/teacher.h"
 #include "storedData/course.h"
+#include "notepad.h"
 
 namespace Ui {
 class CoursesManager;
@@ -53,6 +54,7 @@ private:
     Group *current;
     QList<QTime> begin_times;
     QList<QTime> end_times;
+    QAction* m_shortcutNotepad;
 };
 
 #endif // COURSESMANAGER_H

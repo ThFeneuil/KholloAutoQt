@@ -26,10 +26,14 @@ GroupsSwappingsManager::GroupsSwappingsManager(QSqlDatabase *db, QWidget *parent
     }
 
     connect(ui->pushButton_valid, SIGNAL(clicked(bool)), this, SLOT(swapGroups()));
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 }
 
 GroupsSwappingsManager::~GroupsSwappingsManager() {
     delete ui;
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
 }
 
 bool GroupsSwappingsManager::swapGroups() {

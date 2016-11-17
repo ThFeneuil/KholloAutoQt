@@ -6,6 +6,7 @@
 #include <QSqlQuery>
 #include <QMessageBox>
 #include "storedData/group.h"
+#include "notepad.h"
 
 namespace Ui {
 class GroupsSwappingsManager;
@@ -26,6 +27,7 @@ private:
     Ui::GroupsSwappingsManager *ui;
     QSqlDatabase* m_db;
     QList<Group*>* m_listGroups;
+    QAction* m_shortcutNotepad;
 };
 
 #endif // GROUPSSWAPPINGSMANAGER_H

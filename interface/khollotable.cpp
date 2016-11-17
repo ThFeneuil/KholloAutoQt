@@ -105,6 +105,7 @@ void KholloTable::displayTable() {
 
         // Display the kholles of the student
         QList<Kholle*>* listKholles = m_student->kholles();
+        QQueue<QRect> khollesInCurrentSubject;
         for(int i=0; i<listKholles->count(); i++) { // For each kholle where there is the student
             Kholle* klle = listKholles->at(i);
             Timeslot* slot = klle->timeslot();
@@ -119,9 +120,13 @@ void KholloTable::displayTable() {
             QRect rect(x,y,w,h);
             if(slot->kholleur()->getId_subjects() == m_tab->getSubject()->getId())
                     addRect(rect, QPen(Qt::black, 0), QBrush(QColor(255,201,14)));
-            else    addRect(rect, QPen(Qt::black, 0), QBrush(QColor(255,220,100)));
+            else    khollesInCurrentSubject.append(rect);
             // Save the area to draw the frame profile at the end
             areaCourses.append(rect);
+        }
+        while (!khollesInCurrentSubject.isEmpty()) {
+            QRect rect = khollesInCurrentSubject.dequeue();
+            addRect(rect, QPen(Qt::black, 0), QBrush(QColor(255,220,100)));
         }
     }
 
@@ -291,6 +296,7 @@ bool KholloTable::selection(QGraphicsSceneMouseEvent *mouseEvent) {
 
     /// Select a kholle (Right button)
     if(mouseEvent->button() == Qt::RightButton && m_selectedTimeslot == NULL) {
+        bool selection = false;
         // Check every kholle
         QList<Kholle*>* listKholles = m_student->kholles();
         for(int i=0; i<listKholles->count(); i++) { // For each group
@@ -302,6 +308,26 @@ bool KholloTable::selection(QGraphicsSceneMouseEvent *mouseEvent) {
                 m_kholleur = slot->kholleur();
                 m_tab->selectKholleur(m_kholleur);
                 m_selectedTimeslot = slot;
+                selection = true;
+            }
+        }
+        if(! selection) {
+            for(int i=0; i<listKholles->count() && ! selection; i++) { // For each group
+                Kholle* klle = listKholles->at(i);
+                Timeslot* slot = klle->timeslot();
+                // Check if the area of the kholle was under the mouse when user clicked
+                    // Only for the kholles of the subject of the OTHER tabs
+                if(slot->kholleur()->getId_subjects() != m_tab->getSubject()->getId() && slot->getArea()->contains(pos)) {
+                    for(int j=0; j<m_interface->tabWidget()->count(); j++) {
+                        InterfaceTab* tab = (InterfaceTab*) m_interface->tabWidget()->widget(j);
+                        if(tab->getSubject()->getId() == slot->kholleur()->getId_subjects()) {
+                            m_interface->tabWidget()->setCurrentWidget(tab);
+                            tab->selectKholleur(slot->kholleur());
+                            tab->selectTimeslot(slot);
+                            selection = true;
+                        }
+                    }
+                }
             }
         }
     }
@@ -396,32 +422,8 @@ bool KholloTable::removeSelection() {
 bool KholloTable::addKholle() {
     /** METHOD TO ADD A KHOLLE **/
     if(m_selectedTimeslot && m_student) {
-        /// Check if the selected student has not already the kholle
-        for(int i=0; i<m_selectedTimeslot->kholles()->count(); i++)
-            if(m_selectedTimeslot->kholles()->at(i)->getId_students() == m_student->getId()) {
-                QMessageBox::critical(NULL, "Erreur", "Cet étudiant participe déjà à cette kholle.");
-                return false;
-            }
-
-        /// Create the kholle
-        Kholle* klle = new Kholle();
-        klle->setId_students(m_student->getId());
-        klle->setId_timeslots(m_selectedTimeslot->getId());
-        klle->setStudent(m_student);
-        klle->setTimeslot(m_selectedTimeslot);
-
-        /// Save the kholle in the databases
-        // SQL database
-        QSqlQuery query(*m_db);
-        query.prepare("INSERT INTO `tau_kholles`(`id_users`, `id_timeslots`) VALUES(:id_users, :id_timeslots)");
-        query.bindValue(":id_users", klle->getId_students());
-        query.bindValue(":id_timeslots", klle->getId_timeslots());
-        query.exec();
-        klle->setId(query.lastInsertId().toInt());
-        // Local database
-        m_dbase->listKholles()->insert(klle->getId(), klle);
-        m_student->kholles()->append(klle);
-        m_selectedTimeslot->kholles()->append(klle);
+        if(! m_interface->addKholleInDB(m_student, m_selectedTimeslot))
+            return false;
 
         /// Update interface
         updateListKholleurs(); // Kholleurs list
@@ -447,26 +449,8 @@ bool KholloTable::removeKholle(Student* stud) {
         stud = m_student;
 
     if(m_selectedTimeslot && stud) {
-        /// Get the kholle checking if the selected student is in the kholle
-        Kholle* klle = NULL;
-        for(int i=0; i<m_selectedTimeslot->kholles()->count() && !klle; i++)
-            if(m_selectedTimeslot->kholles()->at(i)->getId_students() == stud->getId())
-                klle = m_selectedTimeslot->kholles()->at(i);
-        if(!klle) {
-            QMessageBox::critical(NULL, "Erreur", "Cet étudiant ne participe pas à cette kholle.");
+        if(! m_interface->removeKholleInDB(stud, m_selectedTimeslot))
             return false;
-        }
-
-        /// Remove the kholle from the databases
-        // SQL database
-        QSqlQuery query(*m_db);
-        query.prepare("DELETE FROM `tau_kholles` WHERE `id` = :id");
-        query.bindValue(":id", klle->getId());
-        query.exec();
-        // Local database
-        stud->kholles()->removeOne(klle);
-        m_selectedTimeslot->kholles()->removeOne(klle);
-        m_dbase->listKholles()->remove(klle->getId());
 
         /// Update interface
         updateListKholleurs(); // Kholleurs list
@@ -527,5 +511,36 @@ bool KholloTable::updateListKholleurs() {
     /** METHOD TO UPDATE THE KHOLLEURS LIST OF THE SELECTED TAB **/
     if(m_tab)
         m_tab->selectStudent(m_student);
+    return true;
+}
+
+bool KholloTable::selectionTimeslot(Timeslot* ts) {
+    if(m_kholleur) {
+        // Check every timeslot
+        QList<Timeslot*>* listTimeslots = m_dbase->listKholleurs()->value(m_kholleur->getId())->timeslots();
+        for(int i=0; i<listTimeslots->count(); i++) { // For each timeslot
+            Timeslot* slot = listTimeslots->at(i);
+            // Check if the area of the timeslot was under the mouse when user clicked
+            if(slot->getId() == ts->getId()) {
+                // Select the timeslot
+                m_selectedTimeslot = slot;
+                displayTable();
+                updateInfoArea();
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool KholloTable::openReviewWithSelection() {
+    if(m_student) {
+        ReviewDialog dialog(m_db, m_interface, ReviewDialog::FROMKHOLLEURS, m_student, m_kholleur);
+        dialog.exec();
+    } else {
+        ReviewDialog dialog(m_db, m_interface, ReviewDialog::FROMKHOLLEURS, NULL, m_kholleur);
+        dialog.exec();
+    }
     return true;
 }

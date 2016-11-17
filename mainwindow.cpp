@@ -28,9 +28,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_Help, SIGNAL(triggered()), this, SLOT(openHelp()));
     connect(ui->action_AboutIt, SIGNAL(triggered()), this, SLOT(openAboutIt()));
 
-
-
     connect(this, SIGNAL(triggerInterface(QDate,int)), this, SLOT(openInterfaceWithDate(QDate,int)));
+
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 
     updateWindow();
 
@@ -39,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     args = QCoreApplication::arguments();
     if(args.count() > 1) {
         QString suffix = QFileInfo(args[1]).suffix().toUpper();
-        // Check the file suffic
+        // Check the file suffix
         if(suffix == "KSCOPE") {
             openKhollo(args[1]); // Try to open the file
         } else {
@@ -52,6 +53,8 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {

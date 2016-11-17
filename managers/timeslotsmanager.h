@@ -12,6 +12,7 @@
 #include "storedData/kholleur.h"
 #include "storedData/timeslot.h"
 #include "managers/copytimeslots.h"
+#include "notepad.h"
 
 namespace Ui {
 class TimeslotsManager;
@@ -27,12 +28,14 @@ public:
     void getKholleurs();
     void freeKholleurs();
     void update_list_timeslots(int id_kholleur);
+    void update_list_oftenTimeslots(int id_kholleur);
     void free_timeslots();
 
 public slots:
     void onSelection_change();
-    void deleteTimeslot();
+    void deleteTimeslot(QListWidgetItem* item = NULL);
     void addTimeslot();
+    void addOftenTimeslot(QListWidgetItem* item);
     void copyTimeslots();
     void copyAllTimeslots();
 
@@ -43,6 +46,7 @@ private:
     QQueue<Kholleur*> queue_displayedKholleurs;
     QQueue<Timeslot*> queue_displayedTimeslots;
     QStringList days;
+    QAction* m_shortcutNotepad;
 };
 
 #endif // TIMESLOTSMANAGER_H

@@ -39,6 +39,7 @@ InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabas
     }
     // Connect to detect a new selected kholleur
     connect(ui->list_kholleurs, SIGNAL(itemSelectionChanged()), this, SLOT(displayKholleur()));
+    connect(ui->list_kholleurs, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openReviewWithSelection()));
 }
 
 InterfaceTab::~InterfaceTab() {
@@ -61,7 +62,7 @@ bool InterfaceTab::displayKholleur() {
         return false;
     } else {
         // Get the selected kholleur
-        Kholleur* kll = (Kholleur*) item->data(Qt::UserRole).toULongLong();
+        Kholleur* kll = (ui->list_kholleurs->selectedItems().length() > 0) ? (Kholleur*) item->data(Qt::UserRole).toULongLong() : NULL;
         // Display the selected kholleur
         ((KholloTable*) ui->viewTable->scene())->displayKholleur(kll);
     }
@@ -144,4 +145,14 @@ bool InterfaceTab::selectKholleur(Kholleur* khll) {
         }
     }
     return false;
+}
+
+bool InterfaceTab::selectTimeslot(Timeslot* slot) {
+    if(slot)
+        return ((KholloTable*) ui->viewTable->scene())->selectionTimeslot(slot);
+    return false;
+}
+
+bool InterfaceTab::openReviewWithSelection() {
+    return ((KholloTable*) ui->viewTable->scene())->openReviewWithSelection();
 }

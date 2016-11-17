@@ -25,6 +25,9 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
     else if(m_id_week == 2)
         textWeekLabel += " (Impaire)";
     ui->label_week->setText("<html><head/><body><p align=\"center\"><span style=\" color:#005500;\">"+textWeekLabel+"</span></p></body></html>");
+    m_lastActions = new QStack<InterfaceAction*>();
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 
     /// To load the DB in the RAM (DataBase object) selecting the courses and the timeslots of the selected week
     m_dbase = new DataBase(m_db);
@@ -73,6 +76,9 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
     /// To detect when user click on a button
     connect(ui->pushButton_print, SIGNAL(clicked(bool)), this, SLOT(printKholloscope()));
     connect(ui->pushButton_review, SIGNAL(clicked(bool)), this, SLOT(openReviewDialog()));
+
+    QShortcut* shortcut_cancel = new QShortcut(QKeySequence("Ctrl+Z"), this);
+    connect(shortcut_cancel, SIGNAL(activated()), this, SLOT(cancelAction()));
 }
 
 InterfaceDialog::~InterfaceDialog() {
@@ -81,6 +87,8 @@ InterfaceDialog::~InterfaceDialog() {
     delete ui;
     delete m_dbase; // Free DataBase object
     delete m_students;
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
 }
 
 bool InterfaceDialog::selectStudent(Student *stud) {
@@ -95,10 +103,11 @@ bool InterfaceDialog::selectStudent(Student *stud) {
             return false;
         } else {
             // Get the student
-            Student* stud = (Student*) item->data(Qt::UserRole).toULongLong();
+            Student* stndt = (ui->list_students->selectedItems().length() > 0) ? (Student*) item->data(Qt::UserRole).toULongLong() : NULL;
+
             // Update the tabs (and the khollotable)
             for(int i=0; i<ui->tabWidget->count(); i++)
-                ((InterfaceTab*) ui->tabWidget->widget(i))->selectStudent(stud);
+                ((InterfaceTab*) ui->tabWidget->widget(i))->selectStudent(stndt);
         }
     } else {
        // If the student is manually selected
@@ -246,10 +255,125 @@ bool InterfaceDialog::commuteKholle(Subject* subj, Student* stud1, Student* stud
         queryUpdate.exec("UPDATE tau_kholles SET id_users = " + QString::number(idStud_target) + " WHERE id = " + QString::number(id));
     }
 
+    InterfaceAction* act = new InterfaceAction();
+    act->setCommuteKholle(stud1, stud2, subj);
+    lastActions()->push(act);
+
     /// Update the interface (students list, tabs, khollotab)
+    QListWidgetItem *item = ui->list_students->currentItem();
+    Student* selectedStudent = (item != NULL) ? (Student*) item->data(Qt::UserRole).toULongLong() : NULL;
     update_list(subj);
     for(int i=0; i<ui->tabWidget->count(); i++)
-        ((InterfaceTab*) ui->tabWidget->widget(i))->selectStudent(stud1);
+        ((InterfaceTab*) ui->tabWidget->widget(i))->selectStudent(selectedStudent);
 
     return true;
+}
+
+QStack<InterfaceAction*>* InterfaceDialog::lastActions() {
+    return m_lastActions;
+}
+
+bool InterfaceDialog::cancelAction() {
+    if(m_lastActions->isEmpty()) {
+        QMessageBox::information(this, "Pile des actions vide", "Aucune action a annulé.");
+        return false;
+    }
+    QListWidgetItem *item = ui->list_students->currentItem();
+    Student* selectedStudent = (item != NULL) ? (Student*) item->data(Qt::UserRole).toULongLong() : NULL;
+
+    InterfaceAction* act = m_lastActions->pop();
+    switch(act->type()) {
+    case InterfaceAction::AddKholle:
+        removeKholleInDB(act->student(), act->timeslot());
+        delete m_lastActions->pop();
+        update_list(((InterfaceTab*) ui->tabWidget->currentWidget())->getSubject());
+        for(int i=0; i<ui->tabWidget->count(); i++)
+            ((InterfaceTab*) ui->tabWidget->widget(i))->selectStudent(selectedStudent);
+        break;
+    case InterfaceAction::DeleteKholle:
+        addKholleInDB(act->student(), act->timeslot());
+        delete m_lastActions->pop();
+        update_list(((InterfaceTab*) ui->tabWidget->currentWidget())->getSubject());
+        for(int i=0; i<ui->tabWidget->count(); i++)
+            ((InterfaceTab*) ui->tabWidget->widget(i))->selectStudent(selectedStudent);
+        break;
+    case InterfaceAction::CommuteKholle:
+        commuteKholle(act->subject(), act->student(1), act->student(2));
+        delete m_lastActions->pop();
+        break;
+    default:
+        break;
+    }
+    delete act;
+
+    return true;
+}
+
+bool InterfaceDialog::addKholleInDB(Student* stud, Timeslot* ts) {
+    /// Check if the selected student has not already the kholle
+    for(int i=0; i<ts->kholles()->count(); i++)
+        if(ts->kholles()->at(i)->getId_students() == stud->getId()) {
+            QMessageBox::critical(NULL, "Erreur", "Cet étudiant participe déjà à cette kholle.");
+            return false;
+        }
+
+    /// Create the kholle
+    Kholle* klle = new Kholle();
+    klle->setId_students(stud->getId());
+    klle->setId_timeslots(ts->getId());
+    klle->setStudent(stud);
+    klle->setTimeslot(ts);
+
+    /// Save the kholle in the databases
+    // SQL database
+    QSqlQuery query(*m_db);
+    query.prepare("INSERT INTO `tau_kholles`(`id_users`, `id_timeslots`) VALUES(:id_users, :id_timeslots)");
+    query.bindValue(":id_users", klle->getId_students());
+    query.bindValue(":id_timeslots", klle->getId_timeslots());
+    query.exec();
+    klle->setId(query.lastInsertId().toInt());
+    // Local database
+    m_dbase->listKholles()->insert(klle->getId(), klle);
+    stud->kholles()->append(klle);
+    ts->kholles()->append(klle);
+
+    InterfaceAction* act = new InterfaceAction();
+    act->setAddKholle(stud, ts);
+    lastActions()->push(act);
+
+    return true;
+}
+
+
+bool InterfaceDialog::removeKholleInDB(Student* stud, Timeslot* ts) {
+    /// Get the kholle checking if the selected student is in the kholle
+    Kholle* klle = NULL;
+    for(int i=0; i<ts->kholles()->count() && !klle; i++)
+        if(ts->kholles()->at(i)->getId_students() == stud->getId())
+            klle = ts->kholles()->at(i);
+    if(!klle) {
+        QMessageBox::critical(NULL, "Erreur", "Cet étudiant ne participe pas à cette kholle.");
+        return false;
+    }
+
+    /// Remove the kholle from the databases
+    // SQL database
+    QSqlQuery query(*m_db);
+    query.prepare("DELETE FROM `tau_kholles` WHERE `id` = :id");
+    query.bindValue(":id", klle->getId());
+    query.exec();
+    // Local database
+    stud->kholles()->removeOne(klle);
+    ts->kholles()->removeOne(klle);
+    m_dbase->listKholles()->remove(klle->getId());
+
+    InterfaceAction* act = new InterfaceAction();
+    act->setDeleteKholle(stud, ts);
+    lastActions()->push(act);
+
+    return true;
+}
+
+QTabWidget* InterfaceDialog::tabWidget() const {
+    return ui->tabWidget;
 }

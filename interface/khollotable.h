@@ -60,6 +60,8 @@ public slots:
     bool removeKholleFromInfoArea(); // To remove a kholle from the info area
     bool selectStudentInInterface(); // To select a student from the info area (students list)
     bool updateListKholleurs(); // To update the kholleurs list of the selected tab
+    bool selectionTimeslot(Timeslot* ts);
+    bool openReviewWithSelection();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent); // To detect when user clicks with the mouse (knowing button)

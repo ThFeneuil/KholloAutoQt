@@ -65,6 +65,7 @@ private:
     QList<StudentKholleChg*> m_students; // Displayed students in the list "Students"
     QMap<Timeslot*, Timeslot*> m_mapTimeslots;
     QStringList days;
+    QAction* m_shortcutNotepad;
 };
 
 #endif // LASTCHANGES_H
