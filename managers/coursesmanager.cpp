@@ -185,7 +185,7 @@ bool CoursesManager::update_list_groups() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name FROM tau_groups WHERE is_deleted = 0 ORDER BY name");
+    query.exec("SELECT id, name FROM tau_groups ORDER BY name");
 
     //Treat result
     while(query.next()) {

@@ -33,7 +33,7 @@ UsersGroupsManager::UsersGroupsManager(QSqlDatabase *db, QWidget *parent) :
         m_listStudents->append(stdnt);
     }
     /// Get the list of the groups
-    query.exec("SELECT `id`, `name` FROM `tau_groups` WHERE `is_deleted` = 0 ORDER BY `name`");
+    query.exec("SELECT `id`, `name` FROM `tau_groups` ORDER BY `name`");
     while (query.next()) {
         Group* grp = new Group();
         grp->setId(query.value(0).toInt());

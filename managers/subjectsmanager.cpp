@@ -7,10 +7,11 @@ SubjectsManager::SubjectsManager(QSqlDatabase *db, QWidget *parent) :
 {
     // Apply the design of the dialog box
     ui->setupUi(this);
-    m_subjectColor = new QColor(255, 255, 255);
+    ui->spinBox_weight->setMinimum(0);
+    ui->spinBox_weight->setMaximum(MaxWeightSubject);
     connect(ui->pushButton_add, SIGNAL(clicked(bool)), this, SLOT(add_subject()));
     connect(ui->pushButton_delete, SIGNAL(clicked(bool)), this, SLOT(delete_subject()));
-    connect(ui->pushButton_color, SIGNAL(clicked(bool)), this, SLOT(select_color()));
+    connect(ui->list_subjects, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(update_subject()));
 
     // DB
     m_db = db;
@@ -36,7 +37,7 @@ bool SubjectsManager::update_list() {
 
     // Make the request
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, shortName, color FROM tau_subjects ORDER BY name, shortName");
+    query.exec("SELECT id, name, shortName, weight FROM tau_subjects ORDER BY UPPER(name), UPPER(shortName)");
 
     // Treat the request
     while (query.next()) {
@@ -44,11 +45,10 @@ bool SubjectsManager::update_list() {
         subj->setId(query.value(0).toInt());
         subj->setName(query.value(1).toString());
         subj->setShortName(query.value(2).toString());
-        subj->setColor(query.value(3).toString());
+        subj->setWeight(query.value(3).toInt());
 
-        QListWidgetItem *item = new QListWidgetItem(subj->getName() + " (" + subj->getShortName() + ") : " + subj->getColor(), ui->list_subjects);
+        QListWidgetItem *item = new QListWidgetItem(subj->getName() + " (" + subj->getShortName() + ") : " + QString::number(subj->getWeight()), ui->list_subjects);
         item->setData(Qt::UserRole, (qulonglong) subj);
-        item->setBackgroundColor(QColor(subj->getColor()));
         queue_displayedSubjects.enqueue(subj);
     }
 
@@ -58,16 +58,17 @@ bool SubjectsManager::update_list() {
 bool SubjectsManager::add_subject() {
     QString name = ui->lineEdit_long->text();
     QString shortName = ui->lineEdit_short->text();
+    int weight = ui->spinBox_weight->value();
 
     if(name == "" || shortName == "") {
         QMessageBox::critical(this, "Erreur", "Il faut renseigner à la fois le nom long et le nom court.");
         return false;
     } else {
         QSqlQuery query(*m_db);
-        query.prepare("INSERT INTO tau_subjects(name, shortName, color) VALUES(:long, :short, :color)");
+        query.prepare("INSERT INTO tau_subjects(name, shortName, color, weight) VALUES(:long, :short, '', :weight)");
         query.bindValue(":long", name);
         query.bindValue(":short", shortName);
-        query.bindValue(":color", m_subjectColor->name());
+        query.bindValue(":weight", weight);
         query.exec();
 
         ui->lineEdit_long->clear();
@@ -121,10 +122,19 @@ bool SubjectsManager::delete_subject() {
     return true;
 }
 
-bool SubjectsManager::select_color() {
-    *m_subjectColor = QColorDialog::getColor(*m_subjectColor, this);
-    // To color the COLOR button
-    ui->pushButton_color->setStyleSheet("QPushButton { background-color: "+m_subjectColor->name()+"; }");
+bool SubjectsManager::update_subject() {
+    QListWidgetItem *item = ui->list_subjects->currentItem();
+
+    if(item == NULL) {
+        QMessageBox::critical(this, "Erreur", "Veuillez sélectionner un étudiant.");
+        return false;
+    } else {
+        Subject* subj = (Subject*) item->data(Qt::UserRole).toULongLong();
+        UpdateSubjectDialog updateBox(m_db, subj, this);
+        if(updateBox.exec() == QDialog::Accepted) {
+            update_list();
+        }
+    }
 
     return true;
 }

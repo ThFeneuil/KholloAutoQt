@@ -11,7 +11,7 @@ GroupsSwappingsManager::GroupsSwappingsManager(QSqlDatabase *db, QWidget *parent
     m_listGroups = new QList<Group*>();
 
     QSqlQuery query(*m_db);
-    query.exec("SELECT `id`, `name` FROM `tau_groups` WHERE `is_deleted`=0 ORDER BY `name`");
+    query.exec("SELECT `id`, `name` FROM `tau_groups` ORDER BY `name`");
     while(query.next()) {
         Group* grp = new Group();
         grp->setId(query.value(0).toInt());

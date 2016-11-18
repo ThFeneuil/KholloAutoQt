@@ -31,7 +31,8 @@ FORMS += \
     managers/updatetimeslotdialog.ui \
     managers/groupsswappingsmanager.ui \
     notepad.ui \
-    settingsdialog.ui
+    settingsdialog.ui \
+    managers/updatesubjectdialog.ui
 
 HEADERS += \
     mainwindow.h \
@@ -78,7 +79,8 @@ HEADERS += \
     managers/groupsswappingsmanager.h \
     notepad.h \
     settingsdialog.h \
-    interface/interfaceactionsrecord.h
+    interface/interfaceactionsrecord.h \
+    managers/updatesubjectdialog.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -126,7 +128,8 @@ SOURCES += \
     managers/groupsswappingsmanager.cpp \
     notepad.cpp \
     settingsdialog.cpp \
-    interface/interfaceactionsrecord.cpp
+    interface/interfaceactionsrecord.cpp \
+    managers/updatesubjectdialog.cpp
 DISTFILES +=
 
 RESOURCES += \
