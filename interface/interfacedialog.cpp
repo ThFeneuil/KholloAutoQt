@@ -192,14 +192,19 @@ bool InterfaceDialog::doubleSelectStudent(QListWidgetItem* item) {
                 item->setBackgroundColor(doubleSelectedColor);
 
                 // Get the subject and the both students
-                Subject* subj = ((InterfaceTab*) ui->tabWidget->currentWidget())->getSubject();
-                Student* stud1 = (Student*) item->data(Qt::UserRole).toULongLong();
-                Student* stud2 = (Student*) m_doubleSelectedItem->data(Qt::UserRole).toULongLong();
+                InterfaceTab* tab = (InterfaceTab*) ui->tabWidget->currentWidget();
+                Subject* subj = tab ? tab->getSubject() : NULL;
+                if(! subj) {
+                    QMessageBox::critical(NULL, "Échange de kholles", "Veuillez sélectionner une matière...");
+                } else {
+                    Student* stud1 = (Student*) item->data(Qt::UserRole).toULongLong();
+                    Student* stud2 = (Student*) m_doubleSelectedItem->data(Qt::UserRole).toULongLong();
 
-                // Ask for a confirmation
-                int res = QMessageBox::information(NULL, "Échange de kholles", "Vous êtes sur le point d'échanger les kholles de <strong>" + subj->getName() + "</strong> entre <strong>" + stud1->getFirst_name() + " " + stud1->getName() + "</strong> et <strong>" + stud2->getFirst_name() + " " + stud2->getName() + "</strong>. Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::Cancel);
-                if(res == QMessageBox::Yes)
-                    commuteKholle(subj, stud1, stud2);
+                    // Ask for a confirmation
+                    int res = QMessageBox::information(NULL, "Échange de kholles", "Vous êtes sur le point d'échanger les kholles de <strong>" + subj->getName() + "</strong> entre <strong>" + stud1->getFirst_name() + " " + stud1->getName() + "</strong> et <strong>" + stud2->getFirst_name() + " " + stud2->getName() + "</strong>. Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::Cancel);
+                    if(res == QMessageBox::Yes)
+                        commuteKholle(subj, stud1, stud2);
+                }
 
                 // Remove the double-selection for the both items
                 item->setBackgroundColor(empty);

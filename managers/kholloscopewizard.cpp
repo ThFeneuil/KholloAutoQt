@@ -22,6 +22,9 @@ KholloscopeWizard::KholloscopeWizard(QSqlDatabase *db, QWidget *parent) :
     addPage(new SubjectsPage(db));
     addPage(new UsersPage(db));
     addPage(new GeneratePage(db, parent));
+
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 }
 
 KholloscopeWizard::~KholloscopeWizard()
@@ -33,6 +36,8 @@ KholloscopeWizard::~KholloscopeWizard()
     delete m_students;
     delete m_subjects;
     delete m_input;
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
 }
 
 QList<Subject*>* KholloscopeWizard::get_assoc_subjects() {

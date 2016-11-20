@@ -139,7 +139,7 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
                             "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
                             "`name`	TEXT NOT NULL, "
                             "`shortName`	TEXT NOT NULL, "
-                            "`color`	TEXT NOT NULL "
+                            "`color`	TEXT NOT NULL, "
                             "`weight`	INTEGER NOT NULL "
                         ");");
             break;
