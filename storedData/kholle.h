@@ -1,6 +1,7 @@
 #ifndef Kholle_H
 #define Kholle_H
 
+#include <QtSql>
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
 
@@ -33,6 +34,11 @@ public:
     void setTimeslot(Timeslot* slot); // Interface
     void setStatus(Status status); //Generation
     void setWeeks(int weeks); //Generation
+
+    //Other functions
+    static int nearestKholle(QSqlDatabase *db, QMap<int, Timeslot *> *timeslots, int id_user, Timeslot* t, int id_kholle);
+    int nearest(QMap<int, Timeslot *> *timeslots, QSqlDatabase *db);
+    void updateStatus(QMap<int, Timeslot *> *timeslots, QSqlDatabase *db);
 
 private:
     int m_id;

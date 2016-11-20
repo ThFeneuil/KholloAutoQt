@@ -26,6 +26,7 @@
 #include "managers/kholloscopewizard.h"
 #include "mainwindow.h"
 #include "printpdf.h"
+#include "utilities.h"
 
 struct working_index {
     int current_student;
@@ -50,30 +51,21 @@ public:
 
     QList<Subject *> *testAvailability();
 
-    int weeksTo(Timeslot* ts1, Timeslot* ts2);
-    float proba(Student* user, Timeslot* timeslot);
-    QMap<int, float> *corrected_proba(Student* user, QList<Timeslot *> list);
-
-    bool compatible(int id_user, Timeslot* timeslot);
-    void quickSort(QList<Timeslot*> *list, int i, int j, QMap<int, float> *probas);
     void constructPoss();
 
     QMap<int, QList<Timeslot*> > *updatePoss(int id_user, Timeslot *current);
     void resetPoss(int id_user, QMap<int, QList<Timeslot*> > *old);
 
-    int listMax(QList<Timeslot*>, Student*);
     working_index *findMax();
     bool generate();
 
-    void saveInSql();
     void setStatus();
     bool exchange(int index, bool only_warnings, int score_limit);
 
-    void msg_display();
-    int nearestKholle(Student*, Timeslot*);
-    void display();
-    void displayCollision();
+    void display(int *errors, int *warnings);
+    void displayCollision(int *collisions);
     void displayBlocking();
+    void displayConclusion(int errors, int warnings, int collisions);
 
     void freeKholles();
 

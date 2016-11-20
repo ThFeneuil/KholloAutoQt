@@ -41,6 +41,9 @@ public:
     void setKholleur(Kholleur* kll);
     void setIsDeleted(bool is_deleted);
 
+    //Other functions
+    int weeksTo(Timeslot* ts);
+
 private:
     int m_id;
     QTime m_time_start;

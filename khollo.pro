@@ -77,7 +77,8 @@ HEADERS += \
     kscopemanager.h \
     managers/groupsswappingsmanager.h \
     notepad.h \
-    settingsdialog.h
+    settingsdialog.h \
+    managers/KholloscopeWizardPages/utilities.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -124,7 +125,8 @@ SOURCES += \
     kscopemanager.cpp \
     managers/groupsswappingsmanager.cpp \
     notepad.cpp \
-    settingsdialog.cpp
+    settingsdialog.cpp \
+    managers/KholloscopeWizardPages/utilities.cpp
 DISTFILES +=
 
 RESOURCES += \

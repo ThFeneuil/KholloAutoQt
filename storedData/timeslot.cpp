@@ -95,3 +95,20 @@ void Timeslot::setKholleur(Kholleur* kll) {
 void Timeslot::setIsDeleted(bool is_deleted) {
     m_is_deleted = is_deleted;
 }
+
+
+//Other functions
+int Timeslot::weeksTo(Timeslot *ts) {
+    /** Number of weeks between the two Timeslot's **/
+
+    //Get the corresponding mondays to have number of weeks between the two dates
+    QDate d1 = this->getDate();
+    while(d1.dayOfWeek() != 1)
+        d1 = d1.addDays(-1);
+
+    QDate d2 = ts->getDate();
+    while(d2.dayOfWeek() != 1)
+        d2 = d2.addDays(-1);
+
+    return int(abs(d1.daysTo(d2)) / 7);
+}

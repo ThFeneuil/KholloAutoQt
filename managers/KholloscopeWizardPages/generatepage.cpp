@@ -39,11 +39,6 @@ GeneratePage::~GeneratePage() {
 
     delete m_box;
     freeKholles();
-
-    /*if(last_index != NULL)
-        free(last_index);*/
-
-    //QMessageBox::information(this, "OK", "destructor called...");
 }
 
 void GeneratePage::initializePage() {
@@ -51,7 +46,7 @@ void GeneratePage::initializePage() {
     connect(wizard()->button(QWizard::FinishButton), SIGNAL(clicked()), this, SLOT(saveKholles()));
 
     //Initialise random number generator
-    qsrand((uint)QTime::currentTime().msec());
+    qsrand((uint)QTime::currentTime().msecsSinceStartOfDay());
 
     m_week = field("current_week").toInt() + 1;
     m_date = field("monday_date").toDateTime().date();
@@ -69,7 +64,6 @@ void GeneratePage::initializePage() {
     if(m_dbase != NULL)
         delete m_dbase;
     m_dbase = new DataBase(m_db);
-    //m_dbase->setConditionTimeslots("date>=\"" + m_date.toString("yyyy-MM-dd") + "\" AND date<=\"" + m_date.addDays(6).toString("yyyy-MM-dd") + "\"");
     m_dbase->load();
 
     setPupilsOnTimeslots();
@@ -122,9 +116,6 @@ void GeneratePage::cleanupPage() {
 
     //Clear list
     ui->tableKhollo->clear();
-
-    //delete m_dbase;
-    //QMessageBox::information(this, "OK", "cleanupPage() called...");
 }
 
 void GeneratePage::setPupilsOnTimeslots() {
@@ -166,161 +157,9 @@ QList<Subject*>* GeneratePage::testAvailability() {
     return result;
 }
 
-int GeneratePage::weeksTo(Timeslot *ts1, Timeslot *ts2) {
-    //Get the corresponding mondays to have number of weeks between the two dates
-    QDate d1 = ts1->getDate();
-    while(d1.dayOfWeek() != 1)
-        d1 = d1.addDays(-1);
-
-    QDate d2 = ts2->getDate();
-    while(d2.dayOfWeek() != 1)
-        d2 = d2.addDays(-1);
-
-    return int(abs(d1.daysTo(d2)) / 7);
-}
-
-float GeneratePage::proba(Student *user, Timeslot *timeslot) {
-    /** Calculates a score for this (user, timeslot) couple
-        Attention ! The Student and Timeslot need to have their "kholleur", "kholles", etc. properties set (in DataBase) **/
-    int kholleur_total = 0;
-    int kholles_total = 0;
-    int this_kholleur = 0;
-
-    float p = 0; //Insert formula here
-
-    int i;
-    foreach(Kholleur* k, *m_dbase->listKholleurs()) {
-        if(k->getId_subjects() == timeslot->kholleur()->getId_subjects()) //Total number of kholleurs in this subject
-            kholleur_total++;
-    }
-
-    for (i = 0; i < user->kholles()->length(); i++) {
-        Timeslot* ts = user->kholles()->at(i)->timeslot();
-
-        if(ts->kholleur()->getId_subjects() == timeslot->kholleur()->getId_subjects()) //Total number of kholles in this subject for this person
-            kholles_total++;
-        if(ts->getId_kholleurs() == timeslot->getId_kholleurs()) { //If it was the same kholleur
-            this_kholleur++;
-
-            if(ts->getDate() >= m_date.addDays(-21) && ts->getDate() <= m_date.addDays(27)) { //If it was within certain time limits
-                p -= 40*pow(2, 3-weeksTo(ts, timeslot));
-//                p -= 40*pow(2, 28-abs(ts->getDate().daysTo(timeslot->getDate())));
-            }
-        }
-    }
-
-    p -= 20 * this_kholleur * kholleur_total;
-    p += 20 * kholles_total;
-
-    return p;
-}
-
-QMap<int, float>* GeneratePage::corrected_proba(Student *user, QList<Timeslot*> list) {
-    /** Calculates the probability for this user and list of timeslots, taking into account the average probability for this user
-        Attention, user and timeslots from DataBase !**/
-    QMap<int, float> *probas = new QMap<int, float>(); //Result
-    int i;
-    float sum = 0;
-    for(i = 0; i < list.length(); i++) {
-        probas->insert(list[i]->getId(), proba(user, list[i]));
-        sum += probas->value(list[i]->getId());
-    }
-
-    float corr = 1000 - (sum / list.length()); //The correction to be applied...
-
-    for(i = 0; i < list.length(); i++) {
-        int id = list[i]->getId();
-        probas->insert(id, probas->value(id) + corr);
-    }
-
-    return probas;
-}
-
-bool GeneratePage::compatible(int id_user, Timeslot *timeslot) {
-    //Get all groups of user (the ids)
-    QList<Group*> *groups = m_dbase->listStudents()->value(id_user)->groups();
-
-    int i;
-    if(groups->length() > 0) {
-        QString request = "id_groups=" + QString::number(groups->at(0)->getId());
-        for(i = 1; i < groups->length(); i++) {
-            request = request + " OR id_groups=" + QString::number(groups->at(i)->getId());
-        }
-
-        //Get all courses that can interfere with this timeslot
-        QSqlQuery courses_query(*m_db);
-        courses_query.prepare("SELECT * FROM tau_courses WHERE (" + request + ") AND id_day=:id_day AND id_week=:id_week AND ("
-                                                                              "(time_start <= :time_start AND time_end > :time_start) OR"
-                                                                              "(time_start < :time_end AND time_end >= :time_end) OR"
-                                                                              "(time_start >= :time_start AND time_end <= :time_end) )");
-        courses_query.bindValue(":time_start", timeslot->getTime_start().toString("HH:mm:ss"));
-        courses_query.bindValue(":time_end", timeslot->getTime_end().toString("HH:mm:ss"));
-        courses_query.bindValue(":id_day", timeslot->getDate().dayOfWeek());
-        courses_query.bindValue(":id_week", m_week);
-        courses_query.exec();
-
-        if(courses_query.next()) {
-            return false;
-        }
-
-        //Get all events that can interfere with this timeslot
-        QSqlQuery event_query(*m_db);
-        event_query.prepare("SELECT * FROM tau_events AS E JOIN tau_events_groups AS G ON E.`id` = G.`id_events` WHERE (" + request + ") AND ("
-                                      "(E.`start` <= :start_time AND E.`end` > :start_time) OR"
-                                      "(E.`start` < :end_time AND E.`end` >= :end_time) OR"
-                                      "(E.`start` >= :start_time AND E.`end` <= :end_time))");
-        event_query.bindValue(":start_time", QDateTime(timeslot->getDate(), timeslot->getTime_start()).toString("yyyy-MM-dd HH:mm:ss"));
-        event_query.bindValue(":end_time", QDateTime(timeslot->getDate(), timeslot->getTime_end()).toString("yyyy-MM-dd HH:mm:ss"));
-        event_query.exec();
-
-        if(event_query.next()) {
-            return false;
-        }
-
-    }
-
-    //Get all kholles that can interfere with this timeslot
-    QSqlQuery kholle_query(*m_db);
-    kholle_query.prepare("SELECT * FROM tau_kholles AS K JOIN tau_timeslots AS T ON K.`id_timeslots` = T.`id` WHERE K.`id_users`=:id_users AND T.`date`=:date AND ("
-                         "(T.`time_start` <= :time_start AND T.`time_end` > :time_start) OR "
-                         "(T.`time_start` < :time_end AND T.`time_end` >= :time_end) OR "
-                         "(T.`time_start` >= :time_start AND T.`time_end` <= :time_end))");
-    kholle_query.bindValue(":id_users", id_user);
-    kholle_query.bindValue(":date", timeslot->getDate().toString("yyyy-MM-dd"));
-    kholle_query.bindValue(":time_start", timeslot->getTime_start().toString("HH:mm:ss"));
-    kholle_query.bindValue(":time_end", timeslot->getTime_end().toString("HH:mm:ss"));
-    kholle_query.exec();
-
-    if(kholle_query.next()) {
-        return false;
-    }
-
-    return true;
-}
-
-void GeneratePage::quickSort(QList<Timeslot *> *list, int i, int j, QMap<int, float> *probas) {
-    /** QuickSort of a QList<Timeslot*> based on the value of the probabilities
-        Attention ! Student must have "kholles" and other properties set (from DataBase) **/
-    if(i >= j)
-        return;
-
-    int pivot_index = i;
-    int k;
-    for(k = i+1; k <= j; k++) {
-        if(probas->value(list->at(k)->getId()) > probas->value(list->at(pivot_index)->getId())) {
-            Timeslot* pivot = list->at(pivot_index);
-            list->replace(pivot_index, list->at(k));
-            list->replace(k, list->at(pivot_index+1));
-            list->replace(pivot_index+1, pivot);
-            pivot_index++;
-        }
-    }
-
-    quickSort(list, i, pivot_index-1, probas);
-    quickSort(list, pivot_index+1, j, probas);
-}
-
 void GeneratePage::constructPoss() {
+    /** To construct the 3D table of possibilities - a list for every (Student, Subject) couple **/
+
     //Create stream around log_file
     QTextStream out(log_file);
 
@@ -348,14 +187,14 @@ void GeneratePage::constructPoss() {
                 if(sub->getId() == selected_subjects->at(i)->getId()
                         && ts->getDate() >= m_date
                         && ts->getDate() <= m_date.addDays(6)
-                        && compatible(users[j]->getId(), ts)) { //Add the compatible timeslots
+                        && Utilities::compatible(m_db, m_dbase, users[j]->getId(), ts, m_week)) { //Add the compatible timeslots
                     new_list.append(ts);
                 }
             }
 
             //Log the probability for these timeslots
             if(log_file != NULL) {
-                QMap<int, float> *probas = corrected_proba(m_dbase->listStudents()->value(users[j]->getId()), new_list);
+                QMap<int, float> *probas = Utilities::corrected_proba(m_dbase, m_dbase->listStudents()->value(users[j]->getId()), new_list, m_date);
                 for(k = 0; k < new_list.length(); k++) {
                     out << users[j]->getName() << ", " << selected_subjects->at(i)->getShortName() << ", " << new_list[k]->kholleur()->getName() << ", " << new_list[k]->getId() << " : ";
                     out << probas->value(new_list[k]->getId()) << "\n";
@@ -365,13 +204,6 @@ void GeneratePage::constructPoss() {
 
             // No sorting here !
             //quickSort(&new_list, 0, new_list.length() - 1, users[j]->getId()); //Sort the list based on probabilities
-
-            /*QString string;
-            int k;
-            for(k = 0; k < new_list.length(); k++) {
-                string += QString::number(new_list[k]->getId_kholleurs()) + "\n";
-            }
-            QMessageBox::information(this, QString::number(users[j]->getId()), string);*/
 
             map.insert(users[j]->getId(), new_list); //Insert the list
         }
@@ -436,37 +268,8 @@ void GeneratePage::resetPoss(int id_user, QMap<int, QList<Timeslot *> > *old) {
     }
 }
 
-int GeneratePage::listMax(QList<Timeslot *> list, Student* user) {
-    /** Returns the highest probability from the list or a very high score if the list is empty
-        Attention ! Student must have "kholles" and other properties set (from DataBase) **/
-    int i;
-    bool is_empty = true;
-    int max = 0;
-
-    QMap<int, float> *probas = corrected_proba(user, list);
-
-    for(i = 0; i < list.length(); i++) {
-        float p = probas->value(list[i]->getId());
-        if(i == 0 || p > max)
-            max = p;
-        if(list[i]->getPupils() > 0) {
-            /*float p = probas->value(list[i]->getId());
-            if(is_empty || p > max)
-                max = p;*/
-            is_empty = false;
-        }
-    }
-
-    delete probas;
-
-    if(is_empty)
-        return 1000000;
-    else
-        return max;
-}
-
 working_index *GeneratePage::findMax() {
-    /** To find the place with least possibilities **/
+    /** To find the place with highest score **/
     bool is_empty = true;
     int max = -1;
     QList<int> s_maxs;
@@ -478,7 +281,7 @@ working_index *GeneratePage::findMax() {
         QList<int> u_keys = poss.value(s_keys[i]).keys();
 
         for(j = 0; j < u_keys.length(); j++) {
-            int score = listMax(poss.value(s_keys[i]).value(u_keys[j]), m_dbase->listStudents()->value(u_keys[j]));
+            int score = Utilities::listMax(m_dbase, poss.value(s_keys[i]).value(u_keys[j]), m_dbase->listStudents()->value(u_keys[j]), m_date);
             if(is_empty || score > max) {
                 max = score;
                 s_maxs.clear();
@@ -519,18 +322,12 @@ bool GeneratePage::generate() {
     profondeur++;
     working_index* index = findMax(); //Get the highest priority
 
-    //QMessageBox::information(this, "OK", QString::number(profondeur));
-    //qDebug() << QString::number(profondeur);
-
     //It is finished
     if(index == NULL) {
         return true;
     }
 
     //Copy current index to the global variable
-    /*if(last_index != NULL)
-        free(last_index);*/
-    //last_index = (working_index*) malloc(sizeof(working_index));
     last_index.current_student = index->current_student;
     last_index.current_subject = index->current_subject;
     last_index.max = index->max;
@@ -546,16 +343,11 @@ bool GeneratePage::generate() {
     poss.insert(index->current_subject, map);
 
     //Sort the possibilities
-    QMap<int, float> *probas = corrected_proba(m_dbase->listStudents()->value(index->current_student), loop);
-    quickSort(&loop, 0, loop.length() - 1, probas);
+    QMap<int, float> *probas = Utilities::corrected_proba(m_dbase, m_dbase->listStudents()->value(index->current_student), loop, m_date);
+    Utilities::quickSort(&loop, 0, loop.length() - 1, probas);
     delete probas;
 
-    //QMessageBox::information(this, "OK", QString::number(index->current_student));
-    //QMessageBox::information(this, "OK", QString::number(loop.length()));
-    //msg_display();
-
-    int i;
-    for(i = 0; i < loop.length(); i++) { //For every possibility
+    for(int i = 0; i < loop.length(); i++) { //For every possibility
         if(loop[i]->getPupils() > 0) { //If enough space
             //Create new kholle
             Kholle *k = new Kholle();
@@ -611,7 +403,7 @@ void GeneratePage::finished() {
         log_file = NULL;
     }
     m_db->transaction();
-    saveInSql();
+    Utilities::saveInSql(m_db, &kholloscope);
 
     setStatus();
 
@@ -621,77 +413,27 @@ void GeneratePage::finished() {
         exchange(0, true, 40);
         exchange(0, false, 15);
     }
-    m_db->rollback();
+    /*m_db->rollback();
     m_db->transaction();
-    saveInSql();
+    saveInSql();*/
 
-    display();
-    displayCollision();
+    int errors = 0, warnings = 0, collisions = 0;
+    display(&errors, &warnings);
+    displayCollision(&collisions);
     m_box->hide();
-
+    displayConclusion(errors, warnings, collisions);
 }
 
 void GeneratePage::abort() {
     m_abort = true;
     m_watcher.waitForFinished();
-    //display();
-    //m_box->hide();
-}
-
-
-int GeneratePage::nearestKholle(Student *user, Timeslot *timeslot) {
-    /** Number of weeks to nearest Kholle with the same Kholleur. (-1) if no such Kholle
-     *  Attention ! Student and Timeslot need to have all properties set (from DataBase) **/
-
-    int id_kholleur = timeslot->getId_kholleurs();
-    int min = -1;
-    Timeslot* m = NULL;
-
-    foreach(Kholle* k, *user->kholles()) { //Find the nearest one
-        if(k->timeslot()->getId_kholleurs() == id_kholleur) {
-            int daysTo = abs(k->timeslot()->getDate().daysTo(timeslot->getDate()));
-            if(min == -1 || daysTo < min) {
-                min = daysTo;
-                m = k->timeslot();
-            }
-        }
-    }
-
-    if(min == -1)
-        return (-1);
-    else
-        return weeksTo(m, timeslot);
-}
-
-void GeneratePage::saveInSql() {
-    for(int i = 0; i < kholloscope.length(); i++) {
-        //Get kholle
-        Kholle* k = kholloscope[i];
-
-        //Prepare query for insertion
-        QSqlQuery query(*m_db);
-        query.prepare("INSERT INTO tau_kholles(id_users, id_timeslots) VALUES(:id_students, :id_timeslots)");
-        query.bindValue(":id_students", k->getId_students());
-        query.bindValue(":id_timeslots", k->getId_timeslots());
-        query.exec();
-        kholloscope[i]->setId(query.lastInsertId().toInt());
-    }
 }
 
 void GeneratePage::setStatus() {
     /** Set the status of the generated kholles **/
 
-    int i;
-    for(i = 0; i < kholloscope.length(); i++) {
-        int weeks = nearestKholle(m_dbase->listStudents()->value(kholloscope[i]->getId_students()), m_dbase->listTimeslots()->value(kholloscope[i]->getId_timeslots()));
-        if(weeks == -1 || weeks > 3)
-            kholloscope[i]->setStatus(Kholle::OK);
-        else if(weeks <= 1)
-            kholloscope[i]->setStatus(Kholle::Error);
-        else
-            kholloscope[i]->setStatus(Kholle::Warning);
-
-        kholloscope[i]->setWeeks(weeks);
+    for(int i = 0; i < kholloscope.length(); i++) {
+        kholloscope[i]->updateStatus(m_dbase->listTimeslots(), m_db);
     }
 }
 
@@ -724,13 +466,13 @@ bool GeneratePage::exchange(int index, bool only_warnings, int score_limit) {
             continue;
 
         if(t_current->kholleur()->getId_subjects() == t->kholleur()->getId_subjects()) {
-            if(compatible(s_current->getId(), t)
-                    && compatible(s->getId(), t_current)) {
-                QMap<int, float> *p_current = corrected_proba(s_current, poss.value(t_current->kholleur()->getId_subjects()).value(s_current->getId()));
-                QMap<int, float> *p = corrected_proba(s, poss.value(t->kholleur()->getId_subjects()).value(s->getId()));
+            if(Utilities::compatible(m_db, m_dbase, s_current->getId(), t, m_week)
+                    && Utilities::compatible(m_db, m_dbase, s->getId(), t_current, m_week)) {
+                QMap<int, float> *p_current = Utilities::corrected_proba(m_dbase, s_current, poss.value(t_current->kholleur()->getId_subjects()).value(s_current->getId()), m_date);
+                QMap<int, float> *p = Utilities::corrected_proba(m_dbase, s, poss.value(t->kholleur()->getId_subjects()).value(s->getId()), m_date);
 
-                int n1 = nearestKholle(s_current, t);
-                int n2 = nearestKholle(s, t_current);
+                int n1 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s_current->getId(), t, 0);
+                int n2 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s->getId(), t_current, 0);
 
                 if(p_current->value(t->getId()) - p_current->value(t_current->getId()) >= score_limit
                         && p->value(t_current->getId()) - p->value(t->getId()) >= -score_limit
@@ -765,14 +507,14 @@ bool GeneratePage::exchange(int index, bool only_warnings, int score_limit) {
     return exchange(index + 1, only_warnings, score_limit);
 }
 
-void GeneratePage::display() {
+void GeneratePage::display(int *errors, int *warnings) {
     /** To display in the list **/
     ui->tableKhollo->clear();
     ui->tableKhollo->setRowCount(kholloscope.length());
     ui->tableKhollo->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     khollo_message  = "========== Génération du " + m_date.toString("dd/MM/yyyy") + " ==========\n";
-    khollo_message += "                                 Erreurs et warnings\n";
+    khollo_message += "                            Erreurs et avertissements\n";
 
     for(int i = 0; i < kholloscope.length(); i++) {
         Student* student = m_dbase->listStudents()->value(kholloscope[i]->getId_students());
@@ -803,6 +545,7 @@ void GeneratePage::display() {
             ui->tableKhollo->setItem(i, 1, right);
 
             khollo_message += student->getName() + " " + student->getFirst_name() + " : Erreur\n";
+            (*errors)++;
         }
         else {
             left->setIcon(QIcon(QPixmap(":/images/warning.png")));
@@ -810,13 +553,14 @@ void GeneratePage::display() {
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaines");
             ui->tableKhollo->setItem(i, 1, right);
 
-            khollo_message += student->getName() + " " + student->getFirst_name() + " : Warning\n";
+            khollo_message += student->getName() + " " + student->getFirst_name() + " : Avertissement\n";
+            (*warnings)++;
         }
         ui->tableKhollo->setItem(i, 0, left);
     }
 }
 
-void GeneratePage::displayCollision() {
+void GeneratePage::displayCollision(int *collisions) {
     /** To display when kholles are on the same day **/
     delete m_dbase;
     m_dbase = new DataBase(m_db);
@@ -853,9 +597,17 @@ void GeneratePage::displayCollision() {
                 ui->tableCollision->setItem(r, 1, right);
 
                 collisions_message += sti->getName() + " " + sti->getFirst_name() + " : " + tsi->kholleur()->subject()->getShortName() + " / " + tsj->kholleur()->subject()->getShortName() + "\n";
+                (*collisions)++;
             }
         }
     }
+}
+
+void GeneratePage::displayConclusion(int errors, int warnings, int collisions) {
+    QMessageBox::information(this, "Génération terminée", "La génération a abouti et a créé un kholloscope avec"
+                                                          "<ul><li>" + QString::number(errors) + ((errors <= 1) ? " erreur" : " erreurs") +
+                                                          "<li>" + QString::number(warnings) + ((warnings <= 1) ? " avertissement" : " avertissements") +
+                                                          "<li>" + QString::number(collisions) + ((collisions <= 1) ? " collision" : " collisions") + "</ul>");
 }
 
 void GeneratePage::show_notepad_khollo() {
@@ -868,16 +620,6 @@ void GeneratePage::show_notepad_collisions() {
     if(timestamp != "" && collisions_message != "") {
         Notepad::add(timestamp, collisions_message);
     }
-}
-
-void GeneratePage::msg_display() {
-    /** For debugging purposes **/
-    int i;
-    QString msg;
-    for(i = 0; i < kholloscope.length(); i++) {
-        msg = msg + QString::number(kholloscope[i]->getId_students()) + ", " + QString::number(kholloscope[i]->getId_timeslots()) + "\n";
-    }
-    QMessageBox::information(this, "OK", msg);
 }
 
 void GeneratePage::displayBlocking() {
