@@ -16,6 +16,7 @@
 #include <QListWidgetItem>
 #include "storedData/student.h"
 #include "storedData/group.h"
+#include "notepad.h"
 
 namespace Ui {
 class UsersGroupsManager;
@@ -44,6 +45,7 @@ private:
     QSqlDatabase *m_db; // SQL database
     QList<Student*> *m_listStudents; // Students list
     QList<Group*> *m_listGroups; // Group list
+    QAction* m_shortcutNotepad;
 };
 
 #endif // USERSGROUPSMANAGER_H

@@ -5,6 +5,7 @@ Subject::Subject() {
     m_name = "";
     m_shortName = "";
     m_color = "";
+    m_weight = 0;
     m_teachers = new QList<Teacher*>();
     m_kholleurs = new QList<Kholleur*>();
     m_courses = new QList<Course*>();
@@ -29,6 +30,9 @@ QString Subject::getShortName() const {
 QString Subject::getColor() const {
     return m_color;
 }
+int Subject::getWeight() const {
+    return m_weight;
+}
 QList<Teacher*>* Subject::teachers() const {
     return m_teachers;
 }
@@ -51,4 +55,10 @@ void Subject::setShortName(QString shortName) {
 }
 void Subject::setColor(QString color) {
     m_color = color;
+}
+void Subject::setWeight(int weight) {
+    if(weight < 0)
+        m_weight = 0;
+    else
+        m_weight = (weight > MaxWeightSubject) ? MaxWeightSubject : weight;
 }

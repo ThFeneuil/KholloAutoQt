@@ -14,6 +14,8 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
     connect(this, SIGNAL(rejected()), this, SLOT(onClose_button()));
     connect(ui->copyToEven, SIGNAL(clicked()), this, SLOT(copyToEven()));
     connect(ui->copyToOdd, SIGNAL(clicked()), this, SLOT(copyToOdd()));
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 
     //DB
     m_db = db;
@@ -112,6 +114,8 @@ CoursesManager::~CoursesManager()
     free_groups();
     free_subjects();
     free_teachers();
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
 }
 
 bool CoursesManager::free_subjects() {
@@ -181,7 +185,7 @@ bool CoursesManager::update_list_groups() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name FROM tau_groups WHERE is_deleted = 0 ORDER BY name");
+    query.exec("SELECT id, name FROM tau_groups ORDER BY name");
 
     //Treat result
     while(query.next()) {

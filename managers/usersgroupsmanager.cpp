@@ -18,6 +18,8 @@ UsersGroupsManager::UsersGroupsManager(QSqlDatabase *db, QWidget *parent) :
     m_db = db;
     m_listStudents = new QList<Student*>();
     m_listGroups = new QList<Group*>();
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 
     /// Get the list of the students
     QSqlQuery query(*m_db);
@@ -31,7 +33,7 @@ UsersGroupsManager::UsersGroupsManager(QSqlDatabase *db, QWidget *parent) :
         m_listStudents->append(stdnt);
     }
     /// Get the list of the groups
-    query.exec("SELECT `id`, `name` FROM `tau_groups` WHERE `is_deleted` = 0 ORDER BY `name`");
+    query.exec("SELECT `id`, `name` FROM `tau_groups` ORDER BY `name`");
     while (query.next()) {
         Group* grp = new Group();
         grp->setId(query.value(0).toInt());
@@ -65,6 +67,8 @@ UsersGroupsManager::~UsersGroupsManager() {
     // Delete the list (students and groups)
     delete m_listStudents;
     delete m_listGroups;
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
 }
 
 bool UsersGroupsManager::update_list_browse() {

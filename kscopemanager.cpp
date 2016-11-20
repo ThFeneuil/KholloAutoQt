@@ -109,14 +109,12 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             case Create:
                 qCreate.exec("CREATE TABLE `tau_groups` ( "
                                 "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                                "`name`	TEXT NOT NULL, "
-                                "`is_deleted`	INTEGER NOT NULL DEFAULT 0 "
+                                "`name`	TEXT NOT NULL "
                             ");");
                 break;
             case Check:
                 columns.insert("id", Id);
                 columns.insert("name", Text);
-                columns.insert("is_deleted", Int);
             break;
         }
     } else if(nameTable == "tau_groups_users") {
@@ -142,13 +140,14 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
                             "`name`	TEXT NOT NULL, "
                             "`shortName`	TEXT NOT NULL, "
                             "`color`	TEXT NOT NULL "
+                            "`weight`	INTEGER NOT NULL "
                         ");");
             break;
             case Check:
                 columns.insert("id", Id);
                 columns.insert("name", Text);
                 columns.insert("shortName", Text);
-                columns.insert("shortName", Text);
+                columns.insert("weight", Int);
             break;
         }
     } else if(nameTable == "tau_teachers") {

@@ -7,6 +7,7 @@
 #include <QQueue>
 #include <QColorDialog>
 #include "storedData/subject.h"
+#include "managers/updatesubjectdialog.h"
 
 namespace Ui {
 class SubjectsManager;
@@ -25,12 +26,11 @@ public slots:
     bool update_list();
     bool add_subject();
     bool delete_subject();
-    bool select_color();
+    bool update_subject();
 
 private:
     Ui::SubjectsManager *ui;
     QSqlDatabase *m_db;
-    QColor *m_subjectColor;
     QQueue<Subject*> queue_displayedSubjects;
 };
 

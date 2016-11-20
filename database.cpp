@@ -125,7 +125,7 @@ bool DataBase::load(QProgressBar* progressBar) {
     }
 
     QSqlQuery qGroups(*m_db);
-    qGroups.exec("SELECT id, name FROM tau_groups WHERE is_deleted=0");
+    qGroups.exec("SELECT id, name FROM tau_groups");
     while (qGroups.next()) {
         Group* grp = new Group();
         grp->setId(qGroups.value(0).toInt());

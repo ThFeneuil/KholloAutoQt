@@ -41,6 +41,8 @@ public slots:
     bool displayKholleur(); // To update the khollotable according the selected kholleur
     bool selectKholleur(Kholleur* khll); // To select manually a kholleur in the list
     bool selectStudent(Student* stud); // To update the kholleurs list and the khollotable according the selected student
+    bool selectTimeslot(Timeslot* slot);
+    bool openReviewWithSelection();
 
 private:
     Ui::InterfaceTab *ui; // GUI

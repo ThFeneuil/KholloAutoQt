@@ -33,7 +33,7 @@ bool GroupsManager::update_list() {
 
     // Make the request
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name FROM tau_groups WHERE is_deleted=0 ORDER BY name");
+    query.exec("SELECT id, name FROM tau_groups ORDER BY name");
 
     // Treat the request
     while (query.next()) {
@@ -56,7 +56,7 @@ bool GroupsManager::add_group() {
         return false;
     } else {
         QSqlQuery query(*m_db);
-        query.prepare("INSERT INTO tau_groups(name, is_deleted) VALUES(:name, 0)");
+        query.prepare("INSERT INTO tau_groups(name) VALUES(:name)");
         query.bindValue(":name", name);
         query.exec();
 

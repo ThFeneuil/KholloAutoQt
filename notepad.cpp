@@ -31,6 +31,10 @@ NotepadDialog* Notepad::add(QString label, QString text) {
     return NULL;
 }
 
+void Notepad::add() {
+    add(QString::number(QDateTime::currentMSecsSinceEpoch()), "");
+}
+
 bool Notepad::remove(QString label) {
     if(m_notepads->contains(label)) {
         delete m_notepads->value(label);
@@ -49,10 +53,15 @@ NotepadDialog::NotepadDialog(QString text, QString label, QWidget *parent) :
     m_label = label;
 
     connect(this, SIGNAL(finished(int)), this, SLOT(close()));
+
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 }
 
 NotepadDialog::~NotepadDialog() {
     delete ui;
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
 }
 
 void NotepadDialog::addTextAtTheEnd(QString text) {
@@ -78,4 +87,13 @@ QString NotepadDialog::label() const {
 void NotepadDialog::close() {
     if(m_label != "")
         Notepad::remove(m_label);
+}
+
+QAction* Notepad::shortcut() {
+    QAction* act = new QAction("Bloc-notes");
+    act->setShortcut(QKeySequence("Ctrl+B"));
+    connect(act, &QAction::triggered, [=] () {
+        add(QString::number(QDateTime::currentMSecsSinceEpoch()), "");
+    });
+    return act;
 }

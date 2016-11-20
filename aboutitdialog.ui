@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>336</width>
-    <height>220</height>
+    <height>254</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
         <string notr="true">background : qradialgradient(spread:pad, cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0.130653 rgba(255, 255, 0, 255), stop:0.703518 rgba(255, 255, 0, 0))</string>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:600; color:#ff0000;&quot;&gt;S.P.A.R.K.&lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic; color:#00007f;&quot;&gt;Système de Planification et d'ARrangement de Kholles&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Auteurs : &lt;br/&gt;&lt;/span&gt;Olivér FACKLAM et Thibauld FENEUIL&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Date : &lt;/span&gt;Juillet - Novembre 2016&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Contact :&lt;/span&gt; tfeneuil@free.fr&lt;/p&gt;&lt;p align=&quot;right&quot;&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;Créé avec l'environnement Qt&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:600; color:#ff0000;&quot;&gt;S.P.A.R.K.&lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic; color:#00007f;&quot;&gt;Système de Planification et d'ARrangement de Kholles&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Auteurs : &lt;br/&gt;&lt;/span&gt;Olivér FACKLAM et Thibauld FENEUIL&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Version : &lt;br/&gt;&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;SPARK V1.1&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Date : &lt;/span&gt;Juillet - Novembre 2016&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;Contact :&lt;/span&gt; tfeneuil@free.fr&lt;/p&gt;&lt;p align=&quot;right&quot;&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;Créé avec l'environnement Qt&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>

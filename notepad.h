@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QMap>
+#include <QDateTime>
 
 namespace Ui {
 class NotepadDialog;
@@ -27,15 +28,23 @@ public slots:
 private:
     Ui::NotepadDialog *ui;
     QString m_label;
+    QAction* m_shortcutNotepad;
 };
 
-class Notepad {
+class Notepad : public QObject
+{
+    Q_OBJECT
+
 public:
     Notepad();
     ~Notepad();
 
     static NotepadDialog* add(QString label, QString text);
     static bool remove(QString label);
+    static QAction* shortcut();
+
+public slots:
+    static void add();
 
 private:
     static QMap<QString, NotepadDialog*>* m_notepads;

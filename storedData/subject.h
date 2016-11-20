@@ -7,6 +7,8 @@
 #include "storedData/kholleur.h"
 #include "storedData/course.h"
 
+#define MaxWeightSubject 10
+
 class Teacher;
 class Kholleur;
 class Course;
@@ -22,6 +24,7 @@ class Subject
         QString getName() const;
         QString getShortName() const;
         QString getColor() const;
+        int getWeight() const;
         QList<Teacher*>* teachers() const;
         QList<Kholleur*>* kholleurs() const;
         QList<Course*>* courses() const;
@@ -31,12 +34,14 @@ class Subject
         void setName(QString name);
         void setShortName(QString shortName);
         void setColor(QString color);
+        void setWeight(int weight);
 
     private:
         int m_id;
         QString m_name;
         QString m_shortName;
         QString m_color;
+        int m_weight;
 
         //Interface
         QList<Teacher*>* m_teachers;
