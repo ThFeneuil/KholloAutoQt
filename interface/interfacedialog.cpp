@@ -280,7 +280,7 @@ QStack<InterfaceAction*>* InterfaceDialog::lastActions() {
 
 bool InterfaceDialog::cancelAction() {
     if(m_lastActions->isEmpty()) {
-        QMessageBox::information(this, "Pile des actions vide", "Aucune action a annulé.");
+        QMessageBox::information(this, "Impossible d'annuler", "La pile des actions est vide.");
         return false;
     }
     QListWidgetItem *item = ui->list_students->currentItem();

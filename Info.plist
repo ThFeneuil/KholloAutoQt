@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>KholloAuto</string>
+	<string>SPARK</string>
 	<key>CFBundleIconFile</key>
 	<string>iconApp.icns</string>
 	<key>NSPrincipalClass</key>

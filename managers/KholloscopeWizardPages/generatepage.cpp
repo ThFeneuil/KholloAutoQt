@@ -182,9 +182,7 @@ void GeneratePage::constructPoss() {
             QList<Timeslot*> new_list;
 
             foreach(Timeslot* ts, *m_dbase->listTimeslots()) { //For every timeslot
-                Subject* sub = ts->kholleur()->subject();
-
-                if(sub->getId() == selected_subjects->at(i)->getId()
+                if(ts->kholleur()->getId_subjects() == selected_subjects->at(i)->getId()
                         && ts->getDate() >= m_date
                         && ts->getDate() <= m_date.addDays(6)
                         && Utilities::compatible(m_db, m_dbase, users[j]->getId(), ts, m_week)) { //Add the compatible timeslots
@@ -421,7 +419,9 @@ void GeneratePage::finished() {
     display(&errors, &warnings);
     displayCollision(&collisions);
     m_box->hide();
-    displayConclusion(errors, warnings, collisions);
+
+    if(m_watcher.future().result())
+        displayConclusion(errors, warnings, collisions);
 }
 
 void GeneratePage::abort() {
