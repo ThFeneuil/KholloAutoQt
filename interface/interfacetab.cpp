@@ -27,7 +27,7 @@ InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabas
 
     /// Initilize the kholleurs list with the kholleurs of the selected subject
     QSqlQuery query(*m_db);
-    query.prepare("SELECT `id` FROM `tau_kholleurs` WHERE `id_subjects`=:id_subjects ORDER BY `name`");
+    query.prepare("SELECT `id` FROM `tau_kholleurs` WHERE `id_subjects`=:id_subjects ORDER BY UPPER(`name`)");
     query.bindValue(":id_subjects", m_subject->getId());
     query.exec();
     while (query.next()) {

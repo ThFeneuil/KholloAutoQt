@@ -37,7 +37,7 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
 
     /// To initialize the students list (get, display, connect)
     QSqlQuery query(*m_db);
-    query.exec("SELECT `id` FROM `tau_users` ORDER BY `name`, `first_name`");
+    query.exec("SELECT `id` FROM `tau_users` ORDER BY UPPER(`name`), UPPER(`first_name`)");
     while (query.next()) {
         // To get the student
         Student* stdnt = m_dbase->listStudents()->value(query.value(0).toInt());

@@ -44,7 +44,7 @@ void TimeslotsManager::getKholleurs() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, id_subjects, duration, preparation, pupils FROM tau_kholleurs ORDER BY name");
+    query.exec("SELECT id, name, id_subjects, duration, preparation, pupils FROM tau_kholleurs ORDER BY UPPER(name)");
 
 
     //Treat query

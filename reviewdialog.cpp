@@ -14,7 +14,7 @@ ReviewDialog::ReviewDialog(QSqlDatabase *db, QWidget *parent, SelectionMethod me
     m_students = new QList<Student*>();
     m_kholleurs = new QList<Kholleur*>();
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, first_name FROM tau_users ORDER BY name, first_name");
+    query.exec("SELECT id, name, first_name FROM tau_users ORDER BY UPPER(name), UPPER(first_name)");
     while (query.next()) {
         Student* stud = new Student();
         stud->setId(query.value(0).toInt());
@@ -22,7 +22,7 @@ ReviewDialog::ReviewDialog(QSqlDatabase *db, QWidget *parent, SelectionMethod me
         stud->setFirst_name(query.value(2).toString());
         m_students->append(stud);
     }
-    query.exec("SELECT id, name FROM tau_kholleurs ORDER BY name");
+    query.exec("SELECT id, name FROM tau_kholleurs ORDER BY UPPER(name)");
     while (query.next()) {
         Kholleur* khll = new Kholleur();
         khll->setId(query.value(0).toInt());

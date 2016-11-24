@@ -145,7 +145,7 @@ bool CoursesManager::get_subjects() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, shortName, color FROM tau_subjects ORDER BY name");
+    query.exec("SELECT id, name, shortName, color FROM tau_subjects ORDER BY UPPER(name)");
 
     //Populate the list
     while(query.next()) {
@@ -165,7 +165,7 @@ bool CoursesManager::get_teachers() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, id_subjects FROM tau_teachers ORDER BY name");
+    query.exec("SELECT id, name, id_subjects FROM tau_teachers ORDER BY UPPER(name)");
 
     //Populate the list
     while(query.next()) {
@@ -185,7 +185,7 @@ bool CoursesManager::update_list_groups() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name FROM tau_groups ORDER BY name");
+    query.exec("SELECT id, name FROM tau_groups ORDER BY UPPER(name)");
 
     //Treat result
     while(query.next()) {

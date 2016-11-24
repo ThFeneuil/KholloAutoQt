@@ -20,7 +20,7 @@ LastChanges::LastChanges(QSqlDatabase *db, int id_week, QDate *monday, QWidget *
                "FROM tau_kholleurs AS K "
                "LEFT OUTER JOIN tau_subjects AS S "
                   "ON K.id_subjects = S.id "
-               "ORDER BY K.name");
+               "ORDER BY UPPER(K.name)");
 
     // Treat the request & Display the kholleurs
     while (query.next()) {
@@ -55,7 +55,7 @@ LastChanges::LastChanges(QSqlDatabase *db, int id_week, QDate *monday, QWidget *
     update_khollesManager();
 
     QSqlQuery query_subj(*m_db);
-    query_subj.exec("SELECT `id`, `name` FROM `tau_subjects` ORDER BY `name`");
+    query_subj.exec("SELECT `id`, `name` FROM `tau_subjects` ORDER BY UPPER(`name`)");
 
     while (query_subj.next())
         ui->comboBox_subjects->addItem(query_subj.value(1).toString(), query_subj.value(0).toInt());
@@ -148,7 +148,7 @@ bool LastChanges::change_timeslotsList() {
                       "JOIN `tau_users` AS S "
                         "ON K.`id_users` = S.`id` "
                       "WHERE K.`id_timeslots` = :id_timeslots "
-                      "ORDER BY S.`name`, S.`first_name`");
+                      "ORDER BY UPPER(S.`name`), UPPER(S.`first_name`)");
         queryStudents.bindValue(":id_timeslots", tsChg->start->getId());
         queryStudents.exec();
 
@@ -383,7 +383,7 @@ bool LastChanges::save_timeslotsChanges() {
                       "JOIN `tau_users` AS S "
                         "ON K.`id_users` = S.`id` "
                       "WHERE K.`id_timeslots` = :id_timeslots "
-                      "ORDER BY S.`name`, S.`first_name`");
+                      "ORDER BY UPPER(S.`name`), UPPER(S.`first_name`)");
         query.bindValue(":id_timeslots", initial->getId());
         query.exec();
 

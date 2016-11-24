@@ -35,7 +35,7 @@ bool StudentsManager::update_list() {
 
     // Make the request
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, first_name, email FROM tau_users ORDER BY name, first_name");
+    query.exec("SELECT id, name, first_name, email FROM tau_users ORDER BY UPPER(name), UPPER(first_name)");
 
     // Treat the request
     while (query.next()) {

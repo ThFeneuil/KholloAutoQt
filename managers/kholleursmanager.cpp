@@ -58,7 +58,7 @@ bool KholleursManager::update_listTeachers() {
                "FROM tau_teachers AS T "
                "LEFT OUTER JOIN tau_subjects AS S "
                   "ON T.id_subjects = S.id "
-               "ORDER BY T.name");
+               "ORDER BY UPPER(T.name)");
 
     // Treat the request & Display the teachers
     while (query.next()) {
@@ -162,7 +162,7 @@ bool KholleursManager::update_listKholleurs(int idSelected) {
                "FROM tau_kholleurs AS K "
                "LEFT OUTER JOIN tau_subjects AS S "
                   "ON K.id_subjects = S.id "
-               "ORDER BY K.name");
+               "ORDER BY UPPER(K.name)");
 
     // Treat the request & Display the kholleurs
     while (query.next()) {

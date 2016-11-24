@@ -23,7 +23,7 @@ UsersGroupsManager::UsersGroupsManager(QSqlDatabase *db, QWidget *parent) :
 
     /// Get the list of the students
     QSqlQuery query(*m_db);
-    query.exec("SELECT `id`, `name`, `first_name` FROM `tau_users` ORDER BY `name`, `first_name`");
+    query.exec("SELECT `id`, `name`, `first_name` FROM `tau_users` ORDER BY UPPER(`name`), UPPER(`first_name`)");
     while (query.next()) {
         Student* stdnt = new Student();
         stdnt->setId(query.value(0).toInt());
@@ -33,7 +33,7 @@ UsersGroupsManager::UsersGroupsManager(QSqlDatabase *db, QWidget *parent) :
         m_listStudents->append(stdnt);
     }
     /// Get the list of the groups
-    query.exec("SELECT `id`, `name` FROM `tau_groups` ORDER BY `name`");
+    query.exec("SELECT `id`, `name` FROM `tau_groups` ORDER BY UPPER(`name`)");
     while (query.next()) {
         Group* grp = new Group();
         grp->setId(query.value(0).toInt());

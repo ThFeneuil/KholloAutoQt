@@ -33,7 +33,7 @@ bool GroupsManager::update_list() {
 
     // Make the request
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name FROM tau_groups ORDER BY name");
+    query.exec("SELECT id, name FROM tau_groups ORDER BY UPPER(name)");
 
     // Treat the request
     while (query.next()) {
