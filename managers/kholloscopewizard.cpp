@@ -50,7 +50,7 @@ void KholloscopeWizard::load_students() {
 
     //Prepare the query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, first_name FROM tau_users ORDER BY name, first_name");
+    query.exec("SELECT id, name, first_name FROM tau_users ORDER BY UPPER(`name`), UPPER(`first_name`)");
 
     //Treat the query
     while(query.next()) {
@@ -78,7 +78,7 @@ void KholloscopeWizard::load_subjects() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, shortName, color FROM tau_subjects ORDER BY name");
+    query.exec("SELECT id, name, shortName, color FROM tau_subjects ORDER BY UPPER(`name`)");
 
     //Treat the query
     while(query.next()) {
