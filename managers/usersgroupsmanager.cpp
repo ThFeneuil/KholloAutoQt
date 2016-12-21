@@ -78,16 +78,16 @@ bool UsersGroupsManager::update_list_browse() {
 
     /// Adapt the variables and labels according the chosen method to link students and groups
     bool browseStd = (ui->comboBox_browse->currentData().toInt() == BrowseStudents);
-    QList<int>* listToTreat = NULL;
+    QList<qulonglong>* listToTreat = NULL;
     if(browseStd) {
         // If the browsing is with students
-        listToTreat = (QList<int>*) m_listStudents;
+        listToTreat = (QList<qulonglong>*) m_listStudents;
         ui->label_browse->setText("Elèves");
         ui->label_yes->setText("Groupes de l'élève");
         ui->label_no->setText("Autres groupes");
     }else {
         // If the browsing is with groups
-        listToTreat = (QList<int>*) m_listGroups;
+        listToTreat = (QList<qulonglong>*) m_listGroups;
         ui->label_browse->setText("Groupes");
         ui->label_yes->setText("Elèves du groupe");
         ui->label_no->setText("Autres élèves");

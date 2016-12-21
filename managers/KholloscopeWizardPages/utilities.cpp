@@ -194,3 +194,22 @@ void Utilities::saveInSql(QSqlDatabase *db, QList<Kholle*>* kholloscope) {
     }
 }
 
+int Utilities::sum_day(QSqlDatabase *db, int id_user, QDate date) {
+    /** Determines if this kholle is on a day with collision; (-1) if error **/
+
+    QSqlQuery query(*db);
+    query.prepare("SELECT SUM(S.`weight`) FROM "
+                  "(SELECT * FROM tau_kholles WHERE `id_users` = :id_user) as K "
+                  "JOIN (SELECT * FROM tau_timeslots WHERE `date`=:date) as T ON K.`id_timeslots` = T.`id` "
+                  "JOIN tau_kholleurs AS P ON T.`id_kholleurs` = P.`id` "
+                  "JOIN tau_subjects AS S ON P.`id_subjects` = S.`id`;");
+    query.bindValue(":id_user", id_user);
+    query.bindValue(":date", date);
+    query.exec();
+
+    if(query.next())
+        return query.value(0).toInt();
+    else
+        return (-1);
+}
+

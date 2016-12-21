@@ -15,7 +15,7 @@ public:
     Kholle();
     ~Kholle();
 
-    enum Status {OK, Warning, Error}; //Generation
+    enum Status {OK, Warning, Error}; //Generation, the status are in order from best to worst
 
     //Getters
     int getId() const;
@@ -38,6 +38,7 @@ public:
     //Other functions
     static int nearestKholle(QSqlDatabase *db, QMap<int, Timeslot *> *timeslots, int id_user, Timeslot* t, int id_kholle);
     int nearest(QMap<int, Timeslot *> *timeslots, QSqlDatabase *db);
+    static int correspondingStatus(int weeks);
     void updateStatus(QMap<int, Timeslot *> *timeslots, QSqlDatabase *db);
 
 private:

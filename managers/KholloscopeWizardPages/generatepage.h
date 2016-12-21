@@ -34,6 +34,9 @@ struct working_index {
     int max;
 };
 
+
+enum ExchangeType {Collisions, Warnings, All};
+
 namespace Ui {
 class GeneratePage;
 }
@@ -60,7 +63,7 @@ public:
     bool generate();
 
     void setStatus();
-    bool exchange(int index, bool only_warnings, int score_limit);
+    bool exchange(int index, ExchangeType type, int score_limit);
 
     void display(int *errors, int *warnings);
     void displayCollision(int *collisions);
@@ -82,9 +85,6 @@ private:
     QSqlDatabase *m_db;
     DataBase *m_dbase;
     QFile *log_file;
-    QMap<int, Timeslot*> timeslots;
-    QMap<int, Subject*> subjects;
-    QMap<int, Kholleur*> kholleurs;
     int m_week;
     QDate m_date;
 

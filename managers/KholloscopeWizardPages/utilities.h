@@ -22,6 +22,8 @@ public:
 
     static int listMax(DataBase *dbase, QList<Timeslot*>, Student*, QDate m_date);
     static void saveInSql(QSqlDatabase *db, QList<Kholle*>* kholloscope);
+
+    static int sum_day(QSqlDatabase *db, int id_user, QDate date);
 };
 
 #endif // UTILITIES_H

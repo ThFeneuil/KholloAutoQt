@@ -408,8 +408,9 @@ void GeneratePage::finished() {
     if(!m_watcher.future().result())
         displayBlocking();
     else {
-        exchange(0, true, 40);
-        exchange(0, false, 15);
+        exchange(0, Collisions, 0);
+        exchange(0, Warnings, 40);
+        exchange(0, All, 15);
     }
     /*m_db->rollback();
     m_db->transaction();
@@ -437,17 +438,28 @@ void GeneratePage::setStatus() {
     }
 }
 
-bool GeneratePage::exchange(int index, bool only_warnings, int score_limit) {
+bool GeneratePage::exchange(int index, ExchangeType type, int score_limit) {
     /** Exchange timeslots between people in the kholloscope to improve score **/
 
     if(index >= kholloscope.length())
         return true;
 
-    if(only_warnings) {
-        while(index < kholloscope.length() && kholloscope[index]->status() == Kholle::OK)
-            index++;
-        if(index == kholloscope.length())
-            return true;
+    switch(type) {
+        case Warnings:
+            while(index < kholloscope.length() && kholloscope[index]->status() == Kholle::OK)
+                index++;
+            if(index == kholloscope.length())
+                return true;
+            break;
+        case Collisions:
+            while(index < kholloscope.length() &&
+                  Utilities::sum_day(m_db, kholloscope[index]->getId_students(), m_dbase->listTimeslots()->value(kholloscope[index]->getId_timeslots())->getDate()) <= MaxWeightSubject)
+                index++;
+            if(index == kholloscope.length())
+                return true;
+            break;
+        default:
+            break;
     }
 
     Kholle* current = kholloscope[index];
@@ -465,25 +477,58 @@ bool GeneratePage::exchange(int index, bool only_warnings, int score_limit) {
         if(m_downgraded.contains(s->getId()) && m_downgraded.value(s->getId()))
             continue;
 
+        if(type == Collisions && t_current->getDate() == t->getDate())
+            continue;
+
         if(t_current->kholleur()->getId_subjects() == t->kholleur()->getId_subjects()) {
             if(Utilities::compatible(m_db, m_dbase, s_current->getId(), t, m_week)
                     && Utilities::compatible(m_db, m_dbase, s->getId(), t_current, m_week)) {
+                int sub_weight = t_current->kholleur()->subject()->getWeight();
+                int w_current_old = Utilities::sum_day(m_db, s_current->getId(), t_current->getDate());
+                int w_current_new = Utilities::sum_day(m_db, s_current->getId(), t->getDate()) + (t_current->getDate() != t->getDate() ? sub_weight : 0);
+                int w_old = Utilities::sum_day(m_db, s->getId(), t->getDate());
+                int w_new = Utilities::sum_day(m_db, s->getId(), t_current->getDate()) + (t_current->getDate() != t->getDate() ? sub_weight : 0);
+
                 QMap<int, float> *p_current = Utilities::corrected_proba(m_dbase, s_current, poss.value(t_current->kholleur()->getId_subjects()).value(s_current->getId()), m_date);
                 QMap<int, float> *p = Utilities::corrected_proba(m_dbase, s, poss.value(t->kholleur()->getId_subjects()).value(s->getId()), m_date);
 
-                int n1 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s_current->getId(), t, 0);
-                int n2 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s->getId(), t_current, 0);
+                int n1 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s_current->getId(), t, current->getId());
+                int n2 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s->getId(), t_current, k->getId());
 
-                if(p_current->value(t->getId()) - p_current->value(t_current->getId()) >= score_limit
-                        && p->value(t_current->getId()) - p->value(t->getId()) >= -score_limit
-                        && (n1 == -1 || n1 > 3)
-                        && (n2 == -1 || n2 > 3)) {
+                bool do_exchange = false;
+
+                if(type == Collisions) {
+                    if((w_current_new <= MaxWeightSubject || w_current_new < w_current_old)
+                            && (w_new <= MaxWeightSubject || w_new < w_old)) {
+                        if(Kholle::correspondingStatus(n1) <= current->status()
+                                && Kholle::correspondingStatus(n2) <= k->status()) {
+                            if(p_current->value(t->getId()) + p->value(t_current->getId()) >= p_current->value(t_current->getId()) + p->value(t->getId())) {
+                                do_exchange = true;
+                            }
+                        }
+                    }
+                }
+
+                else {
+                    if((w_current_new <= MaxWeightSubject || w_current_new <= w_current_old)
+                            && (w_new <= MaxWeightSubject || w_new <= w_old)) {
+                        if(Kholle::correspondingStatus(n1) == Kholle::OK
+                                && Kholle::correspondingStatus(n2) == Kholle::OK) {
+                            if(p_current->value(t->getId()) - p_current->value(t_current->getId()) >= score_limit
+                                    && p->value(t_current->getId()) - p->value(t->getId()) >= -score_limit) {
+                                do_exchange = true;
+                            }
+                        }
+                    }
+                }
+
+                if(do_exchange) {
                     current->setId_timeslots(t->getId());
                     current->setWeeks(n1);
-                    current->setStatus(Kholle::OK);
+                    current->setStatus((Kholle::Status) Kholle::correspondingStatus(n1));
                     k->setId_timeslots(t_current->getId());
                     k->setWeeks(n2);
-                    k->setStatus(Kholle::OK);
+                    k->setStatus((Kholle::Status) Kholle::correspondingStatus(n2));
                     m_downgraded.insert(s->getId(), true);
                     m_downgraded.insert(s_current->getId(), false);
 
@@ -504,7 +549,7 @@ bool GeneratePage::exchange(int index, bool only_warnings, int score_limit) {
         }
     }
 
-    return exchange(index + 1, only_warnings, score_limit);
+    return exchange(index + 1, type, score_limit);
 }
 
 void GeneratePage::display(int *errors, int *warnings) {
@@ -544,7 +589,7 @@ void GeneratePage::display(int *errors, int *warnings) {
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaine");
             ui->tableKhollo->setItem(i, 1, right);
 
-            khollo_message += student->getName() + " " + student->getFirst_name() + " : Erreur\n";
+            khollo_message += student->getName() + " " + student->getFirst_name() + ", " + subject->getShortName() + " : Erreur\n";
             (*errors)++;
         }
         else {
@@ -553,7 +598,7 @@ void GeneratePage::display(int *errors, int *warnings) {
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaines");
             ui->tableKhollo->setItem(i, 1, right);
 
-            khollo_message += student->getName() + " " + student->getFirst_name() + " : Avertissement\n";
+            khollo_message += student->getName() + " " + student->getFirst_name() + ", " + subject->getShortName() + " : Avertissement\n";
             (*warnings)++;
         }
         ui->tableKhollo->setItem(i, 0, left);
@@ -577,26 +622,45 @@ void GeneratePage::displayCollision(int *collisions) {
     QStringList days;
     days << "" << "Lundi" << "Mardi" << "Mercredi" << "Jeudi" << "Vendredi" << "Samedi" << "Dimanche";
 
-    foreach(Kholle* ki, *m_dbase->listKholles()) {
-        foreach(Kholle* kj, *m_dbase->listKholles()) {
-            if(ki->getId() <= kj->getId())
-                continue;
-            Timeslot* tsi = ki->timeslot();
-            Student* sti = ki->student();
-            Timeslot* tsj = kj->timeslot();
-            Student* stj = kj->student();
-            if(sti->getId() == stj->getId()
-                    && tsi->getDate() == tsj->getDate()) {
+    QMap<int, QList< QList<Kholle*>* >* > map;
+
+    foreach(Kholle* k, *m_dbase->listKholles()) {
+        if(!map.contains(k->getId_students())) {
+            QList<QList<Kholle*>* > *list = new QList<QList<Kholle*>* >();
+            for(int i = 0; i <= 7; i++) {
+                list->append(new QList<Kholle*>());
+            }
+            map.insert(k->getId_students(), list);
+        }
+
+        map.value(k->getId_students())->at(k->timeslot()->getDate().dayOfWeek())->append(k);
+    }
+
+    foreach(QList<QList<Kholle*>* > *list, map) {
+        for(int i = 1; i <= 7; i++) {
+            QList<Kholle*> *day = list->at(i);
+            int total = 0;
+            for(int j = 0; j < day->length(); j++) {
+                total += day->at(j)->timeslot()->kholleur()->subject()->getWeight();
+            }
+
+            if(day->length() > 0 && total > MaxWeightSubject) {
                 int r = ui->tableCollision->rowCount();
-                ui->tableCollision->setRowCount(r + 1);
+                ui->tableCollision->setRowCount(r + day->length());
 
-                QTableWidgetItem *left = new QTableWidgetItem(sti->getName() + ", " + tsi->kholleur()->subject()->getShortName() + " / " + tsj->kholleur()->subject()->getShortName() + " :");
+                Student *s = day->at(0)->student();
+                QTableWidgetItem *left = new QTableWidgetItem(s->getName() + ", " + days[i] + " (" + QString::number(total) + ")");
                 ui->tableCollision->setItem(r, 0, left);
+                collisions_message += s->getName() + " " + s->getFirst_name() + ", " + days[i] + " : ";
 
-                QTableWidgetItem *right = new QTableWidgetItem(days[tsi->getDate().dayOfWeek()] + " " + tsi->getTime_start().toString() + " / " + tsj->getTime_start().toString());
-                ui->tableCollision->setItem(r, 1, right);
-
-                collisions_message += sti->getName() + " " + sti->getFirst_name() + " : " + tsi->kholleur()->subject()->getShortName() + " / " + tsj->kholleur()->subject()->getShortName() + "\n";
+                for(int j = 0; j < day->length(); j++) {
+                    QString sub_name = day->at(j)->timeslot()->kholleur()->subject()->getShortName();
+                    QTableWidgetItem *right = new QTableWidgetItem(sub_name + " " + day->at(j)->timeslot()->getTime_start().toString());
+                    ui->tableCollision->setItem(r + j, 1, right);
+                    collisions_message += sub_name + " / ";
+                }
+                collisions_message.chop(3);
+                collisions_message += "\n";
                 (*collisions)++;
             }
         }

@@ -163,7 +163,6 @@ void TimeslotsManager::addOftenTimeslot(QListWidgetItem* item) {
     query.bindValue(":pupils", ts->getPupils());
     query.exec();
 
-    delete ts;
     update_list_timeslots(k->getId());
 }
 

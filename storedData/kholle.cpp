@@ -100,16 +100,21 @@ int Kholle::nearest(QMap<int, Timeslot*> *timeslots, QSqlDatabase *db) {
     return Kholle::nearestKholle(db, timeslots, this->getId_students(), ts_current, this->getId());
 }
 
+int Kholle::correspondingStatus(int weeks) {
+    if(weeks == -1 || weeks > 3)
+        return (Kholle::OK);
+    else if(weeks <= 1)
+        return (Kholle::Error);
+    else
+        return (Kholle::Warning);
+}
+
 void Kholle::updateStatus(QMap<int, Timeslot*> *timeslots, QSqlDatabase *db) {
     /** Set the status of this kholle **/
 
     int weeks = this->nearest(timeslots, db);
-    if(weeks == -1 || weeks > 3)
-        this->setStatus(Kholle::OK);
-    else if(weeks <= 1)
-        this->setStatus(Kholle::Error);
-    else
-        this->setStatus(Kholle::Warning);
 
+    this->setStatus((Kholle::Status) Kholle::correspondingStatus(weeks));
     this->setWeeks(weeks);
 }
+
