@@ -158,9 +158,11 @@ void ReviewDialog::updateInfoArea() {
     // Get the list of kholles
     QSqlQuery qKholles(*m_db);
     QSqlQuery qTimeslots(*m_db);
-    qKholles.prepare("SELECT id, id_users, id_timeslots FROM tau_kholles "
-                     "WHERE id_users = :id_students AND id_timeslots IN "
-                        "(SELECT id FROM tau_timeslots WHERE id_kholleurs = :id_kholleurs)");
+    qKholles.prepare("SELECT K.id, K.id_users, K.id_timeslots FROM tau_kholles AS K "
+                     "JOIN tau_timeslots AS T "
+                        "ON K.id_timeslots = T.id "
+                     "WHERE K.id_users = :id_students AND T.id_kholleurs = :id_kholleurs "
+                     "ORDER BY T.date, T.time");
     qKholles.bindValue(":id_students", stud->getId());
     qKholles.bindValue(":id_kholleurs", khll->getId());
     qKholles.exec();
