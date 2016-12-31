@@ -5,7 +5,13 @@
  */
 
 #include "interfacetab.h"
-#include "ui_interfacetab.h"
+#ifdef Q_WS_MAC
+    #include "ui_interfacetab.h"
+#else
+    #include "ui_interfacetab_mac.h"
+#endif
+
+
 
 InterfaceTab::InterfaceTab(Subject* subj, int id_week, QDate monday, QSqlDatabase *db, DataBase *dbase, QWidget *parent, InterfaceDialog* interface) :
     QWidget(parent),

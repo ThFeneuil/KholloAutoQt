@@ -32,7 +32,9 @@ FORMS += \
     managers/groupsswappingsmanager.ui \
     notepad.ui \
     settingsdialog.ui \
-    managers/updatesubjectdialog.ui
+    managers/updatesubjectdialog.ui \
+    interface/interfacedialog_mac.ui \
+    interface/interfacetab_mac.ui
 
 HEADERS += \
     mainwindow.h \

@@ -5,7 +5,12 @@
  */
 
 #include "interfacedialog.h"
-#include "ui_interfacedialog.h"
+#ifdef Q_WS_MAC
+    #include "ui_interfacedialog.h"
+#else
+    #include "ui_interfacedialog_mac.h"
+#endif
+
 
 InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QWidget *parent) :
     QDialog(parent),
