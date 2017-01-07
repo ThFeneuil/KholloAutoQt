@@ -5,7 +5,7 @@
  */
 
 #include "interfacedialog.h"
-#ifdef Q_WS_MAC
+#ifndef Q_WS_MAC
     #include "ui_interfacedialog.h"
 #else
     #include "ui_interfacedialog_mac.h"

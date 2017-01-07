@@ -5,7 +5,7 @@
  */
 
 #include "interfacetab.h"
-#ifdef Q_WS_MAC
+#ifndef Q_WS_MAC
     #include "ui_interfacetab.h"
 #else
     #include "ui_interfacetab_mac.h"
