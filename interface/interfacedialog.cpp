@@ -24,7 +24,11 @@ InterfaceDialog::InterfaceDialog(QSqlDatabase *db, int id_week, QDate monday, QW
     m_id_week = id_week;
     m_monday = monday;
     m_doubleSelectedItem = NULL;
+#ifndef Q_WS_MAC
     QString textWeekLabel = "Semaine : " + m_monday.toString("dd/MM/yyyy");
+#else
+    QString textWeekLabel = m_monday.toString("dd/MM/yyyy");
+#endif
     if(m_id_week == 1)
         textWeekLabel += " (Paire)";
     else if(m_id_week == 2)
