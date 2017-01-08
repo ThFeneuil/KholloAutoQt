@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     updateWindow();
 
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     // Ouvrir directement un fichier sur OS autre que Mac
     args = QCoreApplication::arguments();
     if(args.count() > 1) {
@@ -58,7 +58,7 @@ MainWindow::~MainWindow()
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     // Pour détecter si l'utilisateur ouvre directement un fichier sous Mac
     if(event->type() == QEvent::FileOpen) {
         // Si l'event FileOpen a été appelé, on effectue nos opérations (ouvrir le fichier)

@@ -16,7 +16,7 @@ AppUpdatesURL=http://www.tfeneuilprojects.fr/spark
 DefaultDirName={pf}\SPARK
 DefaultGroupName=SPARK
 AllowNoIcons=yes
-OutputDir=C:\Users\FENEUIL\Desktop
+OutputDir=F:\Ginette\SPARK\KholloAutoQt - delta\KholloAutoQt\software
 OutputBaseFilename=sparksetup
 Compression=lzma
 SolidCompression=yes
@@ -31,8 +31,8 @@ Name: "hungarian"; MessagesFile: "compiler:Languages\Hungarian.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\FENEUIL\Documents\Informatique\KholloAuto\Executables\SPARK_Windows\SPARK.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\FENEUIL\Documents\Informatique\KholloAuto\Executables\SPARK_Windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "F:\Ginette\SPARK\KholloAutoQt - delta\KholloAutoQt\software\SPARK_Windows_08-01-2017\SPARK.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "F:\Ginette\SPARK\KholloAutoQt - delta\KholloAutoQt\software\SPARK_Windows_08-01-2017\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
