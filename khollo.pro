@@ -1,4 +1,4 @@
-QT += widgets sql
+QT += widgets sql concurrent
 
 FORMS += \
     mainwindow.ui \
@@ -26,7 +26,15 @@ FORMS += \
     managers/copytimeslots.ui \
     aboutitdialog.ui \
     contactdialog.ui \
-    reviewdialog.ui
+    reviewdialog.ui \
+    managers/lastchanges.ui \
+    managers/updatetimeslotdialog.ui \
+    managers/groupsswappingsmanager.ui \
+    notepad.ui \
+    settingsdialog.ui \
+    managers/updatesubjectdialog.ui \
+    interface/interfacedialog_mac.ui \
+    interface/interfacetab_mac.ui
 
 HEADERS += \
     mainwindow.h \
@@ -62,12 +70,20 @@ HEADERS += \
     managers/timeslotsmanager.h \
     managers/introtimeslots.h \
     managers/copytimeslots.h \
-    storedData/storeddatum.h \
     database.h \
     aboutitdialog.h \
     contactdialog.h \
     reviewdialog.h \
-    printpdf.h
+    printpdf.h \
+    managers/lastchanges.h \
+    managers/updatetimeslotdialog.h \
+    kscopemanager.h \
+    managers/groupsswappingsmanager.h \
+    notepad.h \
+    settingsdialog.h \
+    managers/KholloscopeWizardPages/utilities.h \
+    interface/interfaceactionsrecord.h \
+    managers/updatesubjectdialog.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -104,15 +120,31 @@ SOURCES += \
 	managers/timeslotsmanager.cpp \
     managers/introtimeslots.cpp \
     managers/copytimeslots.cpp \
-    storedData/storeddatum.cpp \
     database.cpp \
     aboutitdialog.cpp \
     contactdialog.cpp \
     reviewdialog.cpp \
-    printpdf.cpp
+    printpdf.cpp \
+    managers/lastchanges.cpp \
+    managers/updatetimeslotdialog.cpp \
+    kscopemanager.cpp \
+    managers/groupsswappingsmanager.cpp \
+    notepad.cpp \
+    settingsdialog.cpp \
+    managers/KholloscopeWizardPages/utilities.cpp \
+    interface/interfaceactionsrecord.cpp \
+    managers/updatesubjectdialog.cpp
+	
 DISTFILES +=
 
 RESOURCES += \
     khollo.qrc
 
+VERSION = 1.1
+QMAKE_TARGET_PRODUCT = "SPARK\0"
+
 win32:RC_ICONS += "images/iconApp.ico"
+macx {
+    QMAKE_INFO_PLIST = Info.plist
+    ICON = "images/iconApp.icns"
+}

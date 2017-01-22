@@ -125,7 +125,7 @@ bool DataBase::load(QProgressBar* progressBar) {
     }
 
     QSqlQuery qGroups(*m_db);
-    qGroups.exec("SELECT id, name FROM tau_groups WHERE is_deleted=0");
+    qGroups.exec("SELECT id, name FROM tau_groups");
     while (qGroups.next()) {
         Group* grp = new Group();
         grp->setId(qGroups.value(0).toInt());
@@ -148,13 +148,14 @@ bool DataBase::load(QProgressBar* progressBar) {
     if(progressBar) progressBar->setValue(20); // Indicator
 
     QSqlQuery qSubjects(*m_db);
-    qSubjects.exec("SELECT id, name, shortName, color FROM tau_subjects");
+    qSubjects.exec("SELECT id, name, shortName, color, weight FROM tau_subjects");
     while (qSubjects.next()) {
         Subject* subj = new Subject();
         subj->setId(qSubjects.value(0).toInt());
         subj->setName(qSubjects.value(1).toString());
         subj->setShortName(qSubjects.value(2).toString());
         subj->setColor(qSubjects.value(3).toString());
+        subj->setWeight(qSubjects.value(4).toInt());
 
         m_listSubjects->insert(subj->getId(), subj);
     }

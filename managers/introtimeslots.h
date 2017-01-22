@@ -2,7 +2,6 @@
 #define INTROTIMESLOTS_H
 
 #include <QDialog>
-#include <QtSql>
 #include "managers/timeslotsmanager.h"
 
 namespace Ui {
@@ -14,15 +13,15 @@ class IntroTimeslots : public QDialog
     Q_OBJECT
 
 public:
-    explicit IntroTimeslots(QSqlDatabase *db, QWidget *parent = 0);
+    explicit IntroTimeslots(QDate *date, QWidget *parent = 0);
     ~IntroTimeslots();
 
 public slots:
-    void openTimeslotsManager();
+    void save();
 
 private:
     Ui::IntroTimeslots *ui;
-    QSqlDatabase *m_db;
+    QDate *m_date;
 };
 
 #endif // INTROTIMESLOTS_H

@@ -17,6 +17,8 @@ int main(int argc, char *argv[]) {
     app.installTranslator(&translator);
 
     MainWindow fenetre;
+    // Pour détecter si on a ouvert directement un fichier sur Mac
+    QApplication::instance()->installEventFilter(&fenetre);
     fenetre.show();
 
     return app.exec();

@@ -19,7 +19,7 @@ SelectGroupsDialog::SelectGroupsDialog(QSqlDatabase *db, QList<Group*> *list, QW
 
     // Get the list of all the groups
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name FROM tau_groups WHERE is_deleted=0 ORDER BY name");
+    query.exec("SELECT id, name FROM tau_groups ORDER BY name");
     while (query.next()) {
         Group* grp = new Group();
         grp->setId(query.value(0).toInt());

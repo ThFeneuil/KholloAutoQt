@@ -8,6 +8,7 @@
 #include <QMap>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QVBoxLayout>
 #include "storedData/subject.h"
 #include "storedData/student.h"
 #include "managers/kholloscopewizard.h"
@@ -26,7 +27,7 @@ public:
     void initializePage();
     void cleanupPage();
     void get_selected_subjects();
-    void populate(QListWidget *list);
+    void populate(QListWidget *list, int id_subject);
 
 public slots:
     void selection_changed();

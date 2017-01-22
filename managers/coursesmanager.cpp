@@ -9,9 +9,13 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
     ui->setupUi(this);
     connect(ui->list_groups, SIGNAL(itemSelectionChanged()), this, SLOT(onSelection_change()));
     connect(ui->pushButton_save, SIGNAL(clicked()), this, SLOT(save_changes()));
-    connect(ui->pushButton_close, SIGNAL(clicked()), this, SLOT(onClose_button()));
+    //connect(ui->pushButton_close, SIGNAL(clicked()), this, SLOT(onClose_button()));
+    connect(this, SIGNAL(accepted()), this, SLOT(onClose_button()));
+    connect(this, SIGNAL(rejected()), this, SLOT(onClose_button()));
     connect(ui->copyToEven, SIGNAL(clicked()), this, SLOT(copyToEven()));
     connect(ui->copyToOdd, SIGNAL(clicked()), this, SLOT(copyToOdd()));
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 
     //DB
     m_db = db;
@@ -55,7 +59,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 subjects->addItem(list_subjects[j]->getShortName(), list_subjects[j]->getId());
             }
             subjects->setEnabled(false);
-            connect(subjects, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
+            connect(subjects, SIGNAL(activated(int)), this, SLOT(courses_changed()));
 
             QComboBox *teachers = new QComboBox();
             teachers->addItem("");
@@ -63,7 +67,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 teachers->addItem(list_teachers[j]->getName(), list_teachers[j]->getId());
             }
             teachers->setEnabled(false);
-            connect(teachers, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
+            connect(teachers, SIGNAL(activated(int)), this, SLOT(courses_changed()));
 
             layout->setContentsMargins(5, 5, 5, 5);
             layout->setSpacing(2);
@@ -81,7 +85,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 subjects->addItem(list_subjects[j]->getShortName(), list_subjects[j]->getId());
             }
             subjects->setEnabled(false);
-            connect(subjects, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
+            connect(subjects, SIGNAL(activated(int)), this, SLOT(courses_changed()));
 
             teachers = new QComboBox();
             teachers->addItem("");
@@ -89,7 +93,7 @@ CoursesManager::CoursesManager(QSqlDatabase *db, QWidget *parent) :
                 teachers->addItem(list_teachers[j]->getName(), list_teachers[j]->getId());
             }
             teachers->setEnabled(false);
-            connect(teachers, SIGNAL(activated(int)), this, SLOT(courses_changed(int)));
+            connect(teachers, SIGNAL(activated(int)), this, SLOT(courses_changed()));
 
             layout->setContentsMargins(5, 5, 5, 5);
             layout->setSpacing(2);
@@ -110,6 +114,8 @@ CoursesManager::~CoursesManager()
     free_groups();
     free_subjects();
     free_teachers();
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
 }
 
 bool CoursesManager::free_subjects() {
@@ -139,7 +145,7 @@ bool CoursesManager::get_subjects() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, shortName, color FROM tau_subjects ORDER BY name");
+    query.exec("SELECT id, name, shortName, color FROM tau_subjects ORDER BY UPPER(name)");
 
     //Populate the list
     while(query.next()) {
@@ -159,7 +165,7 @@ bool CoursesManager::get_teachers() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, id_subjects FROM tau_teachers ORDER BY name");
+    query.exec("SELECT id, name, id_subjects FROM tau_teachers ORDER BY UPPER(name)");
 
     //Populate the list
     while(query.next()) {
@@ -179,7 +185,7 @@ bool CoursesManager::update_list_groups() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name FROM tau_groups WHERE is_deleted = 0 ORDER BY name");
+    query.exec("SELECT id, name FROM tau_groups ORDER BY UPPER(name)");
 
     //Treat result
     while(query.next()) {
@@ -193,7 +199,7 @@ bool CoursesManager::update_list_groups() {
     return true;
 }
 
-void CoursesManager::courses_changed(int i) {
+void CoursesManager::courses_changed() {
     isChanged = true;
 }
 
@@ -417,7 +423,4 @@ void CoursesManager::onClose_button() {
             save_changes();
         }
     }
-
-    //Close the dialog
-    accept();
 }

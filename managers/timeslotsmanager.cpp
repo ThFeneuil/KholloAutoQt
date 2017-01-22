@@ -18,10 +18,15 @@ TimeslotsManager::TimeslotsManager(QSqlDatabase *db, QDate date, QWidget *parent
     getKholleurs();
 
     connect(ui->listKholleurs, SIGNAL(itemSelectionChanged()), this, SLOT(onSelection_change()));
+    connect(ui->listTimeslots, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(deleteTimeslot(QListWidgetItem*)));
+    connect(ui->listOftenTimeslots, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(addOftenTimeslot(QListWidgetItem*)));
     connect(ui->addButton, SIGNAL(clicked()), this, SLOT(addTimeslot()));
     connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteTimeslot()));
     connect(ui->copyButton, SIGNAL(clicked()), this, SLOT(copyTimeslots()));
     connect(ui->copyAllButton, SIGNAL(clicked()), this, SLOT(copyAllTimeslots()));
+
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 }
 
 TimeslotsManager::~TimeslotsManager()
@@ -29,6 +34,8 @@ TimeslotsManager::~TimeslotsManager()
     delete ui;
     freeKholleurs();
     free_timeslots();
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
 }
 
 void TimeslotsManager::getKholleurs() {
@@ -37,7 +44,7 @@ void TimeslotsManager::getKholleurs() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, id_subjects, duration, preparation, pupils FROM tau_kholleurs ORDER BY name");
+    query.exec("SELECT id, name, id_subjects, duration, preparation, pupils FROM tau_kholleurs ORDER BY UPPER(name)");
 
 
     //Treat query
@@ -94,6 +101,70 @@ void TimeslotsManager::update_list_timeslots(int id_kholleur) {
                 + ", " + QString::number(ts->getPupils()) + (ts->getPupils() <= 1 ? " élève" : " élèves"), ui->listTimeslots);
         item->setData(Qt::UserRole, (qulonglong) ts);
     }
+
+    update_list_oftenTimeslots(id_kholleur);
+}
+
+void TimeslotsManager::update_list_oftenTimeslots(int id_kholleur) {
+    ui->listOftenTimeslots->clear();
+
+    //Prepare query
+    QSqlQuery query(*m_db);
+    query.prepare("SELECT strftime('%w', `date`) AS DOW, `time` FROM tau_timeslots "
+                    "WHERE `id_kholleurs` = :id_kholleurs AND DOW || '#' || `time` NOT IN "
+                      "(SELECT strftime('%w', `date`) || '#' || `time` FROM tau_timeslots "
+                          "WHERE `date` >= :monday_date AND `date` <= :sunday_date  AND `id_kholleurs` = :id_kholleurs) "
+                  "GROUP BY DOW, `time` "
+                  "ORDER BY COUNT(`id`) DESC, DOW, `time`");
+    query.bindValue(":id_kholleurs", id_kholleur);
+    query.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
+    query.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
+    query.exec();
+
+    //Treat
+    while(query.next()) {
+        Timeslot* ts = new Timeslot();
+        ts->setDate(m_date.addDays(query.value(0).toInt()-1));
+        ts->setTime(QTime::fromString(query.value(1).toString(), "h:mm:ss"));
+        queue_displayedTimeslots.enqueue(ts);
+
+        QListWidgetItem *item = new QListWidgetItem(days[query.value(0).toInt()] + " : "
+                + query.value(1).toString(), ui->listOftenTimeslots);
+        item->setData(Qt::UserRole, (qulonglong) ts);
+    }
+}
+
+void TimeslotsManager::addOftenTimeslot(QListWidgetItem* item) {
+    QList<QListWidgetItem*> selection = ui->listKholleurs->selectedItems();
+
+    if(selection.length() <= 0) {
+        QMessageBox::critical(this, "Erreur", "Veuillez sélectionner un kholleur.");
+        return;
+    }
+    Kholleur* k = (Kholleur*) selection[0]->data(Qt::UserRole).toULongLong();
+
+    //Create timeslot
+    Timeslot* ts = (Timeslot*) item->data(Qt::UserRole).toULongLong();
+    ts->setId_kholleurs(k->getId());
+    ts->setPupils(k->getPupils());
+
+    QTime time = ts->getTime();
+    ts->setTime_start(time.addSecs(-60*k->getPreparation()));
+    ts->setTime_end(time.addSecs(60*k->getDuration()));
+
+    //Add to DB
+    QSqlQuery query(*m_db);
+    query.prepare("INSERT INTO tau_timeslots(time_start, time, time_end, id_kholleurs, date, pupils) VALUES(:time_start, :time, :time_end, :id_kholleurs, :date, :pupils)");
+    query.bindValue(":time_start", ts->getTime_start().toString("HH:mm:ss"));
+    query.bindValue(":time", ts->getTime().toString("HH:mm:ss"));
+    query.bindValue(":time_end", ts->getTime_end().toString("HH:mm:ss"));
+    query.bindValue(":id_kholleurs", ts->getId_kholleurs());
+    query.bindValue(":date", ts->getDate().toString("yyyy-MM-dd"));
+    query.bindValue(":pupils", ts->getPupils());
+    query.exec();
+
+    delete ts;
+    update_list_timeslots(k->getId());
 }
 
 void TimeslotsManager::free_timeslots() {
@@ -113,6 +184,7 @@ void TimeslotsManager::onSelection_change() {
         ui->label_debut->setEnabled(false);
         ui->timeEdit->setEnabled(false);
         ui->listTimeslots->setEnabled(false);
+        ui->listOftenTimeslots->setEnabled(false);
         ui->addButton->setEnabled(false);
         ui->deleteButton->setEnabled(false);
         ui->copyButton->setEnabled(false);
@@ -125,6 +197,7 @@ void TimeslotsManager::onSelection_change() {
     ui->label_debut->setEnabled(true);
     ui->timeEdit->setEnabled(true);
     ui->listTimeslots->setEnabled(true);
+    ui->listOftenTimeslots->setEnabled(true);
     ui->addButton->setEnabled(true);
     ui->deleteButton->setEnabled(true);
     ui->copyButton->setEnabled(true);
@@ -164,18 +237,21 @@ void TimeslotsManager::addTimeslot() {
     query.exec();
 
     delete ts;
+    ui->timeEdit->setTime(ui->timeEdit->time().addSecs(60*k->getDuration()));
     update_list_timeslots(k->getId());
 }
 
-void TimeslotsManager::deleteTimeslot() {
+void TimeslotsManager::deleteTimeslot(QListWidgetItem *item) {
     QList<QListWidgetItem*> selection = ui->listTimeslots->selectedItems();
+    if(item) {
+        selection.clear();
+        selection << item;
+    }
 
     if(selection.length() <= 0) {
         QMessageBox::critical(this, "Erreur", "Veuillez sélectionner un horaire de kholle.");
         return;
     }
-
-    Timeslot* ts = (Timeslot*) selection[0]->data(Qt::UserRole).toULongLong();
 
     QList<QListWidgetItem*> kholleurs = ui->listKholleurs->selectedItems();
     if(kholleurs.length() <= 0) {
@@ -184,23 +260,25 @@ void TimeslotsManager::deleteTimeslot() {
     }
 
     //Confirmation
-    int res = QMessageBox::warning(this, "Suppression en cours", "Vous êtes sur le point de supprimer un horaire de kholle "
+    QString nbDeletedTimeslots = (selection.length() == 1) ? "un horaire de kholle" : QString::number(selection.length()) + " horaires de kholles";
+    int res = QMessageBox::warning(this, "Suppression en cours", "Vous êtes sur le point de supprimer " + nbDeletedTimeslots + " " +
                                                                  "du kholleur <strong>" + ((Kholleur*)kholleurs[0]->data(Qt::UserRole).toULongLong())->getName() + "</strong> "
                                                                  "ainsi que les <strong>kholles</strong> associées. <br /> Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::No);
 
     if(res == QMessageBox::Yes) {
-        //Query
-        QSqlQuery query(*m_db);
-        query.prepare("DELETE FROM tau_kholles WHERE id_timeslots=:id_timeslots");
-        query.bindValue(":id_timeslots", ts->getId());
-        query.exec();
-        query.prepare("DELETE FROM tau_timeslots WHERE id=:id");
-        query.bindValue(":id", ts->getId());
-        query.exec();
-
+        for(int i=0; i<selection.length(); i++) {
+            Timeslot* ts = (Timeslot*) selection[i]->data(Qt::UserRole).toULongLong();
+            //Query
+            QSqlQuery query(*m_db);
+            query.prepare("DELETE FROM tau_kholles WHERE id_timeslots=:id_timeslots");
+            query.bindValue(":id_timeslots", ts->getId());
+            query.exec();
+            query.prepare("DELETE FROM tau_timeslots WHERE id=:id");
+            query.bindValue(":id", ts->getId());
+            query.exec();
+        }
         //Update
         update_list_timeslots(((Kholleur*)kholleurs[0]->data(Qt::UserRole).toULongLong())->getId());
-
     }
 
 }
@@ -216,7 +294,7 @@ void TimeslotsManager::copyTimeslots() {
     Kholleur* k = (Kholleur*) selection[0]->data(Qt::UserRole).toULongLong();
 
     //Open dialog
-    CopyTimeslots dialog(m_db, m_date, false, k->getId());
+    CopyTimeslots dialog(m_db, m_date, false, k->getId(), this);
     dialog.exec();
 
     //Update
@@ -225,7 +303,7 @@ void TimeslotsManager::copyTimeslots() {
 
 void TimeslotsManager::copyAllTimeslots() {
     //Open dialog with all = true
-    CopyTimeslots dialog(m_db, m_date);
+    CopyTimeslots dialog(m_db, m_date, true, 0, this);
     dialog.exec();
 
     //Get selection

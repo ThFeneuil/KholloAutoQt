@@ -90,7 +90,6 @@ bool UpdateEventDialog::update_event() {
             query.exec();
         }
 
-
         accept();
     }
 

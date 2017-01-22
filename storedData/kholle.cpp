@@ -8,6 +8,8 @@ Kholle::Kholle()
 
     m_student = NULL;
     m_timeslot = NULL;
+    m_status = OK;
+    m_weeks = 0;
 }
 
 Kholle::~Kholle() {
@@ -32,6 +34,12 @@ Student* Kholle::student() const {
 Timeslot* Kholle::timeslot() const {
     return m_timeslot;
 }
+int Kholle::status() const {
+    return m_status;
+}
+int Kholle::weeks() const {
+    return m_weeks;
+}
 
 
 //Setters
@@ -52,3 +60,61 @@ void Kholle::setStudent(Student* stud) {
 void Kholle::setTimeslot(Timeslot* slot) {
     m_timeslot = slot;
 }
+void Kholle::setStatus(Status status) {
+    m_status = status;
+}
+void Kholle::setWeeks(int weeks) {
+    m_weeks = weeks;
+}
+
+
+//Other functions
+int Kholle::nearestKholle(QSqlDatabase *db, QMap<int, Timeslot*> *timeslots, int id_user, Timeslot *t, int id_kholle) {
+    /** Number of weeks to nearest Kholle with the same Kholleur. (-1) if no such Kholle **/
+
+    int id_kholleur = t->getId_kholleurs();
+
+    QSqlQuery query(*db);
+    query.prepare("SELECT K.`id_timeslots` FROM tau_kholles AS K JOIN tau_timeslots AS T ON K.`id_timeslots` = T.`id` "
+                  "WHERE K.`id_users`=:id_user AND T.`id_kholleurs`=:id_kholleur AND K.`id`!=:id_kholle "
+                  "ORDER BY ABS(strftime('%s', T.`date`) - strftime('%s', :date_current)) LIMIT 1;");
+    query.bindValue(":id_user", id_user);
+    query.bindValue(":id_kholleur", id_kholleur);
+    query.bindValue(":date_current", t->getDate());
+    query.bindValue(":id_kholle", id_kholle);
+    query.exec();
+
+    if(query.next()) {
+        return t->weeksTo(timeslots->value(query.value(0).toInt()));
+    }
+    else {
+        return (-1);
+    }
+}
+
+int Kholle::nearest(QMap<int, Timeslot*> *timeslots, QSqlDatabase *db) {
+    /** Number of weeks to nearest Kholle with the same Kholleur. (-1) if no such Kholle **/
+
+    Timeslot* ts_current = timeslots->value(this->getId_timeslots());
+
+    return Kholle::nearestKholle(db, timeslots, this->getId_students(), ts_current, this->getId());
+}
+
+int Kholle::correspondingStatus(int weeks) {
+    if(weeks == -1 || weeks > 3)
+        return (Kholle::OK);
+    else if(weeks <= 1)
+        return (Kholle::Error);
+    else
+        return (Kholle::Warning);
+}
+
+void Kholle::updateStatus(QMap<int, Timeslot*> *timeslots, QSqlDatabase *db) {
+    /** Set the status of this kholle **/
+
+    int weeks = this->nearest(timeslots, db);
+
+    this->setStatus((Kholle::Status) Kholle::correspondingStatus(weeks));
+    this->setWeeks(weeks);
+}
+

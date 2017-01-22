@@ -1,6 +1,7 @@
 #ifndef Kholle_H
 #define Kholle_H
 
+#include <QtSql>
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
 
@@ -9,9 +10,12 @@ class Timeslot;
 
 class Kholle
 {
+
 public:
     Kholle();
     ~Kholle();
+
+    enum Status {OK, Warning, Error}; //Generation, the status are in order from best to worst
 
     //Getters
     int getId() const;
@@ -19,6 +23,8 @@ public:
     int getId_timeslots() const;
     Student* student() const; // Interface
     Timeslot* timeslot() const; // Interface
+    int status() const; //Generation
+    int weeks() const; //Generation
 
     //Setters
     void setId(int id);
@@ -26,6 +32,14 @@ public:
     void setId_timeslots(int id_timeslots);
     void setStudent(Student* stud); // Interface
     void setTimeslot(Timeslot* slot); // Interface
+    void setStatus(Status status); //Generation
+    void setWeeks(int weeks); //Generation
+
+    //Other functions
+    static int nearestKholle(QSqlDatabase *db, QMap<int, Timeslot *> *timeslots, int id_user, Timeslot* t, int id_kholle);
+    int nearest(QMap<int, Timeslot *> *timeslots, QSqlDatabase *db);
+    static int correspondingStatus(int weeks);
+    void updateStatus(QMap<int, Timeslot *> *timeslots, QSqlDatabase *db);
 
 private:
     int m_id;
@@ -35,6 +49,10 @@ private:
     // Interface
     Student* m_student;
     Timeslot* m_timeslot;
+
+    //Generation
+    Status m_status;
+    int m_weeks;
 };
 
 #endif // Kholle_H

@@ -9,11 +9,13 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QDate>
+#include <QAction>
 #include "managers/KholloscopeWizardPages/subjectspage.h"
 #include "managers/KholloscopeWizardPages/userspage.h"
 #include "managers/KholloscopeWizardPages/generatepage.h"
 #include "storedData/subject.h"
 #include "storedData/student.h"
+#include "notepad.h"
 
 namespace Ui {
 class KholloscopeWizard;
@@ -28,7 +30,6 @@ public:
     ~KholloscopeWizard();
 
     QList<Subject *> *get_assoc_subjects();
-    void set_assoc_subjects(QList<Subject*> *list);
 
     void load_students();
     void free_students();
@@ -38,7 +39,6 @@ public:
     void free_subjects();
     QList<Subject*> *get_subjects();
 
-    void set_input(QMap<int, QList<Student*> > *input);
     QMap<int, QList<Student*> > *get_input();
 
 private:
@@ -48,6 +48,7 @@ private:
     QList<Student*> *m_students;
     QList<Subject*> *m_subjects;
     QMap<int, QList<Student*> > *m_input;
+    QAction *m_shortcutNotepad;
 };
 
 #endif // KHOLLOSCOPEWIZARD_H

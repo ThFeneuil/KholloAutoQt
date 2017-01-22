@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>CoursesManager</class>
  <widget class="QDialog" name="CoursesManager">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -26,14 +29,21 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="list_groups"/>
+        <widget class="QListWidget" name="list_groups">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="tab_even">
         <attribute name="title">
@@ -349,5 +359,22 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pushButton_close</sender>
+   <signal>clicked()</signal>
+   <receiver>CoursesManager</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>959</x>
+     <y>561</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>991</x>
+     <y>548</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

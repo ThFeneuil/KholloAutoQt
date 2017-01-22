@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>TimeslotsManager</class>
  <widget class="QDialog" name="TimeslotsManager">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -22,10 +25,13 @@
        <height>16777215</height>
       </size>
      </property>
+     <property name="whatsThis">
+      <string/>
+     </property>
     </widget>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_2">
+    <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,5,2">
      <property name="leftMargin">
       <number>0</number>
      </property>
@@ -121,6 +127,19 @@
      </item>
      <item>
       <widget class="QListWidget" name="listTimeslots">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="whatsThis">
+        <string/>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="listOftenTimeslots">
        <property name="enabled">
         <bool>false</bool>
        </property>

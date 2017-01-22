@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>SubjectsManager</class>
  <widget class="QDialog" name="SubjectsManager">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -37,12 +40,16 @@
       <widget class="QLineEdit" name="lineEdit_short"/>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_color">
-       <property name="mouseTracking">
-        <bool>false</bool>
-       </property>
+      <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Choisir une couleur</string>
+        <string>Poids (0-10) :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="spinBox_weight">
+       <property name="maximum">
+        <number>10</number>
        </property>
       </widget>
      </item>

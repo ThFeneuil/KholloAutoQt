@@ -5,5 +5,10 @@
         <file>images/nbKh0.png</file>
         <file>images/nbKh1.png</file>
         <file>images/nbKh2.png</file>
+        <file>images/none.png</file>
+        <file>images/error.png</file>
+        <file>images/ok.png</file>
+        <file>images/warning.png</file>
+        <file>images/delete.png</file>
     </qresource>
 </RCC>

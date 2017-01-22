@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>KholloscopeWizard</class>
  <widget class="QWizard" name="KholloscopeWizard">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>

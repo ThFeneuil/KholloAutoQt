@@ -13,6 +13,7 @@
 #include "storedData/subject.h"
 #include "storedData/teacher.h"
 #include "storedData/course.h"
+#include "notepad.h"
 
 namespace Ui {
 class CoursesManager;
@@ -38,7 +39,7 @@ public slots:
     bool update_courses(QGridLayout *grid, int week);
     bool save_changes();
     void onSelection_change();
-    void courses_changed(int i);
+    void courses_changed();
     void onClose_button();
     void copyToEven();
     void copyToOdd();
@@ -53,6 +54,7 @@ private:
     Group *current;
     QList<QTime> begin_times;
     QList<QTime> end_times;
+    QAction* m_shortcutNotepad;
 };
 
 #endif // COURSESMANAGER_H

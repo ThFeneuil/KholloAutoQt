@@ -16,12 +16,15 @@ KholloscopeWizard::KholloscopeWizard(QSqlDatabase *db, QWidget *parent) :
     m_subjects = new QList<Subject*>();
     load_subjects();
     m_input = new QMap<int, QList<Student*> >;
-    assoc_subjects = NULL;
+    assoc_subjects = new QList<Subject*>();
 
     //Add pages
     addPage(new SubjectsPage(db));
     addPage(new UsersPage(db));
     addPage(new GeneratePage(db, parent));
+
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 }
 
 KholloscopeWizard::~KholloscopeWizard()
@@ -29,20 +32,16 @@ KholloscopeWizard::~KholloscopeWizard()
     delete ui;
     free_subjects();
     free_students();
-    if(assoc_subjects != NULL) {
-        delete assoc_subjects;
-    }
+    delete assoc_subjects;
     delete m_students;
     delete m_subjects;
     delete m_input;
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
 }
 
 QList<Subject*>* KholloscopeWizard::get_assoc_subjects() {
     return assoc_subjects;
-}
-
-void KholloscopeWizard::set_assoc_subjects(QList<Subject*> *list) {
-    assoc_subjects = list;
 }
 
 void KholloscopeWizard::load_students() {
@@ -51,7 +50,7 @@ void KholloscopeWizard::load_students() {
 
     //Prepare the query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, first_name FROM tau_users ORDER BY name, first_name");
+    query.exec("SELECT id, name, first_name FROM tau_users ORDER BY UPPER(`name`), UPPER(`first_name`)");
 
     //Treat the query
     while(query.next()) {
@@ -79,7 +78,7 @@ void KholloscopeWizard::load_subjects() {
 
     //Prepare query
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, shortName, color FROM tau_subjects ORDER BY name");
+    query.exec("SELECT id, name, shortName, color FROM tau_subjects ORDER BY UPPER(`name`)");
 
     //Treat the query
     while(query.next()) {
@@ -100,10 +99,6 @@ void KholloscopeWizard::free_subjects() {
 
 QList<Subject*>* KholloscopeWizard::get_subjects() {
     return m_subjects;
-}
-
-void KholloscopeWizard::set_input(QMap<int, QList<Student*> > *input) {
-    m_input = input;
 }
 
 QMap<int, QList<Student*> > *KholloscopeWizard::get_input() {

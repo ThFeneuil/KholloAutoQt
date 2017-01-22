@@ -10,7 +10,6 @@ UsersPage::UsersPage(QSqlDatabase *db, QWidget *parent) :
 
     //DB
     m_db = db;
-    list_selected_subjects = new QList<Subject*>();
 }
 
 UsersPage::~UsersPage()
@@ -22,6 +21,8 @@ void UsersPage::initializePage() {
     //Clear the page
     ui->tabWidget->clear();
 
+    list_selected_subjects = ((KholloscopeWizard*) wizard())->get_assoc_subjects();
+
     //Get the selected subjects
     get_selected_subjects();
 
@@ -29,13 +30,20 @@ void UsersPage::initializePage() {
     int i;
     for(i = 0; i < list_selected_subjects->length(); i++) {
         QListWidget *list = new QListWidget();
-        populate(list);
+        populate(list, list_selected_subjects->at(i)->getId());
         list->setSelectionMode(QAbstractItemView::MultiSelection);
-        ui->tabWidget->addTab(list, list_selected_subjects->at(i)->getShortName());
+
+        QVBoxLayout *layout = new QVBoxLayout();
+        layout->addWidget(list);
+        layout->addWidget(new QLabel("0 élève sélectionné"));
+
+        QWidget *widget = new QWidget();
+        widget->setLayout(layout);
+        ui->tabWidget->addTab(widget, list_selected_subjects->at(i)->getShortName());
+                //addTab(list, list_selected_subjects->at(i)->getShortName());
 
         connect(list, SIGNAL(itemSelectionChanged()), this, SLOT(selection_changed()));
     }
-    ((KholloscopeWizard*) wizard())->set_assoc_subjects(list_selected_subjects);
 
     QDate nextMonday = QDate::currentDate();
     while(nextMonday.dayOfWeek() != 1)
@@ -67,30 +75,57 @@ void UsersPage::get_selected_subjects() {
 }
 
 
-void UsersPage::populate(QListWidget *list) {
+void UsersPage::populate(QListWidget *list, int id_subject) {
     //Empty the list
     list->clear();
+
+    //Make request in this subject
+    QSqlQuery query(*m_db);
+    query.prepare("SELECT K.`id_users`, COUNT(K.`id`) FROM tau_kholles AS K WHERE K.`id_timeslots` IN "
+                    "(SELECT T.`id` FROM tau_timeslots AS T JOIN tau_kholleurs AS KR ON T.`id_kholleurs` = KR.`id` WHERE KR.`id_subjects` = :id_subject) "
+                    "GROUP BY K.`id_users`;");
+    query.bindValue(":id_subject", id_subject);
+    query.exec();
+
+    QMap<int, int> number_kholles;
+
+    while(query.next()) {
+        number_kholles.insert(query.value(0).toInt(), query.value(1).toInt());
+    }
 
     //Populate list
     QList<Student*>* students = ((KholloscopeWizard*) wizard())->get_students();
 
     int i;
     for(i = 0; i < students->length(); i++) {
-        QListWidgetItem *item = new QListWidgetItem(students->at(i)->getName() + ", " + students->at(i)->getFirst_name(), list);
+        int n = 0;
+        if(number_kholles.contains(students->value(i)->getId()))
+            n = number_kholles.value(students->value(i)->getId());
+
+        QListWidgetItem *item = new QListWidgetItem("[" + QString::number(n) + "] " + students->at(i)->getName() + ", " + students->at(i)->getFirst_name(), list);
         item->setData(Qt::UserRole, (qulonglong) students->at(i));
     }
 }
 
 void UsersPage::selection_changed() {
     QMap<int, QList<Student*> > *input = ((KholloscopeWizard*) wizard())->get_input();
-    int i, j;
-    for(i = 0; i < ui->tabWidget->count(); i++) {
-        QList<QListWidgetItem*> selection = ((QListWidget*)ui->tabWidget->widget(i))->selectedItems();
-        QList<Student*> students;
 
-        for(j = 0; j < selection.length(); j++) {
-            students.append((Student*) selection[j]->data(Qt::UserRole).toULongLong());
-        }
-        input->insert(list_selected_subjects->at(i)->getId(), students);
+    int i = ui->tabWidget->currentIndex();
+    if(i == -1)
+        return;
+
+    QLayout *layout = (QLayout*) ui->tabWidget->widget(i)->layout();
+    QListWidget *list = (QListWidget*) layout->itemAt(0)->widget();;
+    QLabel *label = (QLabel*) layout->itemAt(1)->widget();
+
+    QList<QListWidgetItem*> selection = list->selectedItems();
+    QList<Student*> students;
+
+    for(int j = 0; j < selection.length(); j++) {
+        students.append((Student*) selection[j]->data(Qt::UserRole).toULongLong());
     }
+    input->insert(list_selected_subjects->at(i)->getId(), students);
+
+    QString text = QString::number(selection.length()) + (selection.length() <= 1 ? " élève sélectionné" : " élèves sélectionnés");
+    label->setText(text);
 }

@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Kholloscope</string>
+   <string>SPARK Kholloscope</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -46,12 +49,17 @@
      <height>21</height>
     </rect>
    </property>
+   <property name="nativeMenuBar">
+    <bool>false</bool>
+   </property>
    <widget class="QMenu" name="menuFichier">
     <property name="title">
      <string>&amp;Fichier</string>
     </property>
     <addaction name="action_File_Create"/>
     <addaction name="action_File_Open"/>
+    <addaction name="separator"/>
+    <addaction name="action_File_Settings"/>
     <addaction name="separator"/>
     <addaction name="action_File_Quit"/>
    </widget>
@@ -76,6 +84,7 @@
     </property>
     <addaction name="action_Schedule_Timetable"/>
     <addaction name="action_Schedule_Students_Groups"/>
+    <addaction name="action_Schedule_Swapping_Groups"/>
     <addaction name="action_Schedule_Kholles"/>
     <addaction name="action_Schedule_Events"/>
    </widget>
@@ -88,6 +97,7 @@
     </property>
     <addaction name="action_Kholles_Interface"/>
     <addaction name="action_Kholles_Generate"/>
+    <addaction name="action_Kholles_LastChanges"/>
     <addaction name="action_Kholles_Historic"/>
    </widget>
    <widget class="QMenu" name="menu_Aide">
@@ -177,7 +187,7 @@
   </action>
   <action name="action_Schedule_Students_Groups">
    <property name="text">
-    <string>&amp;Lien élèves-groupes</string>
+    <string>&amp;Liens élèves-groupes</string>
    </property>
   </action>
   <action name="action_Schedule_Kholles">
@@ -231,6 +241,24 @@
   <action name="action_AboutIt">
    <property name="text">
     <string>A p&amp;ropos de</string>
+   </property>
+  </action>
+  <action name="action_Kholles_LastChanges">
+   <property name="text">
+    <string>&amp;Outils de dépannage</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="action_Schedule_Swapping_Groups">
+   <property name="text">
+    <string>Echange de &amp;groupes</string>
+   </property>
+  </action>
+  <action name="action_File_Settings">
+   <property name="text">
+    <string>P&amp;aramètres</string>
    </property>
   </action>
  </widget>

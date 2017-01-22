@@ -2,11 +2,14 @@
 <ui version="4.0">
  <class>InterfaceDialog</class>
  <widget class="QDialog" name="InterfaceDialog">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>970</width>
+    <width>1020</width>
     <height>600</height>
    </rect>
   </property>
@@ -15,7 +18,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
+    <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0">
      <property name="spacing">
       <number>6</number>
      </property>
@@ -26,6 +29,13 @@
          <width>160</width>
          <height>16777215</height>
         </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_week">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; color:#005500;&quot;&gt;Semaine : __/__/____&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -79,8 +89,6 @@
     </widget>
    </item>
   </layout>
-  <zorder>tabWidget</zorder>
-  <zorder>pushButton_print</zorder>
  </widget>
  <resources>
   <include location="../khollo.qrc"/>

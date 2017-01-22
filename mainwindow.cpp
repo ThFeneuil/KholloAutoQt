@@ -6,6 +6,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    m_idRecord = -1;
+
+    connect(ui->action_File_Create, SIGNAL(triggered()), this, SLOT(createKhollo()));
+    connect(ui->action_File_Open, SIGNAL(triggered()), this, SLOT(openKhollo()));
+    connect(ui->action_File_Settings, SIGNAL(triggered()), this, SLOT(openSettings()));
     connect(ui->action_File_Quit, SIGNAL(triggered()), this, SLOT(close()));
     connect(ui->action_DB_Students, SIGNAL(triggered()), this, SLOT(openStudentsManager()));
     connect(ui->action_DB_Groups, SIGNAL(triggered()), this, SLOT(openGroupsManager()));
@@ -13,25 +18,59 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_DB_Kholleurs, SIGNAL(triggered()), this, SLOT(openKholleursManager()));
     connect(ui->action_Schedule_Students_Groups, SIGNAL(triggered()), this, SLOT(openUsersGroupsManager()));
     connect(ui->action_Schedule_Timetable, SIGNAL(triggered()), this, SLOT(openCoursesManager()));
+    connect(ui->action_Schedule_Swapping_Groups, SIGNAL(triggered()), this, SLOT(openGroupsSwappingsManager()));
     connect(ui->action_Schedule_Kholles, SIGNAL(triggered()), this, SLOT(openTimeslotsManager()));
     connect(ui->action_Schedule_Events, SIGNAL(triggered()), this, SLOT(openEventsManager()));
     connect(ui->action_Kholles_Interface, SIGNAL(triggered()), this, SLOT(openInterface()));
     connect(ui->action_Kholles_Generate, SIGNAL(triggered()), this, SLOT(openKholloscope()));
     connect(ui->action_Kholles_Historic, SIGNAL(triggered()), this, SLOT(openReview()));
+    connect(ui->action_Kholles_LastChanges, SIGNAL(triggered()), this, SLOT(openLastChanges()));
     connect(ui->action_Help, SIGNAL(triggered()), this, SLOT(openHelp()));
     connect(ui->action_AboutIt, SIGNAL(triggered()), this, SLOT(openAboutIt()));
 
-    connect(ui->action_File_Create, SIGNAL(triggered()), this, SLOT(createKhollo()));
-    connect(ui->action_File_Open, SIGNAL(triggered()), this, SLOT(openKhollo()));
-
     connect(this, SIGNAL(triggerInterface(QDate,int)), this, SLOT(openInterfaceWithDate(QDate,int)));
 
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
+
     updateWindow();
+
+#ifndef Q_OS_MAC
+    // Ouvrir directement un fichier sur OS autre que Mac
+    args = QCoreApplication::arguments();
+    if(args.count() > 1) {
+        QString suffix = QFileInfo(args[1]).suffix().toUpper();
+        // Check the file suffix
+        if(suffix == "KSCOPE") {
+            openKhollo(args[1]); // Try to open the file
+        } else {
+            QMessageBox::critical(this, "Fichier non pris en charge", "Erreur : Fichier " + QFileInfo(args[1]).suffix().toUpper() + " non pris en charge.");
+        }
+    }
+#endif
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    this->removeAction(m_shortcutNotepad);
+    delete m_shortcutNotepad;
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+#ifdef Q_OS_MAC
+    // Pour détecter si l'utilisateur ouvre directement un fichier sous Mac
+    if(event->type() == QEvent::FileOpen) {
+        // Si l'event FileOpen a été appelé, on effectue nos opérations (ouvrir le fichier)
+        openKhollo(((QFileOpenEvent*)event)->file());
+        return true;
+    } else {
+        // Sinon, le programme s'est exécuté à partir de son icône et non de celle d'un autre fichier s'ouvrant avec lui
+        return QObject::eventFilter(obj, event);
+    }
+#else
+    return QObject::eventFilter(obj, event);
+#endif
 }
 
 void MainWindow::openStudentsManager() {
@@ -40,7 +79,7 @@ void MainWindow::openStudentsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        StudentsManager manager(&db);
+        StudentsManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -54,7 +93,7 @@ void MainWindow::openGroupsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        GroupsManager manager(&db);
+        GroupsManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -68,7 +107,7 @@ void MainWindow::openSubjectsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        SubjectsManager manager(&db);
+        SubjectsManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -82,7 +121,7 @@ void MainWindow::openKholleursManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        KholleursManager manager(&db);
+        KholleursManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -96,7 +135,7 @@ void MainWindow::openUsersGroupsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        usersgroupsmanager manager(&db);
+        UsersGroupsManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -110,7 +149,21 @@ void MainWindow::openCoursesManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        CoursesManager manager(&db);
+        CoursesManager manager(&db, this);
+        manager.exec();
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
+    }
+}
+
+void MainWindow::openGroupsSwappingsManager() {
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if(db.isOpen()) {
+        // Open the manager
+        GroupsSwappingsManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -124,8 +177,13 @@ void MainWindow::openTimeslotsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        IntroTimeslots manager(&db);
-        manager.exec();
+        QDate monday;
+        IntroTimeslots intro(&monday, this);
+        if(intro.exec() == IntroTimeslots::Accepted) {
+            //Open TimeslotsManager with this date and DB connection
+            TimeslotsManager manager(&db, monday, this);
+            manager.exec();
+        }
     }
     else {
         QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
@@ -138,7 +196,7 @@ void MainWindow::openEventsManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        EventsManager manager(&db);
+        EventsManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -199,7 +257,7 @@ void MainWindow::openReview() {
 
     if(db.isOpen()) {
         // Open the manager
-        ReviewDialog dialog(&db);
+        ReviewDialog dialog(&db, this);
         dialog.exec();
     }
     else {
@@ -207,28 +265,44 @@ void MainWindow::openReview() {
     }
 }
 
+void MainWindow::openLastChanges() {
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if(db.isOpen()) {
+        int id_week = -1;
+        QDate monday;
+        IntroInterface intro(&id_week, &monday, this);
+        if(intro.exec() == IntroInterface::Accepted) {
+            LastChanges manager(&db, id_week, &monday, this);
+            manager.exec();
+        }
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
+    }
+}
+
 void MainWindow::openAboutIt() {
-    AboutItDialog dialog;
+    AboutItDialog dialog(this);
     dialog.exec();
 }
 
 void MainWindow::openHelp(){
-    ContactDialog dialog;
+    ContactDialog dialog(this);
     dialog.exec();
 }
 
+void MainWindow::openSettings() {
+    SettingsDialog dialog(this);
+    dialog.exec();
+}
 
 void MainWindow::createKhollo() {
+    record(false);
     //Try to load directory preferences
-    QString pref_path;
-    QFile read(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
-    if(read.exists() && read.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&read);
-        pref_path = in.readLine();
-    }
-
-    if(pref_path == "" || !QDir(pref_path).exists())
-        pref_path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    Preferences pref;
+    QString pref_path = pref.dir();
 
     //Get file name
     QString filename = QFileDialog::getSaveFileName(this, "Enregistrer sous...",
@@ -241,120 +315,21 @@ void MainWindow::createKhollo() {
 
     //Save directory in preferences
     QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
-    QFile pref_file(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
-    if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)){
-        QTextStream out(&pref_file);
-        out << dirpath;
-    }
+    pref.setDir(dirpath);
 
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(filename);
-    if (!db.open()) {
-        QMessageBox::critical(NULL, "Echec", "Impossible d'ouvrir la base de données générée...");
-        updateWindow();
-        return;
-    }
+    if(kscopemanager.createFile(filename))
+        QMessageBox::information(NULL, "Succès", "Votre kholloscope a été créé.<br />Vous pouvez dès maintenant l'utiliser. :p");
 
-    QSqlQuery qCreate(db);
-    // TABLE USERS
-    qCreate.exec("CREATE TABLE `tau_users` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`name`	TEXT NOT NULL, "
-                    "`first_name`	TEXT NOT NULL, "
-                    "`email`	TEXT NOT NULL "
-                ");");
-    // TABLE GROUPS
-    qCreate.exec("CREATE TABLE `tau_groups` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`name`	TEXT NOT NULL, "
-                    "`is_deleted`	INTEGER NOT NULL DEFAULT 0 "
-                ");");
-    // TABLE GROUPS-USERS
-    qCreate.exec("CREATE TABLE `tau_groups_users` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`id_groups`	INTEGER NOT NULL, "
-                    "`id_users`	INTEGER NOT NULL "
-                ");");
-    // TABLE SUBJECTS
-    qCreate.exec("CREATE TABLE `tau_subjects` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`name`	TEXT NOT NULL, "
-                    "`shortName`	TEXT NOT NULL, "
-                    "`color`	TEXT NOT NULL "
-                ");");
-    // TABLE TEACHERS
-    qCreate.exec("CREATE TABLE `tau_teachers` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`name`	TEXT NOT NULL, "
-                     "`id_subjects`	INTEGER NOT NULL "
-                ");");
-    // TABLE KHOLLEURS
-    qCreate.exec("CREATE TABLE `tau_kholleurs` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`name`	TEXT NOT NULL, "
-                    " `id_subjects`	INTEGER NOT NULL, "
-                    "`duration`	INTEGER NOT NULL DEFAULT 0, "
-                    "`preparation`	INTEGER NOT NULL DEFAULT 0, "
-                    "`pupils`	INTEGER NOT NULL DEFAULT 0 "
-                ");");
-    // TABLE COURSES
-    qCreate.exec("CREATE TABLE `tau_courses` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`id_subjects`	INTEGER NOT NULL, "
-                    "`time_start`	TEXT NOT NULL, "
-                    "`time_end`	TEXT NOT NULL, "
-                    "`id_groups`	INTEGER NOT NULL, "
-                    "`id_teachers`	INTEGER NOT NULL, "
-                    "`id_day`	INTEGER NOT NULL, "
-                    "`id_week`	INTEGER NOT NULL "
-                ");");
-    // TABLE TIMESLOTS
-    qCreate.exec("CREATE TABLE `tau_timeslots` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`time`	TEXT NOT NULL, "
-                    "`time_end`	TEXT NOT NULL, "
-                    "`id_kholleurs`	INTEGER NOT NULL, "
-                    "`date`	TEXT NOT NULL, "
-                    "`time_start`	TEXT NOT NULL, "
-                    "`pupils`	INTEGER NOT NULL "
-                ");");
-    // TABLE EVENTS
-    qCreate.exec("CREATE TABLE `tau_events` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`name`	TEXT NOT NULL, "
-                    "`comment`	TEXT NOT NULL, "
-                    "`start`	TEXT NOT NULL, "
-                    "`end`	TEXT NOT NULL "
-                ");");
-    // TABLE EVENTS-GROUPS
-    qCreate.exec("CREATE TABLE `tau_events_groups` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`id_events`	INTEGER NOT NULL, "
-                    "`id_groups`	INTEGER NOT NULL "
-                ");");
-    // TABLE KHOLLES
-    qCreate.exec("CREATE TABLE `tau_kholles` ( "
-                    "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                    "`id_users`	INTEGER NOT NULL, "
-                    "`id_timeslots`	INTEGER NOT NULL "
-                ");");
-
-    QMessageBox::information(NULL, "Succès", "Votre kholloscope a été créé.<br />Vous pouvez dès maintenant l'utiliser. :p");
     updateWindow();
+    record(QSqlDatabase::database().isOpen());
     return;
 }
 
 void MainWindow::openKhollo() {
+    record(false);
     //Try to load directory preferences
-    QString pref_path;
-    QFile read(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
-    if(read.exists() && read.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&read);
-        pref_path = in.readLine();
-    }
-
-    if(pref_path == "" || !QDir(pref_path).exists())
-        pref_path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    Preferences pref;
+    QString pref_path = pref.dir();
 
     //Get file name
     QString fileDB = QFileDialog::getOpenFileName(this, "Ouvrir un fichier", pref_path + QDir::separator(), "KSCOPE (*.kscope)");
@@ -364,44 +339,24 @@ void MainWindow::openKhollo() {
         return;
     }
 
+    QString suffix = QFileInfo(fileDB).suffix().toUpper();
+    // Check the file suffix
+    if(suffix == "KSCOPE")
+        openKhollo(fileDB); // Try to open the file
+    else
+        QMessageBox::critical(this, "Fichier non pris en charge", "Erreur : Fichier " + QFileInfo(fileDB).suffix().toUpper() + " non pris en charge.");
+
+    return;
+}
+
+void MainWindow::openKhollo(QString filename) {
     //Save directory in preferences
-    QString dirpath = QFileInfo(fileDB).absoluteDir().absolutePath();
-    QFile pref_file(QDir::currentPath() + QDir::separator() + "dir_preferences.pref");
-    if(pref_file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)){
-        QTextStream out(&pref_file);
-        out << dirpath;
-    }
+    QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
+    Preferences pref; pref.setDir(dirpath);
 
-    // To load the DB which is on a local server
-    if(QFileInfo(fileDB).fileName() == "localhost.kscope") {
-        // Connection with the DB
-        QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-        db.setHostName("localhost");
-        db.setDatabaseName("lataupe");
-        db.setUserName("root");
-        db.setPassword("");
-        if (!db.open()) {
-            QMessageBox::critical(NULL, "Echec", "Impossible d'ouvrir la base de données (du serveur local)...");
-            updateWindow();
-            return;
-        }
-
-        QMessageBox::information(NULL, "Succès", "La base de données qui est sur le serveur local a été chargée.<br />Vous pouvez l'utiliser. :p");
-        updateWindow();
-        return;
-    }
-
-    // Open the QSQLite database
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(fileDB);
-    if (!db.open()) {
-        QMessageBox::critical(NULL, "Echec", "Impossible d'ouvrir la base de données...");
-        updateWindow();
-        return;
-    }
-
-    QMessageBox::information(NULL, "Succès", "Votre kholloscope a été chargé.<br />Vous pouvez l'utiliser. :p");
+    kscopemanager.openFile(filename);
     updateWindow();
+    record(QSqlDatabase::database().isOpen());
     return;
 }
 
@@ -428,9 +383,39 @@ void MainWindow::updateWindow() {
     ui->action_DB_Kholleurs->setEnabled(db.isOpen());
     ui->action_Schedule_Timetable->setEnabled(db.isOpen());
     ui->action_Schedule_Students_Groups->setEnabled(db.isOpen());
+    ui->action_Schedule_Swapping_Groups->setEnabled(db.isOpen());
     ui->action_Schedule_Kholles->setEnabled(db.isOpen());
     ui->action_Schedule_Events->setEnabled(db.isOpen());
     ui->action_Kholles_Interface->setEnabled(db.isOpen());
     ui->action_Kholles_Generate->setEnabled(db.isOpen());
     ui->action_Kholles_Historic->setEnabled(db.isOpen());
+    ui->action_Kholles_LastChanges->setEnabled(db.isOpen());
+}
+
+void MainWindow::record(bool start) {
+    if(start) {
+        QSqlDatabase db = QSqlDatabase::database();
+        QSqlQuery qInilisation(db);
+        qInilisation.prepare("INSERT INTO `tau_record`(`date`, `minutes`) VALUES(:date, 0)");
+        qInilisation.bindValue(":date", QDate::currentDate().toString("yyyy-MM-dd"));
+        qInilisation.exec();
+        m_idRecord = qInilisation.lastInsertId().toInt();
+        if(m_idRecord >= 0) {
+            m_timer = new QTimer(this);
+            connect(m_timer, SIGNAL(timeout()), this, SLOT(updateRecord()));
+            m_timer->start(60*1000);
+        }
+    } else if(!start && m_idRecord>=0) {
+        m_idRecord = -1;
+        disconnect(m_timer, SIGNAL(timeout()), this, SLOT(updateRecord()));
+        m_timer->stop();
+    }
+}
+
+void MainWindow::updateRecord() {
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query(db);
+    query.prepare("UPDATE tau_record SET minutes = minutes + 1 WHERE id = :id_record");
+    query.bindValue(":id_record", m_idRecord);
+    query.exec();
 }

@@ -27,6 +27,7 @@ public:
     QRect* getArea() const;
     QList<Kholle*>* kholles() const;
     Kholleur* kholleur() const;
+    bool isDeleted() const;
 
     //Setters
     void setId(int id);
@@ -38,6 +39,10 @@ public:
     void setPupils(int pupils);
     void setArea(QRect* area);
     void setKholleur(Kholleur* kll);
+    void setIsDeleted(bool is_deleted);
+
+    //Other functions
+    int weeksTo(Timeslot* ts);
 
 private:
     int m_id;
@@ -47,6 +52,9 @@ private:
     int m_id_kholleurs;
     QDate m_date;
     int m_pupils;
+
+    // UpdateTimeslotDialog
+    bool m_is_deleted;
 
     // Interface
     QRect* m_area;

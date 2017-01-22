@@ -31,6 +31,9 @@ CopyTimeslots::~CopyTimeslots()
 }
 
 void CopyTimeslots::copy() {
+    //Create a transaction to speed up process
+    m_db->transaction();
+
     //Get selected date
     QDate old_date = ui->dateEdit->date();
     if(old_date.dayOfWeek() != 1) {
@@ -182,6 +185,7 @@ void CopyTimeslots::copy() {
         }
         else {
             QMessageBox::critical(this, "Erreur", "Ce kholleur n'existe pas. Comment est-ce possible ?");
+            m_db->commit();
             return;
         }
     }
@@ -191,4 +195,6 @@ void CopyTimeslots::copy() {
                                                 "Les horaires de kholles sont simplement copiés et ne sont pas automatiquement mis à jour.\n"
                                                 "Pour que ces changements se répercutent sur les horaires, il faut les rentrer à nouveau.");
     }
+
+    m_db->commit();
 }
