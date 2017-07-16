@@ -126,7 +126,7 @@ bool PrintPDF::printKholles_StudentsDays(QList<Student *> *students, QMap<int, K
     }
 
     //Reorganise the kholles
-    QList<QList<QList<Kholle*>*>*> kholles;
+    QList<QList<QList<Kholle*>*>*> kholles; //Matrix of list of kholles. i => student; j => day; list of kholles
     for(i = 0; i < students->length(); i++) {
         kholles.append(new QList<QList<Kholle*>*>);
         for(j = 0; j < 6; j++) {

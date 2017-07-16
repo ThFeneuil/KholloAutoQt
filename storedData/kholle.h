@@ -15,7 +15,7 @@ public:
     Kholle();
     ~Kholle();
 
-    enum Status {OK, Warning, Error}; //Generation, the status are in order from best to worst
+    enum Status {OK, Warning, Error, Impossible}; //Generation, the status are in order from best to worst
 
     //Getters
     int getId() const;

@@ -17,7 +17,8 @@ public:
     static float proba(DataBase *dbase, Student* user, Timeslot* timeslot, QDate m_date);
     static QMap<int, float> *corrected_proba(DataBase *dbase, Student* user, QList<Timeslot *> list, QDate m_date);
 
-    static bool compatible(QSqlDatabase *db, DataBase *dbase, int id_user, Timeslot* timeslot, int week);
+    static bool compatible(QSqlDatabase *db, DataBase *dbase, int id_user, Timeslot* timeslot, int week, int id_kholle_avoid = 0);
+    static void make_exchange(QSqlDatabase *db, Kholle *current, Timeslot *t_current, Kholle *k, Timeslot *t, int n1, int n2);
     static void quickSort(QList<Timeslot*> *list, int i, int j, QMap<int, float> *probas);
 
     static int listMax(DataBase *dbase, QList<Timeslot*>, Student*, QDate m_date);

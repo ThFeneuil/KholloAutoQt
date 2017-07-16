@@ -2,7 +2,6 @@
 #define REVIEWDIALOG_H
 
 #include <QDialog>
-#include <QSql>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QQueue>

@@ -10,7 +10,6 @@
 
 #include <QDialog>
 #include <QList>
-#include <QSql>
 #include <QSqlQuery>
 #include <QMessageBox>
 #include <QListWidget>

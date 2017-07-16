@@ -2,7 +2,6 @@
 #define GROUPSSWAPPINGSMANAGER_H
 
 #include <QDialog>
-#include <QSql>
 #include <QSqlQuery>
 #include <QMessageBox>
 #include "storedData/group.h"

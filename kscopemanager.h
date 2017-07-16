@@ -2,7 +2,6 @@
 #define KSCOPEMANAGER_H
 
 #include <QString>
-#include <QSql>
 #include <QSqlQuery>
 #include <QSqlDriver>
 #include <QSqlRecord>

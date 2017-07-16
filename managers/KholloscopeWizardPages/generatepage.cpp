@@ -58,6 +58,7 @@ void GeneratePage::initializePage() {
 
     profondeur = 0;
     m_abort = false;
+    m_timeout = false;
     freeKholles();
 
     //Reinitialise DataBase object
@@ -97,6 +98,9 @@ void GeneratePage::initializePage() {
     QFuture<bool> future = QtConcurrent::run(this, &GeneratePage::generate);
     m_watcher.setFuture(future);
 
+    //Start a timeout timer
+    QTimer::singleShot(TIMEOUT_INT, this, SLOT(timeout()));
+
     //Display a message with an option to abort
     connect(m_box, SIGNAL(finished(int)), this, SLOT(abort()));
     m_box->show();
@@ -104,6 +108,7 @@ void GeneratePage::initializePage() {
 
 void GeneratePage::cleanupPage() {
     disconnect(wizard()->button(QWizard::FinishButton), SIGNAL(clicked()), this, SLOT(saveKholles()));
+    clearPoss();
 
     //Abort operation
     m_abort = true;
@@ -173,6 +178,7 @@ void GeneratePage::constructPoss() {
     for(i = 0; i < selected_subjects->length(); i++) { //For every selected subject
         //Create a new map
         QMap<int, QList<Timeslot*> > map;
+        QMap<int, QMap<int, float>* > p_map;
 
         //The selected users for this subject
         QList<Student*> users = input->value(selected_subjects->at(i)->getId());
@@ -190,24 +196,39 @@ void GeneratePage::constructPoss() {
                 }
             }
 
+            QMap<int, float> *probas = Utilities::corrected_proba(m_dbase, m_dbase->listStudents()->value(users[j]->getId()), new_list, m_date);
+
             //Log the probability for these timeslots
             if(log_file != NULL) {
-                QMap<int, float> *probas = Utilities::corrected_proba(m_dbase, m_dbase->listStudents()->value(users[j]->getId()), new_list, m_date);
                 for(k = 0; k < new_list.length(); k++) {
                     out << users[j]->getName() << ", " << selected_subjects->at(i)->getShortName() << ", " << new_list[k]->kholleur()->getName() << ", " << new_list[k]->getId() << " : ";
                     out << probas->value(new_list[k]->getId()) << "\n";
                 }
-                delete probas;
             }
 
-            // No sorting here !
-            //quickSort(&new_list, 0, new_list.length() - 1, users[j]->getId()); //Sort the list based on probabilities
+            Utilities::quickSort(&new_list, 0, new_list.length() - 1, probas); //Sort the list based on probabilities
 
             map.insert(users[j]->getId(), new_list); //Insert the list
+            p_map.insert(users[j]->getId(), probas);
         }
 
         poss.insert(selected_subjects->at(i)->getId(), map); //Insert the map
+        probabilities.insert(selected_subjects->at(i)->getId(), p_map);
     }
+}
+
+void GeneratePage::clearPoss() {
+    poss.clear();
+
+    QList<int> keys_1 = probabilities.keys();
+    for(int i = 0; i < keys_1.length(); i++) {
+        QMap<int, QMap<int, float>* > map = probabilities.value(keys_1[i]);
+        QList<int> keys_2 = map.keys();
+        for(int j = 0; j < keys_2.length(); j++) {
+            delete map.take(keys_2[j]);
+        }
+    }
+    probabilities.clear();
 }
 
 QMap<int, QList<Timeslot *> > *GeneratePage::updatePoss(int id_user, Timeslot* current) {
@@ -315,6 +336,20 @@ working_index *GeneratePage::findMax() {
     return res;
 }
 
+Kholle *GeneratePage::createKholle(int id_student, Timeslot *ts) {
+    /** Creates a new Kholle with the parameters, adds it to kholloscope, and returns the kholle **/
+    //Create new kholle
+    Kholle *k = new Kholle();
+    k->setId_students(id_student);
+    k->setId_timeslots(ts->getId());
+
+    //Add it
+    kholloscope.append(k);
+    ts->setPupils(ts->getPupils() - 1); //Substract one person
+
+    return k;
+}
+
 bool GeneratePage::generate() {
     /** Generate the Kholloscope **/
     profondeur++;
@@ -340,21 +375,15 @@ bool GeneratePage::generate() {
     QList<Timeslot*> loop = map.take(index->current_student); //Get possibilities and delete them from the possibilities map
     poss.insert(index->current_subject, map);
 
-    //Sort the possibilities
-    QMap<int, float> *probas = Utilities::corrected_proba(m_dbase, m_dbase->listStudents()->value(index->current_student), loop, m_date);
-    Utilities::quickSort(&loop, 0, loop.length() - 1, probas);
-    delete probas;
+    //No need to sort again
+    //QMap<int, float> *probas = Utilities::corrected_proba(m_dbase, m_dbase->listStudents()->value(index->current_student), loop, m_date); //Do we really need to recalculate ???!
+    //Utilities::quickSort(&loop, 0, loop.length() - 1, probas);
+    //delete probas;
 
     for(int i = 0; i < loop.length(); i++) { //For every possibility
         if(loop[i]->getPupils() > 0) { //If enough space
-            //Create new kholle
-            Kholle *k = new Kholle();
-            k->setId_students(index->current_student);
-            k->setId_timeslots(loop[i]->getId());
+            createKholle(index->current_student, loop[i]);
 
-            //Add it
-            kholloscope.append(k);
-            loop[i]->setPupils(loop[i]->getPupils() - 1); //Substract one person
             QMap<int, QList<Timeslot*> > *old = updatePoss(index->current_student, loop[i]); //Update the possibilities
 
             //Recursive call
@@ -401,13 +430,30 @@ void GeneratePage::finished() {
         log_file = NULL;
     }
     m_db->transaction();
+
+    if(m_timeout) {
+        qDebug() << "timeout";
+        force();
+    }
+
     Utilities::saveInSql(m_db, &kholloscope);
 
     setStatus();
 
-    if(!m_watcher.future().result())
+    if(!m_watcher.future().result() && !m_timeout)
         displayBlocking();
     else {
+        if(m_timeout) {
+            for(int i = 0; i < MAX_ITERATION && remainImpossible(); i++)
+                treatImpossible(0);
+
+            if(remainImpossible()) {
+                m_box->hide();
+                QMessageBox::warning(this, "La génération n'a pas abouti...", "Aucun kholloscope compatible n'a été trouvé");
+                return;
+            }
+        }
+
         exchange(0, Collisions, 0);
         exchange(0, Warnings, 40);
         exchange(0, All, 15);
@@ -421,7 +467,7 @@ void GeneratePage::finished() {
     displayCollision(&collisions);
     m_box->hide();
 
-    if(m_watcher.future().result())
+    if(m_watcher.future().result() || m_timeout)
         displayConclusion(errors, warnings, collisions);
 }
 
@@ -430,37 +476,154 @@ void GeneratePage::abort() {
     m_watcher.waitForFinished();
 }
 
+void GeneratePage::timeout() {
+    m_abort = true;
+    m_timeout = true;
+    m_watcher.waitForFinished();
+}
+
 void GeneratePage::setStatus() {
     /** Set the status of the generated kholles **/
 
     for(int i = 0; i < kholloscope.length(); i++) {
-        kholloscope[i]->updateStatus(m_dbase->listTimeslots(), m_db);
+        if(kholloscope[i]->status() != Kholle::Impossible)
+            kholloscope[i]->updateStatus(m_dbase->listTimeslots(), m_db);
     }
+}
+
+
+void GeneratePage::force() {
+    /** Attributes Kholles randomly **/
+
+    QList<int> s_keys = poss.keys();
+    for(int i = 0; i < s_keys.length(); i++) {
+        QList<int> u_keys = poss.value(s_keys[i]).keys();
+        for(int j = 0; j < u_keys.length(); j++) {
+            bool success = false;
+
+            QList<Timeslot*> loop = poss.value(s_keys[i]).value(u_keys[j]);
+
+            //No need to sort again
+            //QMap<int, float> *p = Utilities::corrected_proba(m_dbase, m_dbase->listStudents()->value(u_keys[j]), loop, m_date);
+            //Utilities::quickSort(&loop, 0, loop.length() - 1, p);
+            //delete p;
+
+            for(int k = 0; k < loop.length() && !success; k++) {
+                if(loop[k]->getPupils() > 0) {
+                    success = true;
+                    createKholle(u_keys[j], loop[k]);
+                    updatePoss(u_keys[j], loop[k]);
+                }
+            }
+
+            if(!success) {
+                foreach(Timeslot* ts, *m_dbase->listTimeslots()) {
+                    if(ts->getPupils() > 0) {
+                        if(ts->kholleur()->getId_subjects() == s_keys[i]) {
+                            if(ts->getDate() >= m_date && ts->getDate() <= m_date.addDays(6)) {
+                                //All conditions respected (not compatibility) => insert new Kholle
+                                Kholle *kholle = createKholle(u_keys[j], ts);
+
+                                //if(!Utilities::compatible(m_db, m_dbase, u_keys[j], ts, m_week))
+                                kholle->setStatus(Kholle::Impossible);
+
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+bool GeneratePage::treatImpossible(int index) {
+    /** Exchange timeslots between pupils in order to resolve impossible situation **/
+
+    while(index < kholloscope.length() && kholloscope[index]->status() != Kholle::Impossible)
+        index++;
+    if(index >= kholloscope.length())
+        return true;
+
+    Kholle* current = kholloscope[index];
+    Timeslot* t_current = m_dbase->listTimeslots()->value(current->getId_timeslots());
+    Student* s_current = m_dbase->listStudents()->value(current->getId_students());
+
+    int max_index = -1;
+    int max_score = 0;
+
+    //First pass : only exchange if both are compatible
+    for(int i = 0; i < kholloscope.length(); i++) {
+        if(i == index)
+            continue;
+
+        Kholle* k = kholloscope[i];
+        Timeslot* t = m_dbase->listTimeslots()->value(k->getId_timeslots());
+        Student* s = m_dbase->listStudents()->value(k->getId_students());
+
+        if(t_current->kholleur()->getId_subjects() == t->kholleur()->getId_subjects()) {
+            if(Utilities::compatible(m_db, m_dbase, s_current->getId(), t, m_week, current->getId())
+                    && Utilities::compatible(m_db, m_dbase, s->getId(), t_current, m_week, k->getId())) {
+                int n1 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s_current->getId(), t, current->getId());
+                int n2 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s->getId(), t_current, k->getId());
+                Utilities::make_exchange(m_db, current, t_current, k, t, n1, n2);
+                return treatImpossible(index + 1);
+            }
+        }
+    }
+
+    //Second pass : exchange even if it is still incompatible
+    for(int i = 0; i < kholloscope.length(); i++) {
+        if(i == index)
+            continue;
+
+        Kholle* k = kholloscope[i];
+        Timeslot* t = m_dbase->listTimeslots()->value(k->getId_timeslots());
+        Student* s = m_dbase->listStudents()->value(k->getId_students());
+
+        if(t->getId() == t_current->getId())
+            continue;
+
+        if(t_current->kholleur()->getId_subjects() == t->kholleur()->getId_subjects()) {
+            if(Utilities::compatible(m_db, m_dbase, s->getId(), t_current, m_week, k->getId())) {
+                int n2 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s->getId(), t_current, k->getId());
+                Utilities::make_exchange(m_db, current, t_current, k, t, 0, n2);
+                current->setStatus(Kholle::Impossible);
+                break;
+            }
+        }
+    }
+
+    return treatImpossible(index + 1);
+}
+
+bool GeneratePage::remainImpossible() {
+    for(int i = 0; i < kholloscope.length(); i++) {
+        if(kholloscope[i]->status() == Kholle::Impossible)
+            return true;
+    }
+    return false;
 }
 
 bool GeneratePage::exchange(int index, ExchangeType type, int score_limit) {
     /** Exchange timeslots between people in the kholloscope to improve score **/
 
-    if(index >= kholloscope.length())
-        return true;
-
     switch(type) {
         case Warnings:
             while(index < kholloscope.length() && kholloscope[index]->status() == Kholle::OK)
                 index++;
-            if(index == kholloscope.length())
-                return true;
             break;
         case Collisions:
             while(index < kholloscope.length() &&
                   Utilities::sum_day(m_db, kholloscope[index]->getId_students(), m_dbase->listTimeslots()->value(kholloscope[index]->getId_timeslots())->getDate()) <= MaxWeightSubject)
                 index++;
-            if(index == kholloscope.length())
-                return true;
             break;
         default:
             break;
     }
+
+    if(index >= kholloscope.length())
+        return true;
 
     Kholle* current = kholloscope[index];
     Timeslot* t_current = m_dbase->listTimeslots()->value(current->getId_timeslots());
@@ -481,16 +644,18 @@ bool GeneratePage::exchange(int index, ExchangeType type, int score_limit) {
             continue;
 
         if(t_current->kholleur()->getId_subjects() == t->kholleur()->getId_subjects()) {
-            if(Utilities::compatible(m_db, m_dbase, s_current->getId(), t, m_week)
-                    && Utilities::compatible(m_db, m_dbase, s->getId(), t_current, m_week)) {
+            if(Utilities::compatible(m_db, m_dbase, s_current->getId(), t, m_week, current->getId())
+                    && Utilities::compatible(m_db, m_dbase, s->getId(), t_current, m_week, k->getId())) {
                 int sub_weight = t_current->kholleur()->subject()->getWeight();
                 int w_current_old = Utilities::sum_day(m_db, s_current->getId(), t_current->getDate());
                 int w_current_new = Utilities::sum_day(m_db, s_current->getId(), t->getDate()) + (t_current->getDate() != t->getDate() ? sub_weight : 0);
                 int w_old = Utilities::sum_day(m_db, s->getId(), t->getDate());
                 int w_new = Utilities::sum_day(m_db, s->getId(), t_current->getDate()) + (t_current->getDate() != t->getDate() ? sub_weight : 0);
 
-                QMap<int, float> *p_current = Utilities::corrected_proba(m_dbase, s_current, poss.value(t_current->kholleur()->getId_subjects()).value(s_current->getId()), m_date);
-                QMap<int, float> *p = Utilities::corrected_proba(m_dbase, s, poss.value(t->kholleur()->getId_subjects()).value(s->getId()), m_date);
+                //QMap<int, float> *p_current = Utilities::corrected_proba(m_dbase, s_current, poss.value(t_current->kholleur()->getId_subjects()).value(s_current->getId()), m_date);
+                //QMap<int, float> *p = Utilities::corrected_proba(m_dbase, s, poss.value(t->kholleur()->getId_subjects()).value(s->getId()), m_date);
+                QMap<int, float> *p_current = probabilities.value(t_current->kholleur()->getId_subjects()).value(s_current->getId());
+                QMap<int, float> *p = probabilities.value(t->kholleur()->getId_subjects()).value(s->getId());
 
                 int n1 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s_current->getId(), t, current->getId());
                 int n2 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s->getId(), t_current, k->getId());
@@ -523,25 +688,10 @@ bool GeneratePage::exchange(int index, ExchangeType type, int score_limit) {
                 }
 
                 if(do_exchange) {
-                    current->setId_timeslots(t->getId());
-                    current->setWeeks(n1);
-                    current->setStatus((Kholle::Status) Kholle::correspondingStatus(n1));
-                    k->setId_timeslots(t_current->getId());
-                    k->setWeeks(n2);
-                    k->setStatus((Kholle::Status) Kholle::correspondingStatus(n2));
                     m_downgraded.insert(s->getId(), true);
                     m_downgraded.insert(s_current->getId(), false);
 
-                    QSqlQuery query(*m_db);
-                    query.prepare("UPDATE tau_kholles SET id_timeslots=:id_ts WHERE id=:id");
-                    query.bindValue(":id", current->getId());
-                    query.bindValue(":id_ts", t->getId());
-                    query.exec();
-
-                    query.prepare("UPDATE tau_kholles SET id_timeslots=:id_ts WHERE id=:id");
-                    query.bindValue(":id", k->getId());
-                    query.bindValue(":id_ts", t_current->getId());
-                    query.exec();
+                    Utilities::make_exchange(m_db, current, t_current, k, t, n1, n2);
 
                     break;
                 }
@@ -551,6 +701,7 @@ bool GeneratePage::exchange(int index, ExchangeType type, int score_limit) {
 
     return exchange(index + 1, type, score_limit);
 }
+
 
 void GeneratePage::display(int *errors, int *warnings) {
     /** To display in the list **/
@@ -697,7 +848,7 @@ void GeneratePage::displayBlocking() {
     message += "Il est donc probable qu’il y ait une incohérence au niveau de cette matière ou de cet/cette élève. "
                "Veuillez vérifier les horaires de kholles, groupes, emplois du temps correspondants.";
 
-    QMessageBox::information(this, "La génération n'a pas abouti...", message);
+    QMessageBox::warning(this, "La génération n'a pas abouti...", message);
 }
 
 void GeneratePage::saveKholles() {
