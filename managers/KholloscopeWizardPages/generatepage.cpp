@@ -523,6 +523,7 @@ void GeneratePage::force() {
                             if(ts->getDate() >= m_date && ts->getDate() <= m_date.addDays(6)) {
                                 //All conditions respected (not compatibility) => insert new Kholle
                                 Kholle *kholle = createKholle(u_keys[j], ts);
+                                updatePoss(u_keys[j], ts);
 
                                 //if(!Utilities::compatible(m_db, m_dbase, u_keys[j], ts, m_week))
                                 kholle->setStatus(Kholle::Impossible);
@@ -660,9 +661,19 @@ bool GeneratePage::exchange(int index, ExchangeType type, int score_limit) {
                 int n1 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s_current->getId(), t, current->getId());
                 int n2 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s->getId(), t_current, k->getId());
 
-                bool do_exchange = false;
+                //bool do_exchange = false;
 
+                bool weight_ok = false, status_ok = false, probas_ok = false;
                 if(type == Collisions) {
+                    weight_ok = (w_current_new <= MaxWeightSubject || w_current_new < w_current_old)
+                                    && (w_new <= MaxWeightSubject || w_new < w_old);
+                    status_ok = (Kholle::correspondingStatus(n1) <= current->status()
+                                    && Kholle::correspondingStatus(n2) <= k->status());
+                    probas_ok = (p_current->value(t->getId()) + p->value(t_current->getId())
+                                    >= p_current->value(t_current->getId()) + p->value(t->getId()));
+                }
+
+                /*if(type == Collisions) {
                     if((w_current_new <= MaxWeightSubject || w_current_new < w_current_old)
                             && (w_new <= MaxWeightSubject || w_new < w_old)) {
                         if(Kholle::correspondingStatus(n1) <= current->status()
@@ -672,9 +683,23 @@ bool GeneratePage::exchange(int index, ExchangeType type, int score_limit) {
                             }
                         }
                     }
+                }*/
+
+                else{
+                    weight_ok = (w_current_new <= MaxWeightSubject || w_current_new <= w_current_old)
+                            && (w_new <= MaxWeightSubject || w_new <= w_old);
+                    probas_ok = (p_current->value(t->getId()) - p_current->value(t_current->getId()) >= score_limit
+                            && p->value(t_current->getId()) - p->value(t->getId()) >= -score_limit);
+
+                    if(type == Warnings)
+                        status_ok = (Kholle::correspondingStatus(n1) < current->status()
+                                     && Kholle::correspondingStatus(n2) < k->status());
+                    else
+                        status_ok = (Kholle::correspondingStatus(n1) <= current->status()
+                                     && Kholle::correspondingStatus(n2) <= k->status());
                 }
 
-                else {
+                /*else {
                     if((w_current_new <= MaxWeightSubject || w_current_new <= w_current_old)
                             && (w_new <= MaxWeightSubject || w_new <= w_old)) {
                         if(Kholle::correspondingStatus(n1) == Kholle::OK
@@ -685,9 +710,9 @@ bool GeneratePage::exchange(int index, ExchangeType type, int score_limit) {
                             }
                         }
                     }
-                }
+                }*/
 
-                if(do_exchange) {
+                if(weight_ok && status_ok && probas_ok) {
                     m_downgraded.insert(s->getId(), true);
                     m_downgraded.insert(s_current->getId(), false);
 
