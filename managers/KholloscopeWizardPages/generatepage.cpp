@@ -551,7 +551,7 @@ bool GeneratePage::treatImpossible(int index) {
     Student* s_current = m_dbase->listStudents()->value(current->getId_students());
 
     int max_index = -1;
-    int max_score = 0;
+    float max_score = 0;
 
     //First pass : only exchange if both are compatible
     for(int i = 0; i < kholloscope.length(); i++) {
@@ -630,8 +630,9 @@ bool GeneratePage::exchange(int index, ExchangeType type, int score_limit) {
     Timeslot* t_current = m_dbase->listTimeslots()->value(current->getId_timeslots());
     Student* s_current = m_dbase->listStudents()->value(current->getId_students());
 
-    int i;
-    for(i = 0; i < kholloscope.length(); i++) {
+    float max_score = 0;
+    int max_index = -1;
+    for(int i = 0; i < kholloscope.length(); i++) {
         if(i == index)
             continue;
 
@@ -713,15 +714,29 @@ bool GeneratePage::exchange(int index, ExchangeType type, int score_limit) {
                 }*/
 
                 if(weight_ok && status_ok && probas_ok) {
-                    m_downgraded.insert(s->getId(), true);
-                    m_downgraded.insert(s_current->getId(), false);
-
-                    Utilities::make_exchange(m_db, current, t_current, k, t, n1, n2);
-
-                    break;
+                    float delta_proba = p_current->value(t->getId()) + p->value(t_current->getId())
+                                            - p_current->value(t_current->getId()) - p->value(t->getId());
+                    if(max_index == -1 || delta_proba > max_score) {
+                        max_index = i;
+                        max_score = delta_proba;
+                    }
                 }
             }
         }
+    }
+
+    if(max_index != -1) {
+        Kholle* k = kholloscope[max_index];
+        Timeslot* t = m_dbase->listTimeslots()->value(k->getId_timeslots());
+        Student* s = m_dbase->listStudents()->value(k->getId_students());
+
+        m_downgraded.insert(s->getId(), true);
+        m_downgraded.insert(s_current->getId(), false);
+
+        int n1 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s_current->getId(), t, current->getId());
+        int n2 = Kholle::nearestKholle(m_db, m_dbase->listTimeslots(), s->getId(), t_current, k->getId());
+
+        Utilities::make_exchange(m_db, current, t_current, k, t, n1, n2);
     }
 
     return exchange(index + 1, type, score_limit);
