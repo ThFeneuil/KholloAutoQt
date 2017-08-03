@@ -34,7 +34,8 @@ FORMS += \
     settingsdialog.ui \
     managers/updatesubjectdialog.ui \
     interface/interfacedialog_mac.ui \
-    interface/interfacetab_mac.ui
+    interface/interfacetab_mac.ui \
+    managers/timetablemanager.ui
 
 HEADERS += \
     mainwindow.h \
@@ -83,7 +84,9 @@ HEADERS += \
     settingsdialog.h \
     managers/KholloscopeWizardPages/utilities.h \
     interface/interfaceactionsrecord.h \
-    managers/updatesubjectdialog.h
+    managers/updatesubjectdialog.h \
+    managers/timetablemanager.h \
+    managers/timetable.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -133,7 +136,9 @@ SOURCES += \
     settingsdialog.cpp \
     managers/KholloscopeWizardPages/utilities.cpp \
     interface/interfaceactionsrecord.cpp \
-    managers/updatesubjectdialog.cpp
+    managers/updatesubjectdialog.cpp \
+    managers/timetablemanager.cpp \
+    managers/timetable.cpp
 	
 DISTFILES +=
 

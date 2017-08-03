@@ -25,6 +25,7 @@
 #include "kscopemanager.h"
 #include "settingsdialog.h"
 #include "notepad.h"
+#include "managers/timetablemanager.h"
 
 namespace Ui {
 class MainWindow;

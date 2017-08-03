@@ -149,7 +149,9 @@ void MainWindow::openCoursesManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        CoursesManager manager(&db, this);
+        /*CoursesManager manager(&db, this);
+        manager.exec();*/
+        TimetableManager manager(&db, this);
         manager.exec();
     }
     else {
