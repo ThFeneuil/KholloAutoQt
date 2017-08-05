@@ -6,13 +6,11 @@ Subject::Subject() {
     m_shortName = "";
     m_color = "";
     m_weight = 0;
-    m_teachers = new QList<Teacher*>();
     m_kholleurs = new QList<Kholleur*>();
     m_courses = new QList<Course*>();
 }
 
 Subject::~Subject() {
-    delete m_teachers;
     delete m_kholleurs;
     delete m_courses;
 }
@@ -32,9 +30,6 @@ QString Subject::getColor() const {
 }
 int Subject::getWeight() const {
     return m_weight;
-}
-QList<Teacher*>* Subject::teachers() const {
-    return m_teachers;
 }
 QList<Kholleur*>* Subject::kholleurs() const {
     return m_kholleurs;

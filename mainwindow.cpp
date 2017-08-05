@@ -149,8 +149,6 @@ void MainWindow::openCoursesManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        /*CoursesManager manager(&db, this);
-        manager.exec();*/
         TimetableManager manager(&db, this);
         manager.exec();
     }
@@ -398,8 +396,9 @@ void MainWindow::record(bool start) {
     if(start) {
         QSqlDatabase db = QSqlDatabase::database();
         QSqlQuery qInilisation(db);
-        qInilisation.prepare("INSERT INTO `tau_record`(`date`, `minutes`) VALUES(:date, 0)");
+        qInilisation.prepare("INSERT INTO `tau_record`(`date`, `minutes`, `version`) VALUES(:date, 0, :version)");
         qInilisation.bindValue(":date", QDate::currentDate().toString("yyyy-MM-dd"));
+        qInilisation.bindValue(":version", APP_VERSION);
         qInilisation.exec();
         m_idRecord = qInilisation.lastInsertId().toInt();
         if(m_idRecord >= 0) {

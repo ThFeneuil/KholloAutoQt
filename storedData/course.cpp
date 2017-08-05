@@ -5,13 +5,11 @@ Course::Course()
     m_id = 0;
     m_id_subjects = 0;
     m_id_groups = 0;
-    m_id_teachers = 0;
     m_id_day = 0;
     m_id_week = 0;
 
     m_subject = NULL;
     m_group = NULL;
-    m_teacher = NULL;
 }
 
 Course::~Course() {
@@ -38,11 +36,6 @@ QTime Course::getTime_end() const {
 int Course::getId_groups() const {
     return m_id_groups;
 }
-
-int Course::getId_teachers() const {
-    return m_id_teachers;
-}
-
 int Course::getId_day() const {
     return m_id_day;
 }
@@ -55,9 +48,6 @@ Subject* Course::subject() const {
 }
 Group* Course::group() const {
     return m_group;
-}
-Teacher* Course::teacher() const {
-    return m_teacher;
 }
 
 
@@ -81,11 +71,6 @@ void Course::setTime_end(QTime time_end) {
 void Course::setId_groups(int id_groups) {
     m_id_groups = id_groups;
 }
-
-void Course::setId_teachers(int id_teachers) {
-    m_id_teachers = id_teachers;
-}
-
 void Course::setId_day(int id_day) {
     m_id_day = id_day;
 }
@@ -98,7 +83,4 @@ void Course::setSubject(Subject* subj) {
 }
 void Course::setGroup(Group* grp) {
     m_group = grp;
-}
-void Course::setTeacher(Teacher* tcher) {
-    m_teacher = tcher;
 }

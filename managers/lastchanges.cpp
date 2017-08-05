@@ -276,7 +276,7 @@ QString LastChanges::compatible(Student* stdnt, Timeslot *timeslot) {
         /// Check if a course interfere with this timeslot
         //Get all courses that can interfere with this timeslot
         QSqlQuery courses_query(*m_db);
-        courses_query.prepare("SELECT `id_subjects`, `id_teachers` FROM `tau_courses` WHERE (" + request_groups + ") AND `id_day`=:id_day AND `id_week`=:id_week AND ("
+        courses_query.prepare("SELECT `id_subjects` FROM `tau_courses` WHERE (" + request_groups + ") AND `id_day`=:id_day AND `id_week`=:id_week AND ("
                                                                               "(`time_start` <= :time_start AND `time_end` > :time_start) OR"
                                                                               "(`time_start` < :time_end AND `time_end` >= :time_end) OR"
                                                                               "(`time_start` >= :time_start AND `time_end` <= :time_end) )");
@@ -290,18 +290,11 @@ QString LastChanges::compatible(Student* stdnt, Timeslot *timeslot) {
         if(courses_query.next()) {
             QString res = "Cours : ";
             int idSubject = courses_query.value(0).toInt();
-            int idTeacher = courses_query.value(1).toInt();
             QSqlQuery info(*m_db);
             info.prepare("SELECT `name` FROM `tau_subjects` WHERE `id` = :id");
             info.bindValue(":id", idSubject);
             info.exec();
-            if(info.next())
-                res += info.value(0).toString();
-            info.prepare("SELECT `name` FROM `tau_teachers` WHERE `id` = :id");
-            info.bindValue(":id", idTeacher);
-            info.exec();
-            if(info.next())
-                res += " (" + info.value(0).toString() + ")";
+            res += info.next() ? info.value(0).toString() : "???";
             return res;
         }
 

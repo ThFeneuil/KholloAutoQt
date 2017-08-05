@@ -7,10 +7,8 @@ FORMS += \
     managers/groupsmanager.ui \
     managers/subjectsmanager.ui \
     managers/kholleursmanager.ui \
-    managers/updateteacherdialog.ui \
     managers/updatekholleurdialog.ui \
     managers/usersgroupsmanager.ui \
-	managers/coursesmanager.ui \
     managers/eventsmanager.ui \
     managers/updateeventdialog.ui \
     managers/selectgroupsdialog.ui \
@@ -48,11 +46,8 @@ HEADERS += \
     storedData/subject.h \
     managers/kholleursmanager.h \
     storedData/kholleur.h \
-    storedData/teacher.h \
-    managers/updateteacherdialog.h \
     managers/updatekholleurdialog.h \
     managers/usersgroupsmanager.h \
-	managers/coursesmanager.h \
     storedData/course.h \
     managers/eventsmanager.h \
     storedData/event.h \
@@ -100,11 +95,8 @@ SOURCES += \
     storedData/subject.cpp \
     managers/kholleursmanager.cpp \
     storedData/kholleur.cpp \
-    storedData/teacher.cpp \
-    managers/updateteacherdialog.cpp \
     managers/updatekholleurdialog.cpp \
     managers/usersgroupsmanager.cpp \
-	managers/coursesmanager.cpp \
     storedData/course.cpp \
     managers/eventsmanager.cpp \
     storedData/event.cpp \
@@ -146,6 +138,7 @@ RESOURCES += \
     khollo.qrc
 
 VERSION = 1.1
+DEFINES += "APP_VERSION='$$VERSION'"
 QMAKE_TARGET_PRODUCT = "SPARK\0"
 
 win32:RC_ICONS += "images/iconApp.ico"

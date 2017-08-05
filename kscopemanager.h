@@ -1,10 +1,12 @@
 #ifndef KSCOPEMANAGER_H
 #define KSCOPEMANAGER_H
 
+#include <QDebug>
 #include <QString>
 #include <QSqlQuery>
 #include <QSqlDriver>
 #include <QSqlRecord>
+#include <QSqlError>
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QVariant>

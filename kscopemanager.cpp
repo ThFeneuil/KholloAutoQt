@@ -2,7 +2,7 @@
 
 KScopeManager::KScopeManager() {
     tables << "tau_users" << "tau_groups" << "tau_groups_users" << "tau_subjects";
-    tables << "tau_teachers" << "tau_kholleurs" << "tau_courses" << "tau_record";
+    tables << "tau_kholleurs" << "tau_courses" << "tau_record";
     tables << "tau_timeslots" << "tau_events" << "tau_events_groups" << "tau_kholles";
 }
 
@@ -92,9 +92,9 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             case Create:
                 qCreate.exec("CREATE TABLE `tau_users` ( "
                                 "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                                "`name`	TEXT NOT NULL, "
-                                "`first_name`	TEXT NOT NULL, "
-                                "`email`	TEXT NOT NULL "
+                                "`name`	TEXT NOT NULL DEFAULT '', "
+                                "`first_name`	TEXT NOT NULL DEFAULT '', "
+                                "`email`	TEXT NOT NULL DEFAULT '' "
                             ");");
                 break;
             case Check:
@@ -109,7 +109,7 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             case Create:
                 qCreate.exec("CREATE TABLE `tau_groups` ( "
                                 "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                                "`name`	TEXT NOT NULL "
+                                "`name`	TEXT NOT NULL DEFAULT '' "
                             ");");
                 break;
             case Check:
@@ -122,8 +122,8 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             case Create:
             qCreate.exec("CREATE TABLE `tau_groups_users` ( "
                             "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                            "`id_groups`	INTEGER NOT NULL, "
-                            "`id_users`	INTEGER NOT NULL "
+                            "`id_groups`	INTEGER NOT NULL DEFAULT 0, "
+                            "`id_users`	INTEGER NOT NULL DEFAULT 0 "
                         ");");
             break;
             case Check:
@@ -137,10 +137,10 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             case Create:
             qCreate.exec("CREATE TABLE `tau_subjects` ( "
                             "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                            "`name`	TEXT NOT NULL, "
-                            "`shortName`	TEXT NOT NULL, "
-                            "`color`	TEXT NOT NULL, "
-                            "`weight`	INTEGER NOT NULL "
+                            "`name`	TEXT NOT NULL DEFAULT '', "
+                            "`shortName`	TEXT NOT NULL DEFAULT '', "
+                            "`color`	TEXT NOT NULL DEFAULT '', "
+                            "`weight`	INTEGER NOT NULL DEFAULT 0 "
                         ");");
             break;
             case Check:
@@ -150,28 +150,13 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
                 columns.insert("weight", Int);
             break;
         }
-    } else if(nameTable == "tau_teachers") {
-        switch(action) {
-            case Create:
-            qCreate.exec("CREATE TABLE `tau_teachers` ( "
-                            "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                            "`name`	TEXT NOT NULL, "
-                             "`id_subjects`	INTEGER NOT NULL "
-                        ");");
-            break;
-            case Check:
-                columns.insert("id", Id);
-                columns.insert("name", Text);
-                columns.insert("id_subjects", Int);
-            break;
-        }
     } else if(nameTable == "tau_kholleurs") {
         switch(action) {
             case Create:
             qCreate.exec("CREATE TABLE `tau_kholleurs` ( "
                             "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                            "`name`	TEXT NOT NULL, "
-                            "`id_subjects`	INTEGER NOT NULL, "
+                            "`name`	TEXT NOT NULL DEFAULT '', "
+                            "`id_subjects`	INTEGER NOT NULL DEFAULT 0, "
                             "`duration`	INTEGER NOT NULL DEFAULT 0, "
                             "`preparation`	INTEGER NOT NULL DEFAULT 0, "
                             "`pupils`	INTEGER NOT NULL DEFAULT 0 "
@@ -191,13 +176,12 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             case Create:
             qCreate.exec("CREATE TABLE `tau_courses` ( "
                             "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                            "`id_subjects`	INTEGER NOT NULL, "
-                            "`time_start`	TEXT NOT NULL, "
-                            "`time_end`	TEXT NOT NULL, "
-                            "`id_groups`	INTEGER NOT NULL, "
-                            "`id_teachers`	INTEGER NOT NULL, "
-                            "`id_day`	INTEGER NOT NULL, "
-                            "`id_week`	INTEGER NOT NULL "
+                            "`id_subjects`	INTEGER NOT NULL DEFAULT 0, "
+                            "`time_start`	TEXT NOT NULL DEFAULT '', "
+                            "`time_end`	TEXT NOT NULL DEFAULT '', "
+                            "`id_groups`	INTEGER NOT NULL DEFAULT 0, "
+                            "`id_day`	INTEGER NOT NULL DEFAULT 0, "
+                            "`id_week`	INTEGER NOT NULL DEFAULT 0 "
                         ");");
             break;
             case Check:
@@ -206,7 +190,6 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
                 columns.insert("time_start", Text);
                 columns.insert("time_end", Text);
                 columns.insert("id_groups", Int);
-                columns.insert("id_teachers", Int);
                 columns.insert("id_day", Int);
                 columns.insert("id_week", Int);
             break;
@@ -216,12 +199,12 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             case Create:
             qCreate.exec("CREATE TABLE `tau_timeslots` ( "
                             "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                            "`time`	TEXT NOT NULL, "
-                            "`time_end`	TEXT NOT NULL, "
-                            "`id_kholleurs`	INTEGER NOT NULL, "
-                            "`date`	TEXT NOT NULL, "
-                            "`time_start`	TEXT NOT NULL, "
-                            "`pupils`	INTEGER NOT NULL "
+                            "`time`	TEXT NOT NULL DEFAULT '', "
+                            "`time_end`	TEXT NOT NULL DEFAULT '', "
+                            "`id_kholleurs`	INTEGER NOT NULL DEFAULT 0, "
+                            "`date`	TEXT NOT NULL DEFAULT '', "
+                            "`time_start`	TEXT NOT NULL DEFAULT '', "
+                            "`pupils`	INTEGER NOT NULL DEFAULT 0 "
                         ");");
             break;
             case Check:
@@ -239,10 +222,10 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             case Create:
             qCreate.exec("CREATE TABLE `tau_events` ( "
                             "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                            "`name`	TEXT NOT NULL, "
-                            "`comment`	TEXT NOT NULL, "
-                            "`start`	TEXT NOT NULL, "
-                            "`end`	TEXT NOT NULL "
+                            "`name`	TEXT NOT NULL DEFAULT '', "
+                            "`comment`	TEXT NOT NULL DEFAULT '', "
+                            "`start`	TEXT NOT NULL DEFAULT '', "
+                            "`end`	TEXT NOT NULL DEFAULT '' "
                         ");");
             break;
             case Check:
@@ -258,8 +241,8 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             case Create:
             qCreate.exec("CREATE TABLE `tau_events_groups` ( "
                             "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                            "`id_events`	INTEGER NOT NULL, "
-                            "`id_groups`	INTEGER NOT NULL "
+                            "`id_events`	INTEGER NOT NULL DEFAULT 0, "
+                            "`id_groups`	INTEGER NOT NULL DEFAULT 0 "
                         ");");
             break;
             case Check:
@@ -273,8 +256,8 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             case Create:
             qCreate.exec("CREATE TABLE `tau_kholles` ( "
                           "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                          "`id_users`	INTEGER NOT NULL, "
-                          "`id_timeslots`	INTEGER NOT NULL "
+                          "`id_users`	INTEGER NOT NULL DEFAULT 0, "
+                          "`id_timeslots`	INTEGER NOT NULL DEFAULT 0 "
                       ");");
             break;
             case Check:
@@ -288,14 +271,16 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             case Create:
             qCreate.exec("CREATE TABLE `tau_record` ( "
                           "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                          "`date`	TEXT NOT NULL, "
-                          "`minutes`	INTEGER NOT NULL "
+                          "`date`	TEXT NOT NULL DEFAULT '', "
+                          "`minutes`	INTEGER NOT NULL DEFAULT 0, "
+                          "`version` TEXT NOT NULL DEFAULT '' "
                       ");");
             break;
             case Check:
                 columns.insert("id", Id);
                 columns.insert("date", Text);
                 columns.insert("minutes", Int);
+                columns.insert("version", Text);
             break;
         }
     } else {
@@ -325,6 +310,52 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
                     nbRectifications++;
                     break;
             }
+        }
+
+        /// COMPATIBILITY WITH OLD KSCOPE FILE (version <= v1.1 ) : DATA TEACHER !!
+        if(nameTable == "tau_courses") {
+            QSqlQuery qCompatibility(*db);
+            /// Test if the software can add a course
+            qCompatibility.exec("INSERT INTO tau_courses(id_subjects, time_start, time_end, id_groups, id_day, id_week) VALUES(0, 'TEST_COMPATIBILITY', 'TEST_COMPATIBILITY', 0, 0, 0)");
+
+            if(qCompatibility.lastError().isValid()) {
+                /// If no, remove the column teacher
+                int res = QMessageBox::warning(NULL, "Vieux fichier", "Le fichier que vous tentez d'ouvrir a été généré par une ancienne version du logiciel, et donc doit subir une opération irréversible pour fonctionner correctement sur cette version."
+                                     "Cette opération vous empéchera de retravailler avec ce fichier sur une version plus ancienne. Voulez-vous effectuer cette opération ?", QMessageBox::Yes | QMessageBox::No);
+                if(res == QMessageBox::Yes) {
+                    qCompatibility.exec("ALTER TABLE tau_courses RENAME TO tau_courses_compatibility;");
+                    qCompatibility.exec("CREATE TABLE `tau_courses` ( "
+                                        "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                                        "`id_subjects`	INTEGER NOT NULL DEFAULT 0, "
+                                        "`time_start`	TEXT NOT NULL DEFAULT '', "
+                                        "`time_end`	TEXT NOT NULL DEFAULT '', "
+                                        "`id_groups`	INTEGER NOT NULL DEFAULT 0, "
+                                        "`id_day`	INTEGER NOT NULL DEFAULT 0, "
+                                        "`id_week`	INTEGER NOT NULL DEFAULT 0 "
+                                    ");");
+                    qCompatibility.exec("SELECT id, id_subjects, time_start, time_end, id_groups, id_day, id_week FROM tau_courses_compatibility");
+                    QString qInsert_string = "";
+                    while(qCompatibility.next()) {
+                        // Build the objec "Course"
+                        int course_id = qCompatibility.value(0).toInt();
+                        int course_id_subjects = qCompatibility.value(1).toInt();
+                        QString course_time_start = qCompatibility.value(2).toString();
+                        QString course_time_end = qCompatibility.value(3).toString();
+                        int course_id_groups = qCompatibility.value(4).toInt();
+                        int course_id_day = qCompatibility.value(5).toInt();
+                        int course_id_week = qCompatibility.value(6).toInt();
+
+                        qInsert_string += (qInsert_string != "") ? ", " : "";
+                        qInsert_string += "("+QString::number(course_id)+", "+QString::number(course_id_subjects)+", '"+course_time_start+"', '"+course_time_end+"', "+QString::number(course_id_groups)+", "+QString::number(course_id_day)+", "+QString::number(course_id_week)+")";
+                    }
+                    qInsert_string = "INSERT INTO tau_courses(id, id_subjects, time_start, time_end, id_groups, id_day, id_week) VALUES " + qInsert_string + ";";
+                    qCompatibility.exec(qInsert_string);
+                    qCompatibility.exec("DROP TABLE tau_courses_compatibility");
+                    nbRectifications++;
+                } else
+                    QMessageBox::critical(NULL, "Vieux fichier", "Vous avez choisi d'ignorer cette opération. Le logiciel pourra rencontrer des erreurs lors de son exécution avec ce fichier...");
+            } else
+                qCompatibility.exec("DELETE FROM tau_courses WHERE id_subjects=0 AND time_start='TEST_COMPATIBILITY' AND time_end='TEST_COMPATIBILITY' AND id_groups=0 AND id_day=0 AND id_week=0");
         }
     }
 

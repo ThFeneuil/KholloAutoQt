@@ -96,9 +96,6 @@ bool SubjectsManager::delete_subject() {
             query.prepare("DELETE FROM tau_courses WHERE id_subjects=:id_subjects");
             query.bindValue(":id_subjects", subj->getId());
             query.exec();
-            query.prepare("UPDATE tau_teachers SET id_subjects=0 WHERE id_subjects=:id_subjects");
-            query.bindValue(":id_subjects", subj->getId());
-            query.exec();
             query.prepare("DELETE FROM tau_kholles WHERE id_timeslots IN "
                             "(SELECT id FROM tau_timeslots WHERE id_kholleurs IN "
                                 "(SELECT id FROM tau_kholleurs WHERE id_subjects = :id_subjects))");
