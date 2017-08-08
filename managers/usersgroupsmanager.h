@@ -43,8 +43,8 @@ public slots:
 private:
     Ui::UsersGroupsManager *ui; // GUI
     QSqlDatabase *m_db; // SQL database
-    QList<Student*> *m_listStudents; // Students list
-    QList<Group*> *m_listGroups; // Group list
+    QList<qulonglong> *m_listStudents; // Students list
+    QList<qulonglong> *m_listGroups; // Group list
     QAction* m_shortcutNotepad;
 };
 

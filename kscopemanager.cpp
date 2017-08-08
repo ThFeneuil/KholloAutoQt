@@ -2,8 +2,9 @@
 
 KScopeManager::KScopeManager() {
     tables << "tau_users" << "tau_groups" << "tau_groups_users" << "tau_subjects";
-    tables << "tau_kholleurs" << "tau_courses" << "tau_record";
-    tables << "tau_timeslots" << "tau_events" << "tau_events_groups" << "tau_kholles";
+    tables << "tau_kholleurs" << "tau_courses" << "tau_record" << "tau_timeslots";
+    tables << "tau_events" << "tau_events_groups" << "tau_kholles" << "tau_merge_kholleurs";
+    tables << "tau_general";
 }
 
 KScopeManager::~KScopeManager() {
@@ -281,6 +282,36 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
                 columns.insert("date", Text);
                 columns.insert("minutes", Int);
                 columns.insert("version", Text);
+            break;
+        }
+    } else if(nameTable == "tau_merge_kholleurs") {
+        switch(action) {
+            case Create:
+            qCreate.exec("CREATE TABLE `tau_merge_kholleurs` ( "
+                          "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                          "`name`	TEXT NOT NULL DEFAULT '', "
+                          "`id_kholleurs`	INTEGER NOT NULL DEFAULT 0 "
+                      ");");
+            break;
+            case Check:
+                columns.insert("id", Id);
+                columns.insert("name", Text);
+                columns.insert("id_kholleurs", Int);
+            break;
+        }
+    } else if(nameTable == "tau_general") {
+        switch(action) {
+            case Create:
+            qCreate.exec("CREATE TABLE `tau_general` ( "
+                          "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                          "`key`	TEXT NOT NULL DEFAULT '', "
+                          "`value`	TEXT NOT NULL DEFAULT '' "
+                      ");");
+            break;
+            case Check:
+                columns.insert("id", Id);
+                columns.insert("key", Text);
+                columns.insert("value", Text);
             break;
         }
     } else {

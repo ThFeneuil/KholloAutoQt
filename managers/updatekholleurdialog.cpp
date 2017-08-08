@@ -1,7 +1,7 @@
 #include "updatekholleurdialog.h"
 #include "ui_updatekholleurdialog.h"
 
-UpdateKholleurDialog::UpdateKholleurDialog(QSqlDatabase *db, Kholleur *khll, QWidget *parent) :
+UpdateKholleurDialog::UpdateKholleurDialog(QSqlDatabase *db, Kholleur *khll, bool warningbox, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::UpdateKholleurDialog)
 {
@@ -9,6 +9,7 @@ UpdateKholleurDialog::UpdateKholleurDialog(QSqlDatabase *db, Kholleur *khll, QWi
     ui->setupUi(this);
     m_db = db;
     m_kholleur = khll;
+    m_warningbox = warningbox;
 
     // Set the input field with the data of the kholleur
     ui->lineEdit_name->setText(m_kholleur->getName());
@@ -76,8 +77,10 @@ bool UpdateKholleurDialog::update_kholleur() {
         query.bindValue(":id", m_kholleur->getId());
         query.exec();
 
-        QMessageBox::warning(this, "Attention", "Les horaires de kholles ne sont pas automatiquement mis à jour.\n"
-                                                "Pour que ces changements se répercutent sur les horaires, il faut les rentrer à nouveau.");
+
+        if(m_warningbox)
+            QMessageBox::warning(this, "Attention", "Les horaires de kholles ne sont pas automatiquement mis à jour.\n"
+                                                    "Pour que ces changements se répercutent sur les horaires, il faut les rentrer à nouveau.");
 
         accept();
     }

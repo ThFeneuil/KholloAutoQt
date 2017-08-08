@@ -83,8 +83,7 @@ bool KholleursManager::add_kholleur() {
         query.prepare("INSERT INTO tau_kholleurs(name, id_subjects, duration, preparation, pupils) VALUES(:name, 0, 0, 0, 0)");
         query.bindValue(":name", name);
         query.exec();
-        idKholleur = query.lastInsertId().toInt()
-;
+        idKholleur = query.lastInsertId().toInt();
         // Update the widgets
         ui->lineEdit_kholleur->clear();
         update_listKholleurs(idKholleur);
@@ -105,7 +104,7 @@ bool KholleursManager::update_kholleur() {
         return false;
     } else { // Else ... open the dialog box
         Kholleur* khll = (Kholleur*) item->data(Qt::UserRole).toULongLong();
-        UpdateKholleurDialog updateBox(m_db, khll, this);
+        UpdateKholleurDialog updateBox(m_db, khll, true, this);
         if(updateBox.exec() == QDialog::Accepted) {
             // Update the list if there are mofications
             update_listKholleurs();
@@ -136,6 +135,9 @@ bool KholleursManager::delete_kholleur() {
             query.bindValue(":id_kholleurs", khll->getId());
             query.exec();
             query.prepare("DELETE FROM tau_timeslots WHERE id_kholleurs=:id_kholleurs");
+            query.bindValue(":id_kholleurs", khll->getId());
+            query.exec();
+            query.prepare("DELETE FROM tau_merge_kholleurs WHERE id_kholleurs=:id_kholleurs");
             query.bindValue(":id_kholleurs", khll->getId());
             query.exec();
             query.prepare("DELETE FROM tau_kholleurs WHERE id=:id");

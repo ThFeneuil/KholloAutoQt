@@ -12,11 +12,18 @@
 #include "storedData/kholleur.h"
 #include "storedData/timeslot.h"
 #include "managers/copytimeslots.h"
+#include "managers/mergekholleursmanager.h"
 #include "notepad.h"
+#include "onlinedatabase.h"
 
 namespace Ui {
 class TimeslotsManager;
 }
+/*
+struct KholleurWithName {
+    Kholleur* khll;
+    QString name;
+};*/
 
 class TimeslotsManager : public QDialog
 {
@@ -30,6 +37,7 @@ public:
     void update_list_timeslots(int id_kholleur);
     void update_list_oftenTimeslots(int id_kholleur);
     void free_timeslots();
+    void displayNameClass();
 
 public slots:
     void onSelection_change();
@@ -38,6 +46,9 @@ public slots:
     void addOftenTimeslot(QListWidgetItem* item);
     void copyTimeslots();
     void copyAllTimeslots();
+    void downloadTimeslots();
+    void downloadedTimeslots(ODBRequest *req);
+    void saveNameClass();
 
 private:
     Ui::TimeslotsManager *ui;

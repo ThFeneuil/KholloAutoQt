@@ -18,7 +18,7 @@ class UpdateKholleurDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit UpdateKholleurDialog(QSqlDatabase *db, Kholleur *khll, QWidget *parent = 0);
+    explicit UpdateKholleurDialog(QSqlDatabase *db, Kholleur *khll, bool warningbox=true, QWidget *parent = 0);
     ~UpdateKholleurDialog();
 
 public slots:
@@ -29,6 +29,7 @@ private:
     QSqlDatabase *m_db;
     Kholleur *m_kholleur;
     QQueue<Subject*> queue_subjects; // Displayed subjects in the comboBox
+    bool m_warningbox;
 };
 
 #endif // UPDATEKHOLLEURDIALOG_H

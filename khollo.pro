@@ -1,4 +1,4 @@
-QT += widgets sql concurrent
+QT += widgets sql concurrent network
 
 FORMS += \
     mainwindow.ui \
@@ -33,7 +33,8 @@ FORMS += \
     managers/updatesubjectdialog.ui \
     interface/interfacedialog_mac.ui \
     interface/interfacetab_mac.ui \
-    managers/timetablemanager.ui
+    managers/timetablemanager.ui \
+    managers/mergekholleursmanager.ui
 
 HEADERS += \
     mainwindow.h \
@@ -81,7 +82,9 @@ HEADERS += \
     interface/interfaceactionsrecord.h \
     managers/updatesubjectdialog.h \
     managers/timetablemanager.h \
-    managers/timetable.h
+    managers/timetable.h \
+    onlinedatabase.h \
+    managers/mergekholleursmanager.h
 
 SOURCES += \
     mainwindow.cpp \
@@ -130,7 +133,9 @@ SOURCES += \
     interface/interfaceactionsrecord.cpp \
     managers/updatesubjectdialog.cpp \
     managers/timetablemanager.cpp \
-    managers/timetable.cpp
+    managers/timetable.cpp \
+    onlinedatabase.cpp \
+    managers/mergekholleursmanager.cpp
 	
 DISTFILES +=
 
