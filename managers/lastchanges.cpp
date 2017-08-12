@@ -54,6 +54,8 @@ LastChanges::LastChanges(QSqlDatabase *db, int id_week, QDate *monday, QWidget *
     connect(ui->pushButton_delete, SIGNAL(clicked(bool)), this, SLOT(delete_kholles()));
     update_khollesManager();
 
+    connect(ui->pushButton_resetMerging, SIGNAL(clicked(bool)), this, SLOT(reset_preferencesMerging()));
+
     QSqlQuery query_subj(*m_db);
     query_subj.exec("SELECT `id`, `name` FROM `tau_subjects` ORDER BY UPPER(`name`)");
 
@@ -520,3 +522,12 @@ bool LastChanges::delete_kholles() {
     return true;
 }
 
+bool LastChanges::reset_preferencesMerging() {
+    int res = QMessageBox::warning(this, "Réinitialisation", "Vous être sur le point de réinitialiser toutes les préférences pour les associations des kholleurs téléchargés avec les horaires de kholles. Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::Cancel);
+    if(res == QMessageBox::Yes) {
+        QSqlQuery query(*m_db);
+        query.exec("DELETE FROM tau_merge_kholleurs");
+        QMessageBox::information(this, "Réinitialisation", "Réinitialisation réussite !");
+    }
+    return true;
+}

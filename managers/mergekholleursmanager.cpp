@@ -75,6 +75,7 @@ void MergeKholleursManager::save() {
                 query.bindValue(":id", khll->getId());
                 query.exec();
                 done(QDialog::Rejected);
+                return;
             }
             query.prepare("INSERT INTO tau_merge_kholleurs(name, id_kholleurs) VALUES(:name, :id_kholleurs)");
             query.bindValue(":name", name);
