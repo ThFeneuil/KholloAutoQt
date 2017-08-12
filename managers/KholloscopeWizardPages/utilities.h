@@ -21,7 +21,7 @@ public:
     static void make_exchange(QSqlDatabase *db, Kholle *current, Timeslot *t_current, Kholle *k, Timeslot *t, int n1, int n2);
     static void quickSort(QList<Timeslot*> *list, int i, int j, QMap<int, float> *probas);
 
-    static int listMax(DataBase *dbase, QList<Timeslot*>, Student*, QDate m_date);
+    static int listMax(DataBase *dbase, QList<Timeslot*>, QMap<int, float> *probas, Student*, QDate m_date);
     static void saveInSql(QSqlDatabase *db, QList<Kholle*>* kholloscope);
 
     static int sum_day(QSqlDatabase *db, int id_user, QDate date);

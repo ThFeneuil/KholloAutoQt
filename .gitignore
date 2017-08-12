@@ -8,9 +8,3 @@ khollo.pro.user
 Makefile.Debug
 *.Release
 object_script.khollo.Debug
-ui_groupsmanager.h
-ui_kholleursmanager.h
-ui_mainwindow.h
-ui_studentsmanager.h
-ui_subjectsmanager.h
-ui_updatestudentdialog.h

@@ -173,14 +173,14 @@ void Utilities::quickSort(QList<Timeslot *> *list, int i, int j, QMap<int, float
     quickSort(list, pivot_index+1, j, probas);
 }
 
-int Utilities::listMax(DataBase *dbase, QList<Timeslot *> list, Student* user, QDate m_date) {
+int Utilities::listMax(DataBase *dbase, QList<Timeslot *> list, QMap<int, float> *probas, Student* user, QDate m_date) {
     /** Returns the highest probability from the list or a very high score if the list is empty
         Attention ! Student must have "kholles" and other properties set (from DataBase) **/
     int i;
     bool is_empty = true;
     int max = 0;
 
-    QMap<int, float> *probas = corrected_proba(dbase, user, list, m_date);
+    //QMap<int, float> *probas = corrected_proba(dbase, user, list, m_date);
 
     for(i = 0; i < list.length(); i++) {
         float p = probas->value(list[i]->getId());
@@ -194,7 +194,7 @@ int Utilities::listMax(DataBase *dbase, QList<Timeslot *> list, Student* user, Q
         }
     }
 
-    delete probas;
+    //delete probas;
 
     if(is_empty)
         return 1000000;

@@ -300,7 +300,7 @@ working_index *GeneratePage::findMax() {
         QList<int> u_keys = poss.value(s_keys[i]).keys();
 
         for(j = 0; j < u_keys.length(); j++) {
-            int score = Utilities::listMax(m_dbase, poss.value(s_keys[i]).value(u_keys[j]), m_dbase->listStudents()->value(u_keys[j]), m_date);
+            int score = Utilities::listMax(m_dbase, poss.value(s_keys[i]).value(u_keys[j]), probabilities.value(s_keys[i]).value(u_keys[j]), m_dbase->listStudents()->value(u_keys[j]), m_date);
             if(is_empty || score > max) {
                 max = score;
                 s_maxs.clear();
