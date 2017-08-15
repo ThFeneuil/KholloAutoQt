@@ -876,7 +876,7 @@ void GeneratePage::display(int *errors, int *warnings) {
     ui->tableKhollo->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     khollo_message  = "========== Génération du " + m_date.toString("dd/MM/yyyy") + " ==========\n";
-    khollo_message += "                            Erreurs et avertissements\n";
+    khollo_message += "                               Furieux et déçus\n";
 
     for(int i = 0; i < kholloscope.length(); i++) {
         Student* student = m_dbase->listStudents()->value(kholloscope[i]->getId_students());
@@ -906,7 +906,7 @@ void GeneratePage::display(int *errors, int *warnings) {
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaine");
             ui->tableKhollo->setItem(i, 1, right);
 
-            khollo_message += student->getName() + " " + student->getFirst_name() + ", " + subject->getShortName() + " : Erreur\n";
+            khollo_message += student->getName() + " " + student->getFirst_name() + ", " + subject->getShortName() + " : Furieux\n";
             (*errors)++;
         }
         else {
@@ -915,7 +915,7 @@ void GeneratePage::display(int *errors, int *warnings) {
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaines");
             ui->tableKhollo->setItem(i, 1, right);
 
-            khollo_message += student->getName() + " " + student->getFirst_name() + ", " + subject->getShortName() + " : Avertissement\n";
+            khollo_message += student->getName() + " " + student->getFirst_name() + ", " + subject->getShortName() + " : Déçu\n";
             (*warnings)++;
         }
         ui->tableKhollo->setItem(i, 0, left);
@@ -986,8 +986,8 @@ void GeneratePage::displayCollision(int *collisions) {
 
 void GeneratePage::displayConclusion(int errors, int warnings, int collisions) {
     QMessageBox::information(this, "Génération terminée", "La génération a abouti et a créé un kholloscope avec"
-                                                          "<ul><li>" + QString::number(errors) + ((errors <= 1) ? " erreur" : " erreurs") +
-                                                          "<li>" + QString::number(warnings) + ((warnings <= 1) ? " avertissement" : " avertissements") +
+                                                          "<ul><li>" + QString::number(errors) + " furieux" +
+                                                          "<li>" + QString::number(warnings) + ((warnings <= 1) ? " déçu" : " déçus") +
                                                           "<li>" + QString::number(collisions) + ((collisions <= 1) ? " collision" : " collisions") + "</ul>");
 }
 
