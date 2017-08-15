@@ -10,6 +10,8 @@ Kholle::Kholle()
     m_timeslot = NULL;
     m_status = OK;
     m_weeks = 0;
+    m_past_id_timeslots.clear();
+    m_id_pb_kholle = -1;
 }
 
 Kholle::~Kholle() {
@@ -40,7 +42,12 @@ int Kholle::status() const {
 int Kholle::weeks() const {
     return m_weeks;
 }
-
+QList<int>* Kholle::past_id_timeslots() {
+    return &m_past_id_timeslots;
+}
+int Kholle::id_pb_kholle() const {
+    return m_id_pb_kholle;
+}
 
 //Setters
 void Kholle::setId(int id) {
@@ -65,6 +72,12 @@ void Kholle::setStatus(Status status) {
 }
 void Kholle::setWeeks(int weeks) {
     m_weeks = weeks;
+}
+void Kholle::setPast_id_timeslots(QList<int> l) {
+    m_past_id_timeslots = l;
+}
+void Kholle::setId_pb_kholle(int id) {
+    m_id_pb_kholle = id;
 }
 
 
@@ -109,12 +122,48 @@ int Kholle::correspondingStatus(int weeks) {
         return (Kholle::Warning);
 }
 
-void Kholle::updateStatus(QMap<int, Timeslot*> *timeslots, QSqlDatabase *db) {
+void Kholle::updateStatus(DataBase *dbase, QSqlDatabase *db, QList<Kholle*> kholloscope, int week) {
     /** Set the status of this kholle **/
+    Timeslot* ts_current = dbase->listTimeslots()->value(this->getId_timeslots());
 
-    int weeks = this->nearest(timeslots, db);
+    stat_info *info = Kholle::calculateStatus(db, dbase, this->getId_students(), ts_current, week, kholloscope, this->getId());
 
-    this->setStatus((Kholle::Status) Kholle::correspondingStatus(weeks));
-    this->setWeeks(weeks);
+    this->setStatus((Kholle::Status) info->status);
+    this->setWeeks(info->weeks);
+    this->setId_pb_kholle(info->id_pb_kholle);
+    free(info);
 }
 
+stat_info* Kholle::calculateStatus(QSqlDatabase *db, DataBase *dbase, int id_user, Timeslot *t, int week, QList<Kholle *> kholloscope, int id_kholle) {
+    /** Calculate status of this hypothetical kholle, including incompatible and impossible **/
+
+    stat_info *info = (stat_info*) malloc(sizeof(stat_info));
+    int id_pb_kholle = -1;
+    bool compat = Utilities::compatible(db, dbase, id_user, t, week, id_kholle, &id_pb_kholle);
+
+    if(compat) {
+        int weeks = nearestKholle(db, dbase->listTimeslots(), id_user, t, id_kholle);
+        info->weeks = weeks;
+        info->status = correspondingStatus(weeks);
+    }
+    else {
+        info->weeks = -1;
+        if(kholloscope_contains(id_pb_kholle, kholloscope)) {
+            info->status = Kholle::Incompatible;
+        }
+        else {
+            info->status = Kholle::Impossible;
+        }
+    }
+    info->id_pb_kholle = id_pb_kholle;
+
+    return info;
+}
+
+bool Kholle::kholloscope_contains(int id, QList<Kholle *> kholloscope) {
+    for(int i = 0; i < kholloscope.length(); i++) {
+        if(id == kholloscope[i]->getId())
+            return true;
+    }
+    return false;
+}

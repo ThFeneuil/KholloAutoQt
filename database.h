@@ -16,6 +16,15 @@
 #include "storedData/event.h"
 #include "storedData/kholle.h"
 
+class Student;
+class Group;
+class Subject;
+class Kholleur;
+class Course;
+class Timeslot;
+class Event;
+class Kholle;
+
 class DataBase
 {
 public:

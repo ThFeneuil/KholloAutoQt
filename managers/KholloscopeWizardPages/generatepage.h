@@ -28,8 +28,8 @@
 #include "printpdf.h"
 #include "utilities.h"
 
-#define TIMEOUT_INT 20000 //in msec
-#define MAX_ITERATION 10
+#define TIMEOUT_INT 30000 //in msec
+#define MAX_ITERATION 100
 
 struct working_index {
     int current_student;
@@ -71,8 +71,8 @@ public:
     bool exchange(int index, ExchangeType type, int score_limit);
 
     void force();
-    bool treatImpossible(int index);
-    bool remainImpossible();
+    bool treatImpossible(int index, Kholle::Status stat_correct);
+    int remainImpossible(Kholle::Status stat);
 
     void display(int *errors, int *warnings);
     void displayCollision(int *collisions);
