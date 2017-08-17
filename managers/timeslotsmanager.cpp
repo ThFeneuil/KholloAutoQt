@@ -400,8 +400,8 @@ void TimeslotsManager::downloadedTimeslots(ODBRequest *req) {
 
     delete req;
     ui->dowloadButton->setText("Télécharger");
-    QList<QListWidgetItem*> selection = ui->listKholleurs->selectedItems();
     getKholleurs();
+    QList<QListWidgetItem*> selection = ui->listKholleurs->selectedItems();
     if(selection.length() > 0) {
         update_list_timeslots(((Kholleur*) selection[0]->data(Qt::UserRole).toULongLong())->getId());
     }
