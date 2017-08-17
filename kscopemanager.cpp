@@ -351,8 +351,8 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
 
             if(qCompatibility.lastError().isValid()) {
                 /// If no, remove the column teacher
-                int res = QMessageBox::warning(NULL, "Vieux fichier", "Le fichier que vous tentez d'ouvrir a été généré par une ancienne version du logiciel, et donc doit subir une opération irréversible pour fonctionner correctement sur cette version."
-                                     "Cette opération vous empéchera de retravailler avec ce fichier sur une version plus ancienne. Voulez-vous effectuer cette opération ?", QMessageBox::Yes | QMessageBox::No);
+                int res = QMessageBox::warning(NULL, "Vieux fichier", "Le fichier que vous tentez d'ouvrir a été généré par une ancienne version du logiciel, et doit donc subir une opération irréversible pour fonctionner correctement sur cette version. "
+                                     "Cette opération vous empêchera de retravailler avec ce fichier sur une version plus ancienne. Voulez-vous effectuer cette opération ?", QMessageBox::Yes | QMessageBox::No);
                 if(res == QMessageBox::Yes) {
                     qCompatibility.exec("ALTER TABLE tau_courses RENAME TO tau_courses_compatibility;");
                     qCompatibility.exec("CREATE TABLE `tau_courses` ( "
