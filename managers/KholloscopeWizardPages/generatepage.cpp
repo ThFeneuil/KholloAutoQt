@@ -61,6 +61,15 @@ void GeneratePage::initializePage() {
     m_timeout = false;
     freeKholles();
 
+    //Open log file
+    log_file = new QFile(QCoreApplication::applicationDirPath() + QDir::separator() + "gen_log.txt");
+    if(!log_file->open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)) {
+        delete log_file;
+        log_file = NULL;
+    }
+
+    QTextStream out(log_file);
+
     //Reinitialise DataBase object
     if(m_dbase != NULL)
         delete m_dbase;
@@ -84,15 +93,11 @@ void GeneratePage::initializePage() {
     //Connect watcher to slot...
     connect(&m_watcher, SIGNAL(finished()), this, SLOT(finished()));
 
-    //Open log file
-    log_file = new QFile(QCoreApplication::applicationDirPath() + QDir::separator() + "gen_log.txt");
-    if(!log_file->open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)) {
-        delete log_file;
-        log_file = NULL;
-    }
-
     //Prepare the table
     constructPoss();
+
+    if(log_file != NULL)
+        out << "\n\n Début de la génération...\n";
 
     //Start work in separate thread
     QFuture<bool> future = QtConcurrent::run(this, &GeneratePage::generate);
@@ -167,6 +172,11 @@ void GeneratePage::constructPoss() {
 
     //Create stream around log_file
     QTextStream out(log_file);
+
+    if(log_file != NULL) {
+        out << "GENERATION DU " << m_date.toString("dd/MM/yyyy") << "\n\nInitialisation de la base de données...\n";
+        out << "Construction de la table des possibilités, avec les scores suivants : \n\n";
+    }
 
     //Get selected subjects
     QList<Subject*> *selected_subjects = ((KholloscopeWizard*) wizard())->get_assoc_subjects();
@@ -425,25 +435,33 @@ void GeneratePage::finished() {
     /** Called when the background process finishes **/
     timestamp = QString::number(QDateTime::currentMSecsSinceEpoch());
 
-    if(log_file != NULL) {
-        delete log_file;
-        log_file = NULL;
-    }
+    QTextStream out(log_file);
+
     m_db->transaction();
 
     if(m_timeout) {
-        qDebug() << "timeout";
+        if(log_file != NULL)
+            out << "Timeout ! (" << QString::number(TIMEOUT_INT / 1000) << " s)\n";
         force();
     }
+
+    if(log_file != NULL)
+        out << "Fin du premier jet...\n" << "Timestamp : " << timestamp << "\n\n";
 
     Utilities::saveInSql(m_db, &kholloscope);
 
     setStatus();
 
-    if(!m_watcher.future().result() && !m_timeout)
+    if(!m_watcher.future().result() && !m_timeout) {
+        if(log_file != NULL)
+            out << "Echec de la génération...\n" << "Affichage de l'endroit du blockage.\n\n";
         displayBlocking();
+    }
     else {
         if(m_timeout) {
+            if(log_file != NULL)
+                out << "Traitement des kholles impossibles et incompatibles...\n\n";
+
             for(int i = 0; i < MAX_ITERATION && (remainImpossible(Kholle::Impossible) != -1 || remainImpossible(Kholle::Incompatible) != -1); i++) {
                 ///First phase : treat impossible
                 for(int i = 0; i < MAX_ITERATION && remainImpossible(Kholle::Impossible) != -1; i++)
@@ -468,6 +486,8 @@ void GeneratePage::finished() {
             }
 
             if(index != -1) {
+                if(log_file != NULL)
+                    out << "Echec de la génération...\n" << "Affichage de l'endroit du blockage.\n\n";
                 m_box->hide();
                 displayBlocking();
                 freeKholles();
@@ -476,21 +496,39 @@ void GeneratePage::finished() {
             }
         }
 
+        if(log_file != NULL)
+            out << "Traitement des collisions...\n";
         exchange(0, Collisions, 0);
+
+        if(log_file != NULL)
+            out << "Traitement des furieux et déçus...\n";
         exchange(0, Warnings, 40);
+
+        if(log_file != NULL)
+            out << "Amélioration du score...\n\n";
         exchange(0, All, 15);
     }
     /*m_db->rollback();
     m_db->transaction();
     saveInSql();*/
 
+    if(log_file != NULL)
+        out << "Affichage du kholloscope...\n";
     int errors = 0, warnings = 0, collisions = 0;
     display(&errors, &warnings);
     displayCollision(&collisions);
     m_box->hide();
 
-    if(m_watcher.future().result() || m_timeout)
+    if(m_watcher.future().result() || m_timeout) {
+        if(log_file != NULL)
+            out << "Affichage de la conclusion...\n" << "Génération réussie !!\n\n";
         displayConclusion(errors, warnings, collisions);
+    }
+
+    if(log_file != NULL) {
+        delete log_file;
+        log_file = NULL;
+    }
 }
 
 void GeneratePage::abort() {
@@ -876,7 +914,7 @@ void GeneratePage::display(int *errors, int *warnings) {
     ui->tableKhollo->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     khollo_message  = "========== Génération du " + m_date.toString("dd/MM/yyyy") + " ==========\n";
-    khollo_message += "                               Furieux et déçus\n";
+    khollo_message += "                                    Furieux et déçus\n\n";
 
     for(int i = 0; i < kholloscope.length(); i++) {
         Student* student = m_dbase->listStudents()->value(kholloscope[i]->getId_students());
@@ -930,7 +968,7 @@ void GeneratePage::displayCollision(int *collisions) {
     m_dbase->load();
 
     collisions_message  = "========== Génération du " + m_date.toString("dd/MM/yyyy") + " ==========\n";
-    collisions_message += "                                         Collisions\n";
+    collisions_message += "                                         Collisions\n\n";
 
     ui->tableCollision->clear();
     ui->tableCollision->setRowCount(0);
