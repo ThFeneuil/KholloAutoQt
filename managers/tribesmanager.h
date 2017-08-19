@@ -6,6 +6,7 @@
 #include <QQueue>
 #include "storedData/subject.h"
 #include "storedData/student.h"
+#include "notepad.h"
 
 namespace Ui {
 class TribesManager;
@@ -37,6 +38,7 @@ private:
     QQueue<Subject*> queue_displayedSubjects;
     QList<Student*> list_displayedStudents;
     QMap<int, QString> map_students_tribes;
+    QAction* m_shortcutNotepad;
 };
 
 #endif // TRIBESMANAGER_H

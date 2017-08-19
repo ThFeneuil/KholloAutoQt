@@ -14,6 +14,9 @@ TribesManager::TribesManager(QSqlDatabase *db, QWidget *parent) :
     connect(ui->list_subjects, SIGNAL(itemSelectionChanged()), this, SLOT(selectionChanged()));
     connect(ui->btn_associate, SIGNAL(clicked()), this, SLOT(associate()));
     connect(ui->list_students, SIGNAL(itemSelectionChanged()), this, SLOT(studentsChanged()));
+
+    m_shortcutNotepad = Notepad::shortcut();
+    this->addAction(m_shortcutNotepad);
 }
 
 TribesManager::~TribesManager()
