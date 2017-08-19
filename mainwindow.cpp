@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_Schedule_Students_Groups, SIGNAL(triggered()), this, SLOT(openUsersGroupsManager()));
     connect(ui->action_Schedule_Timetable, SIGNAL(triggered()), this, SLOT(openCoursesManager()));
     connect(ui->action_Schedule_Swapping_Groups, SIGNAL(triggered()), this, SLOT(openGroupsSwappingsManager()));
+    connect(ui->action_Schedule_Tribes, SIGNAL(triggered()), this, SLOT(openTribesManager()));
     connect(ui->action_Schedule_Kholles, SIGNAL(triggered()), this, SLOT(openTimeslotsManager()));
     connect(ui->action_Schedule_Events, SIGNAL(triggered()), this, SLOT(openEventsManager()));
     connect(ui->action_Kholles_Interface, SIGNAL(triggered()), this, SLOT(openInterface()));
@@ -164,6 +165,20 @@ void MainWindow::openGroupsSwappingsManager() {
     if(db.isOpen()) {
         // Open the manager
         GroupsSwappingsManager manager(&db, this);
+        manager.exec();
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
+    }
+}
+
+void MainWindow::openTribesManager() {
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if(db.isOpen()) {
+        // Open the manager
+        TribesManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -384,6 +399,7 @@ void MainWindow::updateWindow() {
     ui->action_Schedule_Timetable->setEnabled(db.isOpen());
     ui->action_Schedule_Students_Groups->setEnabled(db.isOpen());
     ui->action_Schedule_Swapping_Groups->setEnabled(db.isOpen());
+    ui->action_Schedule_Tribes->setEnabled(db.isOpen());
     ui->action_Schedule_Kholles->setEnabled(db.isOpen());
     ui->action_Schedule_Events->setEnabled(db.isOpen());
     ui->action_Kholles_Interface->setEnabled(db.isOpen());

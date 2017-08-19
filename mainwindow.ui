@@ -85,6 +85,7 @@
     <addaction name="action_Schedule_Timetable"/>
     <addaction name="action_Schedule_Students_Groups"/>
     <addaction name="action_Schedule_Swapping_Groups"/>
+    <addaction name="action_Schedule_Tribes"/>
     <addaction name="action_Schedule_Kholles"/>
     <addaction name="action_Schedule_Events"/>
    </widget>
@@ -259,6 +260,11 @@
   <action name="action_File_Settings">
    <property name="text">
     <string>P&amp;aramètres</string>
+   </property>
+  </action>
+  <action name="action_Schedule_Tribes">
+   <property name="text">
+    <string>&amp;Tribus de kholles</string>
    </property>
   </action>
  </widget>

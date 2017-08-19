@@ -34,7 +34,8 @@ FORMS += \
     interface/interfacedialog_mac.ui \
     interface/interfacetab_mac.ui \
     managers/timetablemanager.ui \
-    managers/mergekholleursmanager.ui
+    managers/mergekholleursmanager.ui \
+    managers/tribesmanager.ui
 
 HEADERS += \
     mainwindow.h \
@@ -84,7 +85,9 @@ HEADERS += \
     managers/timetablemanager.h \
     managers/timetable.h \
     onlinedatabase.h \
-    managers/mergekholleursmanager.h
+    managers/mergekholleursmanager.h \
+    managers/tribesmanager.h
+
 
 SOURCES += \
     mainwindow.cpp \
@@ -135,7 +138,8 @@ SOURCES += \
     managers/timetablemanager.cpp \
     managers/timetable.cpp \
     onlinedatabase.cpp \
-    managers/mergekholleursmanager.cpp
+    managers/mergekholleursmanager.cpp \
+    managers/tribesmanager.cpp
 	
 DISTFILES +=
 
