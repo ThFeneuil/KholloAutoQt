@@ -1,5 +1,69 @@
 #include "onlinedatabase.h"
 
+/// TO PREPARE A QUERY
+
+ODBSqlQuery::ODBSqlQuery(const QObject *receiver, const char *method) {
+    m_receiver = receiver;
+    m_method = method;
+}
+
+ODBSqlQuery::~ODBSqlQuery() {
+
+}
+
+bool ODBSqlQuery::prepare(QString query) {
+    m_query = query;
+    return true;
+}
+
+bool ODBSqlQuery::bindValue(QString key, QVariant value) {
+    if(key.length() > 0 && key[0] == ':')
+        key = key.right(key.length()-1);
+    m_data.insert(key, value);
+    return true;
+}
+
+ODBRequest *ODBSqlQuery::exec() {
+    const QNetworkRequest request(url_db); //On crée notre requête
+
+    QNetworkAccessManager *m = new QNetworkAccessManager;
+    QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+    QMapIterator<QString, QVariant> iData(m_data);
+    while(iData.hasNext()) {
+        iData.next();
+
+        QHttpPart textPart;
+        textPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"$"+iData.key()+"\""));
+        textPart.setBody(iData.value().toString().toLatin1());
+        multiPart->append(textPart);
+    }
+    QHttpPart passwordPart;
+    passwordPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"#password\""));
+    passwordPart.setBody(password_db.toLatin1());
+    multiPart->append(passwordPart);
+    QHttpPart queryPart;
+    queryPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"#query\""));
+    queryPart.setBody(m_query.toLatin1());
+    multiPart->append(queryPart);
+
+    QNetworkReply *r = m->post(request, multiPart);
+
+    ODBRequest* req = new ODBRequest(r, m_receiver, m_method);
+    return req;
+}
+
+ODBRequest* ODBSqlQuery::exec(QString query) {
+    prepare(query);
+    return exec();
+}
+
+ODBRequest* sendQueryODB(QString query, const QObject *receiver, const char *method) {
+    ODBSqlQuery q(receiver, method);
+    return q.exec(query);
+}
+
+/// TO GET THE RESULT OF A QUERY
+
 ODBRequest::ODBRequest(QNetworkReply* r, const QObject *receiver, const char *method) :
     QObject()
 {
@@ -83,15 +147,4 @@ QList<QMap<QString, QVariant>*>* ODBRequest::result() {
 
 QString ODBRequest::lastError() {
     return m_lastError;
-}
-
-ODBRequest* sendQueryODB(QString query, const QObject *receiver, const char *method) {
-    const QNetworkRequest request(url_db); //On crée notre requête
-
-    QNetworkAccessManager *m = new QNetworkAccessManager;
-    QString test("password="+password_db+"&query="+query+"");
-    QNetworkReply *r = m->post(request, test.toLatin1());
-
-    ODBRequest* req = new ODBRequest(r, receiver, method);
-    return req;
 }

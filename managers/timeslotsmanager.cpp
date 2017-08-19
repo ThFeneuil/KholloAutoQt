@@ -325,7 +325,12 @@ void TimeslotsManager::downloadTimeslots() {
         QMessageBox::critical(this, "Erreur", "Le nom de la classe doit posséder au plus 10 caractères...");
     } else {
         ui->dowloadButton->setText("Téléchargement...");
-        askODB("SELECT id, time, time_start, time_end, kholleur, date, nb_pupils FROM spark_timeslots WHERE class='"+name_class+"' AND date>='"+m_date.toString("yyyy-MM-dd")+"' AND date<='"+m_date.addDays(6).toString("yyyy-MM-dd")+"' ORDER BY UPPER(kholleur);", this, downloadedTimeslots);
+        ODBSqlQuery query(INTO(this, downloadedTimeslots));
+        query.prepare("SELECT id, time, time_start, time_end, kholleur, date, nb_pupils FROM spark_timeslots WHERE class=:class AND date>=:start AND date<=:end ORDER BY UPPER(kholleur);");
+        query.bindValue(":class", name_class);
+        query.bindValue(":start", m_date.toString("yyyy-MM-dd"));
+        query.bindValue(":end", m_date.addDays(6).toString("yyyy-MM-dd"));
+        query.exec();
     }
 }
 
