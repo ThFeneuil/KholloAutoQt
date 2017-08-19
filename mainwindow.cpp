@@ -304,8 +304,9 @@ void MainWindow::openAboutIt() {
 }
 
 void MainWindow::openHelp(){
-    ContactDialog dialog(this);
-    dialog.exec();
+    bool success = QDesktopServices::openUrl(QUrl("file:///"+QApplication::applicationDirPath()+"/tutoriels", QUrl::TolerantMode));
+    if(! success)
+        QDesktopServices::openUrl(QUrl("file:///"+QApplication::applicationDirPath(), QUrl::TolerantMode));
 }
 
 void MainWindow::openSettings() {

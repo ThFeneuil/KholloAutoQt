@@ -23,7 +23,6 @@ FORMS += \
     managers/introtimeslots.ui \
     managers/copytimeslots.ui \
     aboutitdialog.ui \
-    contactdialog.ui \
     reviewdialog.ui \
     managers/lastchanges.ui \
     managers/updatetimeslotdialog.ui \
@@ -70,7 +69,6 @@ HEADERS += \
     managers/copytimeslots.h \
     database.h \
     aboutitdialog.h \
-    contactdialog.h \
     reviewdialog.h \
     printpdf.h \
     managers/lastchanges.h \
@@ -123,7 +121,6 @@ SOURCES += \
     managers/copytimeslots.cpp \
     database.cpp \
     aboutitdialog.cpp \
-    contactdialog.cpp \
     reviewdialog.cpp \
     printpdf.cpp \
     managers/lastchanges.cpp \
@@ -146,7 +143,7 @@ DISTFILES +=
 RESOURCES += \
     khollo.qrc
 
-VERSION = 1.1
+VERSION = 1.2
 DEFINES += "APP_VERSION='$$VERSION'"
 QMAKE_TARGET_PRODUCT = "SPARK\0"
 

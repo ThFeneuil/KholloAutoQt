@@ -6,6 +6,7 @@
 #include <QByteArray>
 #include <QTimer>
 #include <QtGlobal>
+#include <QDesktopServices>
 #include "managers/studentsmanager.h"
 #include "managers/groupsmanager.h"
 #include "managers/subjectsmanager.h"
@@ -20,7 +21,6 @@
 #include "interface/introinterface.h"
 #include "managers/lastchanges.h"
 #include "aboutitdialog.h"
-#include "contactdialog.h"
 #include "reviewdialog.h"
 #include "kscopemanager.h"
 #include "settingsdialog.h"
