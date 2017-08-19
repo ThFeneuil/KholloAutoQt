@@ -324,6 +324,7 @@ void TimeslotsManager::downloadTimeslots() {
     if(name_class.length() > 10) {
         QMessageBox::critical(this, "Erreur", "Le nom de la classe doit posséder au plus 10 caractères...");
     } else {
+        ui->dowloadButton->setEnabled(false);
         ui->dowloadButton->setText("Téléchargement...");
         ODBSqlQuery query(INTO(this, downloadedTimeslots));
         query.prepare("SELECT id, time, time_start, time_end, kholleur, date, nb_pupils FROM spark_timeslots WHERE class=:class AND date>=:start AND date<=:end ORDER BY UPPER(kholleur);");
@@ -363,6 +364,7 @@ void TimeslotsManager::downloadedTimeslots(ODBRequest *req) {
             MergeKholleursManager manager(m_db, anonymousKholleurs, idKholleurs, this);
             if(manager.exec() == QDialog::Rejected) {
                 ui->dowloadButton->setText("Télécharger");
+                ui->dowloadButton->setEnabled(true);
                 delete req;
                 QMessageBox::information(this, "Opération anulée", "Téléchargement annulé...");
                 return;
@@ -405,6 +407,7 @@ void TimeslotsManager::downloadedTimeslots(ODBRequest *req) {
 
     delete req;
     ui->dowloadButton->setText("Télécharger");
+    ui->dowloadButton->setEnabled(true);
     getKholleurs();
     QList<QListWidgetItem*> selection = ui->listKholleurs->selectedItems();
     if(selection.length() > 0) {

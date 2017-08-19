@@ -235,7 +235,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Contacts</string>
+    <string>&amp;Tutoriels</string>
    </property>
   </action>
   <action name="action_AboutIt">
