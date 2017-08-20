@@ -84,7 +84,8 @@ HEADERS += \
     managers/timetable.h \
     onlinedatabase.h \
     managers/mergekholleursmanager.h \
-    managers/tribesmanager.h
+    managers/tribesmanager.h \
+    managers/studentsimportmanager.h
 
 
 SOURCES += \
@@ -136,7 +137,8 @@ SOURCES += \
     managers/timetable.cpp \
     onlinedatabase.cpp \
     managers/mergekholleursmanager.cpp \
-    managers/tribesmanager.cpp
+    managers/tribesmanager.cpp \
+    managers/studentsimportmanager.cpp
 	
 DISTFILES +=
 
