@@ -178,6 +178,7 @@ void TribesManager::associate() {
     QList<QListWidgetItem*> students = ui->list_students->selectedItems();
 
     //Treat students
+    m_db->transaction();
     for(int i = 0; i < students.length(); i++) {
         Student *s = (Student*) students[i]->data(Qt::UserRole).toULongLong();
 
@@ -213,6 +214,7 @@ void TribesManager::associate() {
             }
         }
     }
+    m_db->commit();
 
     selectionChanged();
 }
