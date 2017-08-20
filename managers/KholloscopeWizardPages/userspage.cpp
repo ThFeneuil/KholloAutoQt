@@ -29,20 +29,34 @@ void UsersPage::initializePage() {
     //Display the tabs and populate each tab
     int i;
     for(i = 0; i < list_selected_subjects->length(); i++) {
+        //The list for selection
         QListWidget *list = new QListWidget();
         populate(list, list_selected_subjects->at(i)->getId());
         list->setSelectionMode(QAbstractItemView::MultiSelection);
 
+        //The button for loading tribes
+        QHBoxLayout *hbox = new QHBoxLayout();
+        hbox->addWidget(new QLabel("Charger une tribu :"));
+        QComboBox *box = new QComboBox();
+        populateCombo(box, list_selected_subjects->at(i)->getId());
+        hbox->addWidget(box);
+        QPushButton *btn = new QPushButton("Charger");
+        hbox->addWidget(btn);
+
+        //The vertical layout
         QVBoxLayout *layout = new QVBoxLayout();
+        layout->addLayout(hbox);
         layout->addWidget(list);
         layout->addWidget(new QLabel("0 élève sélectionné"));
 
+        //Adding the tab
         QWidget *widget = new QWidget();
         widget->setLayout(layout);
         ui->tabWidget->addTab(widget, list_selected_subjects->at(i)->getShortName());
                 //addTab(list, list_selected_subjects->at(i)->getShortName());
 
         connect(list, SIGNAL(itemSelectionChanged()), this, SLOT(selection_changed()));
+        connect(btn, SIGNAL(clicked()), this, SLOT(load_tribe()));
     }
 
     QDate nextMonday = QDate::currentDate();
@@ -107,6 +121,22 @@ void UsersPage::populate(QListWidget *list, int id_subject) {
     }
 }
 
+void UsersPage::populateCombo(QComboBox *box, int id_subject) {
+    //Empty combo
+    box->clear();
+
+    //Load tribes in this subject
+    QSqlQuery query(*m_db);
+    query.prepare("SELECT DISTINCT name_tribe FROM tau_tribes WHERE id_subjects=:id_subjects ORDER BY UPPER(name_tribe)");
+    query.bindValue(":id_subjects", id_subject);
+    query.exec();
+
+    //Populate combo
+    while(query.next()) {
+        box->addItem(query.value(0).toString());
+    }
+}
+
 void UsersPage::selection_changed() {
     QMap<int, QList<Student*> > *input = ((KholloscopeWizard*) wizard())->get_input();
 
@@ -115,8 +145,8 @@ void UsersPage::selection_changed() {
         return;
 
     QLayout *layout = (QLayout*) ui->tabWidget->widget(i)->layout();
-    QListWidget *list = (QListWidget*) layout->itemAt(0)->widget();;
-    QLabel *label = (QLabel*) layout->itemAt(1)->widget();
+    QListWidget *list = (QListWidget*) layout->itemAt(1)->widget();
+    QLabel *label = (QLabel*) layout->itemAt(2)->widget();
 
     QList<QListWidgetItem*> selection = list->selectedItems();
     QList<Student*> students;
@@ -128,4 +158,41 @@ void UsersPage::selection_changed() {
 
     QString text = QString::number(selection.length()) + (selection.length() <= 1 ? " élève sélectionné" : " élèves sélectionnés");
     label->setText(text);
+}
+
+void UsersPage::load_tribe() {
+    //Get pointer to combo and list
+    int i = ui->tabWidget->currentIndex();
+    if(i == -1)
+        return;
+
+    QLayout *layout = (QLayout*) ui->tabWidget->widget(i)->layout();
+    QLayout *hbox = (QLayout*) layout->itemAt(0)->layout();
+    QComboBox *combo = (QComboBox*) hbox->itemAt(1)->widget();
+    QListWidget *list = (QListWidget*) layout->itemAt(1)->widget();
+
+    //Create map of selected students
+    QList<Student*>* students = ((KholloscopeWizard*) wizard())->get_students();
+    QMap<int, bool> concerned;
+
+    for(int j = 0; j < students->length(); j++) {
+        concerned.insert(students->at(j)->getId(), false);
+    }
+
+    //Load the selected students
+    QString tribe_name = combo->currentText();
+    QSqlQuery query(*m_db);
+    query.prepare("SELECT id_students FROM tau_tribes WHERE id_subjects=:id_subjects AND name_tribe=:tribe_name");
+    query.bindValue(":id_subjects", list_selected_subjects->at(i)->getId());
+    query.bindValue(":tribe_name", tribe_name);
+    query.exec();
+
+    while(query.next()) {
+        concerned[query.value(0).toInt()] = true;
+    }
+
+    //Change selection in list
+    for(int j = 0; j < list->count(); j++) {
+        list->item(j)->setSelected(concerned.value(students->at(j)->getId()));
+    }
 }

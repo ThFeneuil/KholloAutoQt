@@ -28,9 +28,11 @@ public:
     void cleanupPage();
     void get_selected_subjects();
     void populate(QListWidget *list, int id_subject);
+    void populateCombo(QComboBox *box, int id_subject);
 
 public slots:
     void selection_changed();
+    void load_tribe();
 
 private:
     Ui::UsersPage *ui;
