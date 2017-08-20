@@ -182,7 +182,7 @@ void UsersPage::load_tribe() {
     //Load the selected students
     QString tribe_name = combo->currentText();
     QSqlQuery query(*m_db);
-    query.prepare("SELECT id_students FROM tau_tribes WHERE id_subjects=:id_subjects AND name_tribe=:tribe_name");
+    query.prepare("SELECT id_users FROM tau_tribes WHERE id_subjects=:id_subjects AND name_tribe=:tribe_name");
     query.bindValue(":id_subjects", list_selected_subjects->at(i)->getId());
     query.bindValue(":tribe_name", tribe_name);
     query.exec();

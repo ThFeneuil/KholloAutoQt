@@ -86,7 +86,7 @@ void TribesManager::updateStudentList(int id_subject) {
     map_students_tribes.clear();
 
     QSqlQuery query(*m_db);
-    query.prepare("SELECT id_students, name_tribe FROM tau_tribes WHERE id_subjects=:id_subjects");
+    query.prepare("SELECT id_users, name_tribe FROM tau_tribes WHERE id_subjects=:id_subjects");
     query.bindValue(":id_subjects", id_subject);
     query.exec();
 
@@ -187,7 +187,7 @@ void TribesManager::associate() {
             if(tribe_name.toUpper() == "AUCUNE TRIBU") {
                 //Delete
                 QSqlQuery delete_query(*m_db);
-                delete_query.prepare("DELETE FROM tau_tribes WHERE id_subjects=:id_subjects AND id_students=:id_students");
+                delete_query.prepare("DELETE FROM tau_tribes WHERE id_subjects=:id_subjects AND id_users=:id_students");
                 delete_query.bindValue(":id_subjects", id_subject);
                 delete_query.bindValue(":id_students", s->getId());
                 delete_query.exec();
@@ -195,7 +195,7 @@ void TribesManager::associate() {
             else {
                 //Update
                 QSqlQuery update_query(*m_db);
-                update_query.prepare("UPDATE tau_tribes SET name_tribe=:tribe_name WHERE id_subjects=:id_subjects AND id_students=:id_students");
+                update_query.prepare("UPDATE tau_tribes SET name_tribe=:tribe_name WHERE id_subjects=:id_subjects AND id_users=:id_students");
                 update_query.bindValue(":tribe_name", tribe_name);
                 update_query.bindValue(":id_subjects", id_subject);
                 update_query.bindValue(":id_students", s->getId());
@@ -206,7 +206,7 @@ void TribesManager::associate() {
             if(tribe_name.toUpper() != "AUCUNE TRIBU") {
                 //Insert
                 QSqlQuery insert_query(*m_db);
-                insert_query.prepare("INSERT INTO tau_tribes(id_subjects, id_students, name_tribe) VALUES(:id_subjects, :id_students, :tribe_name)");
+                insert_query.prepare("INSERT INTO tau_tribes(id_subjects, id_users, name_tribe) VALUES(:id_subjects, :id_students, :tribe_name)");
                 insert_query.bindValue(":id_subjects", id_subject);
                 insert_query.bindValue(":id_students", s->getId());
                 insert_query.bindValue(":tribe_name", tribe_name);

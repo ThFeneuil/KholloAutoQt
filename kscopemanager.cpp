@@ -319,14 +319,14 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             case Create:
             qCreate.exec("CREATE TABLE `tau_tribes` ( "
                           "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
-                          "`id_students`	INTEGER NOT NULL DEFAULT 0, "
+                          "`id_users`	INTEGER NOT NULL DEFAULT 0, "
                           "`id_subjects`	INTEGER NOT NULL DEFAULT 0, "
                           "`name_tribe`    TEXT NOT NULL DEFAULT '' "
                       ");");
             break;
             case Check:
                 columns.insert("id", Id);
-                columns.insert("id_students", Int);
+                columns.insert("id_users", Int);
                 columns.insert("id_subjects", Int);
                 columns.insert("name_tribe", Text);
             break;
