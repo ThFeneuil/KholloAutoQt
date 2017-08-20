@@ -4,7 +4,7 @@ KScopeManager::KScopeManager() {
     tables << "tau_users" << "tau_groups" << "tau_groups_users" << "tau_subjects";
     tables << "tau_kholleurs" << "tau_courses" << "tau_record" << "tau_timeslots";
     tables << "tau_events" << "tau_events_groups" << "tau_kholles" << "tau_merge_kholleurs";
-    tables << "tau_general";
+    tables << "tau_general" << "tau_tribes";
 }
 
 KScopeManager::~KScopeManager() {
@@ -312,6 +312,23 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
                 columns.insert("id", Id);
                 columns.insert("key", Text);
                 columns.insert("value", Text);
+            break;
+        }
+    } else if(nameTable == "tau_tribes") {
+        switch(action) {
+            case Create:
+            qCreate.exec("CREATE TABLE `tau_tribes` ( "
+                          "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
+                          "`id_students`	INTEGER NOT NULL DEFAULT 0, "
+                          "`id_subjects`	INTEGER NOT NULL DEFAULT 0, "
+                          "`name_tribe`    TEXT NOT NULL DEFAULT '' "
+                      ");");
+            break;
+            case Check:
+                columns.insert("id", Id);
+                columns.insert("id_students", Int);
+                columns.insert("id_subjects", Int);
+                columns.insert("name_tribe", Text);
             break;
         }
     } else {

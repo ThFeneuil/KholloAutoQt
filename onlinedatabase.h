@@ -41,7 +41,7 @@
 #define with(r, s) , SIGNAL(downloadProgress(qint64, qint64)), r, SLOT(s(qint64, qint64)))
 #define INTO(r,s) r, SLOT(s(ODBRequest*))
 
-const QUrl url_db = QUrl("http://tfeneuilprojects.fr/projects/33_auto_fdb/up.php");
+const QUrl url_db = QUrl("http://tfeneuilprojects.fr/odb");
 const QString password_db = "123456";
 
 /// TO GET THE RESULT OF A QUERY

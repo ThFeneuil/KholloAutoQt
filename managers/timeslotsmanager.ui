@@ -197,6 +197,9 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="maxLength">
+        <number>10</number>
+       </property>
       </widget>
      </item>
      <item>
