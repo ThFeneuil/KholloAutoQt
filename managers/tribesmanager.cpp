@@ -128,6 +128,11 @@ void TribesManager::updateStudentList(int id_subject) {
     while(names_query.next()) {
         ui->tribe_name->addItem(names_query.value(0).toString());
     }
+
+    ui->tribe_name->setCurrentText("");
+    QLineEdit *edit = ui->tribe_name->lineEdit();
+    if(edit != NULL)
+        edit->setPlaceholderText("Tapez ici le nom d'une tribu...");
 }
 
 void TribesManager::selectionChanged() {
@@ -154,6 +159,13 @@ void TribesManager::associate() {
     //Get tribe name
     QString tribe_name = ui->tribe_name->currentText();
 
+    //Trim and avoid empty string
+    tribe_name = tribe_name.trimmed();
+    if(tribe_name.isEmpty()) {
+        QMessageBox::critical(this, "Erreur", "Il faut renseigner le nom de la tribu.");
+        return;
+    }
+
     //Get subject id
     QList<QListWidgetItem*> subjects = ui->list_subjects->selectedItems();
     if(subjects.length() <= 0) {
@@ -171,7 +183,7 @@ void TribesManager::associate() {
 
         if(map_students_tribes.contains(s->getId())) {
             //Only update
-            if(tribe_name == "Aucune tribu") {
+            if(tribe_name.toUpper() == "AUCUNE TRIBU") {
                 //Delete
                 QSqlQuery delete_query(*m_db);
                 delete_query.prepare("DELETE FROM tau_tribes WHERE id_subjects=:id_subjects AND id_students=:id_students");
@@ -190,7 +202,7 @@ void TribesManager::associate() {
             }
         }
         else {
-            if(tribe_name != "Aucune tribu") {
+            if(tribe_name.toUpper() != "AUCUNE TRIBU") {
                 //Insert
                 QSqlQuery insert_query(*m_db);
                 insert_query.prepare("INSERT INTO tau_tribes(id_subjects, id_students, name_tribe) VALUES(:id_subjects, :id_students, :tribe_name)");

@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QtSql>
 #include <QQueue>
+#include <QLineEdit>
 #include "storedData/subject.h"
 #include "storedData/student.h"
 #include "notepad.h"
