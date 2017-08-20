@@ -315,7 +315,6 @@ void MainWindow::openSettings() {
 }
 
 void MainWindow::createKhollo() {
-    record(false);
     //Try to load directory preferences
     Preferences pref;
     QString pref_path = pref.dir();
@@ -329,6 +328,7 @@ void MainWindow::createKhollo() {
         return;
     }
 
+    record(false);
     //Save directory in preferences
     QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
     pref.setDir(dirpath);
