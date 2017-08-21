@@ -58,9 +58,9 @@ bool KholleursManager::update_listKholleurs(int idSelected) {
         khll->setPupils(query.value(5).toInt());
         // Display the kholleur
         QString subject = query.value(6).toString();
-        if(subject != "")
-            subject = "(" + subject + ") ";
-        QListWidgetItem *item = new QListWidgetItem(khll->getName() + " " + subject + ": " + QString::number(khll->getDuration()) + ", " + QString::number(khll->getPreparation()) + ", " + QString::number(khll->getPupils()), ui->list_kholleurs);
+        if(subject == "")
+            subject = "???";
+        QListWidgetItem *item = new QListWidgetItem(khll->getName() + " : " + subject + ", " + QString::number(khll->getDuration()) + ", " + QString::number(khll->getPreparation()) + ", " + QString::number(khll->getPupils()), ui->list_kholleurs);
         item->setData(Qt::UserRole, (qulonglong) khll);
         if(idSelected == khll->getId())
             ui->list_kholleurs->setCurrentItem(item);

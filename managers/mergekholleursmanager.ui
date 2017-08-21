@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>524</width>
+    <width>540</width>
     <height>376</height>
    </rect>
   </property>
@@ -27,7 +27,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>504</width>
+        <width>520</width>
         <height>316</height>
        </rect>
       </property>
@@ -50,7 +50,7 @@
          <item>
           <widget class="QLabel" name="label">
            <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Veuillez associer, à chaque &lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#ff0000;&quot;&gt;kholleur téléchargé&lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;, un &lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#00aa00;&quot;&gt;kholleur de votre fichier&lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#ff0000;&quot;&gt;.&lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;..&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;Veuillez associer, à chaque &lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#ff0000;&quot;&gt;kholleur téléchargé (matière)&lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;, un &lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#00aa00;&quot;&gt;kholleur de votre fichier&lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#ff0000;&quot;&gt;.&lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;..&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>

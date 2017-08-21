@@ -270,10 +270,11 @@ void TimeslotsManager::deleteTimeslot(QListWidgetItem *item) {
                                                                  "ainsi que les <strong>kholles</strong> associées. <br /> Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::No);
 
     if(res == QMessageBox::Yes) {
+        QSqlQuery query(*m_db);
+        m_db->transaction();
         for(int i=0; i<selection.length(); i++) {
             Timeslot* ts = (Timeslot*) selection[i]->data(Qt::UserRole).toULongLong();
             //Query
-            QSqlQuery query(*m_db);
             query.prepare("DELETE FROM tau_kholles WHERE id_timeslots=:id_timeslots");
             query.bindValue(":id_timeslots", ts->getId());
             query.exec();
@@ -281,6 +282,7 @@ void TimeslotsManager::deleteTimeslot(QListWidgetItem *item) {
             query.bindValue(":id", ts->getId());
             query.exec();
         }
+        m_db->commit();
         //Update
         update_list_timeslots(((Kholleur*)kholleurs[0]->data(Qt::UserRole).toULongLong())->getId());
     }
@@ -331,7 +333,7 @@ void TimeslotsManager::downloadTimeslots() {
         if(pref.serverDefault())
                 query = new ODBSqlQuery(DEFAULT INTO(this, downloadedTimeslots));
         else    query = new ODBSqlQuery(FROM(pref.serverScript(), pref.serverPassword()) INTO(this, downloadedTimeslots));
-        query->prepare("SELECT id, time, time_start, time_end, kholleur, date, nb_pupils FROM spark_timeslots WHERE class=:class AND date>=:start AND date<=:end ORDER BY UPPER(kholleur);");
+        query->prepare("SELECT id, time, time_start, time_end, kholleur, date, nb_pupils, subject FROM spark_timeslots WHERE class=:class AND date>=:start AND date<=:end ORDER BY UPPER(kholleur);");
         query->bindValue(":class", name_class);
         query->bindValue(":start", m_date.toString("yyyy-MM-dd"));
         query->bindValue(":end", m_date.addDays(6).toString("yyyy-MM-dd"));
@@ -353,7 +355,8 @@ void TimeslotsManager::downloadedTimeslots(ODBRequest *req) {
         QList<QMap<QString, QVariant>*>* res = req->result();
         for(int i=0; i<res->length(); i++) {
             QMap<QString, QVariant>* row = res->at(i);
-            QString name_khll = row->value("kholleur").toString();
+            // We avoid a "MergeSubjectsManager" concatenating the subjet with the name of the kholleur...
+            QString name_khll = row->value("kholleur").toString() + " (" + row->value("subject").toString() + ")";
 
             if(idKholleurs->contains(name_khll) == false && (anonymousKholleurs->length() == 0 || anonymousKholleurs->last()->getName() != name_khll)) {
                 Kholleur* khll = new Kholleur;
@@ -385,7 +388,8 @@ void TimeslotsManager::downloadedTimeslots(ODBRequest *req) {
             slot->setTime(row->value("time").toTime());
             slot->setTime_start(row->value("time_start").toTime());
             slot->setTime_end(row->value("time_end").toTime());
-            QString name_khll = row->value("kholleur").toString();
+            // We avoid a "MergeSubjectsManager" concatenating the subjet with the name of the kholleur...
+            QString name_khll = row->value("kholleur").toString() + " (" + row->value("subject").toString() + ")";
             slot->setDate(row->value("date").toDate());
             slot->setPupils(row->value("nb_pupils").toInt());
 
