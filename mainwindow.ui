@@ -172,7 +172,7 @@
   </action>
   <action name="action_DB_Kholleurs">
    <property name="text">
-    <string>Kholleurs</string>
+    <string>K&amp;holleurs</string>
    </property>
   </action>
   <action name="action_Schedule_Timetable">
@@ -259,7 +259,7 @@
   </action>
   <action name="action_File_Settings">
    <property name="text">
-    <string>P&amp;aramètres</string>
+    <string>Para&amp;mètres</string>
    </property>
   </action>
   <action name="action_Schedule_Tribes">
