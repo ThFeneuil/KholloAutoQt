@@ -147,7 +147,7 @@ RESOURCES += \
 
 VERSION = 1.2
 DEFINES += "APP_VERSION='$$VERSION'"
-QMAKE_TARGET_PRODUCT = "SPARK\0"
+QMAKE_TARGET_PRODUCT = "SPARK Kholloscope\0"
 
 win32:RC_ICONS += "images/iconApp.ico"
 macx {
