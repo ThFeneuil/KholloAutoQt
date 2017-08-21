@@ -39,6 +39,8 @@ private:
     QQueue<Subject*> queue_displayedSubjects;
     QList<Student*> list_displayedStudents;
     QMap<int, QString> map_students_tribes;
+    QMap<QString, QColor> map_colors;
+    QList<QColor> list_colors;
     QAction* m_shortcutNotepad;
 };
 

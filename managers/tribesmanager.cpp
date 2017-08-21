@@ -8,6 +8,9 @@ TribesManager::TribesManager(QSqlDatabase *db, QWidget *parent) :
     ui->setupUi(this);
     m_db = db;
 
+    list_colors << QColor("#f6f6f6") << QColor("#fff1f1") << QColor("#f1fff1");
+    list_colors << QColor("#ffe2e2") << QColor("#e2ffe2") << QColor("#ffffc6") << QColor("#baffff");
+
     getSubjects();
     getStudents();
 
@@ -79,10 +82,32 @@ void TribesManager::freeStudents() {
 }
 
 void TribesManager::updateStudentList(int id_subject) {
+    //Get tribe names
+    map_colors.clear();
+    ui->tribe_name->clear();
+    ui->tribe_name->addItem("Aucune tribu");
+
+    QSqlQuery names_query(*m_db);
+    names_query.prepare("SELECT DISTINCT name_tribe FROM tau_tribes WHERE id_subjects=:id_subjects ORDER BY UPPER(name_tribe)");
+    names_query.bindValue(":id_subjects", id_subject);
+    names_query.exec();
+
+    int count = 0;
+    while(names_query.next()) {
+        ui->tribe_name->addItem(names_query.value(0).toString());
+        map_colors.insert(names_query.value(0).toString(), list_colors[count % list_colors.length()]);
+        count++;
+    }
+
+    ui->tribe_name->setCurrentText("");
+    QLineEdit *edit = ui->tribe_name->lineEdit();
+    if(edit != NULL)
+        edit->setPlaceholderText("Tapez ici le nom d'une tribu...");
+
     //Clear list
     ui->list_students->clear();
 
-    //Load tribes names in map
+    //Load tribes of students in map
     map_students_tribes.clear();
 
     QSqlQuery query(*m_db);
@@ -114,25 +139,13 @@ void TribesManager::updateStudentList(int id_subject) {
 
         QListWidgetItem *item = new QListWidgetItem(text, ui->list_students);
         item->setData(Qt::UserRole, (qulonglong) s);
+
+        if(map_students_tribes.contains(s->getId())) {
+            QString tribe_name = map_students_tribes[s->getId()];
+            if(map_colors.contains(tribe_name))
+                item->setBackgroundColor(map_colors[tribe_name]);
+        }
     }
-
-    //Populate ComboBox
-    ui->tribe_name->clear();
-    ui->tribe_name->addItem("Aucune tribu");
-
-    QSqlQuery names_query(*m_db);
-    names_query.prepare("SELECT DISTINCT name_tribe FROM tau_tribes WHERE id_subjects=:id_subjects ORDER BY UPPER(name_tribe)");
-    names_query.bindValue(":id_subjects", id_subject);
-    names_query.exec();
-
-    while(names_query.next()) {
-        ui->tribe_name->addItem(names_query.value(0).toString());
-    }
-
-    ui->tribe_name->setCurrentText("");
-    QLineEdit *edit = ui->tribe_name->lineEdit();
-    if(edit != NULL)
-        edit->setPlaceholderText("Tapez ici le nom d'une tribu...");
 }
 
 void TribesManager::selectionChanged() {
