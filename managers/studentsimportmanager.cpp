@@ -33,10 +33,18 @@ bool StudentsImportManager::load(QString filename) {
         return false;
     }
 
-    if(m1 > m2)
+    QMessageBox msg;
+    msg.setText("Quel est le format du nom suivant : <b>" + m_table[0].at(m1) + " " + m_table[0].at(m2) + "</b> ?");
+    QAbstractButton *name_btn = (QAbstractButton*) msg.addButton("NOM Prénom", QMessageBox::ApplyRole);
+    QAbstractButton *first_btn = (QAbstractButton*) msg.addButton("Prénom NOM", QMessageBox::ApplyRole);
+    msg.exec();
+
+    if(msg.clickedButton() == first_btn)
         insertStudents(m2, m1);
-    else
+    else if(msg.clickedButton() == name_btn)
         insertStudents(m1, m2);
+    else
+        return false;
 
     return true;
 }
@@ -134,6 +142,7 @@ void StudentsImportManager::findMaxes(int *max1, int *max2) {
 }
 
 void StudentsImportManager::insertStudents(int indexName, int indexFirstName) {
+    m_db->transaction();
     for(int i = 0; i < m_table.length(); i++) {
         QString name = m_table[i].at(indexName);
         QString first_name = m_table[i].at(indexFirstName);
@@ -145,4 +154,5 @@ void StudentsImportManager::insertStudents(int indexName, int indexFirstName) {
         query.bindValue(":email", "");
         query.exec();
     }
+    m_db->commit();
 }
