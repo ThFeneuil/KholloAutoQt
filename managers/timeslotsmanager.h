@@ -15,6 +15,7 @@
 #include "managers/mergekholleursmanager.h"
 #include "notepad.h"
 #include "onlinedatabase.h"
+#include "settingsdialog.h"
 
 namespace Ui {
 class TimeslotsManager;

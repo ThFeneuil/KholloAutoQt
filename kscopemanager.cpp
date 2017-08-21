@@ -19,8 +19,10 @@ bool KScopeManager::createFile(QString path) {
         return false;
     }
 
+    db.transaction();
     for(int i=0; i<tables.count(); i++)
         tablesStructures(&db, tables[i], Create);
+    db.commit();
 
     return true;
 }

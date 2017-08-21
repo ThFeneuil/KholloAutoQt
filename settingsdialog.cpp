@@ -17,7 +17,18 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     else if(format == Preferences::StudentsSubjects)
         ui->comboBox_formats->setCurrentText("élèves-matières");
 
+    bool isDefault = pref.serverDefault();
+
+    ui->radioButton_default->setChecked(isDefault);
+    ui->radioButton_other->setChecked(! isDefault);
+
+    ui->lineEdit_script->setEnabled(! isDefault);
+    ui->lineEdit_password->setEnabled(! isDefault);
+    ui->lineEdit_script->setText(pref.serverScript());
+    ui->lineEdit_password->setText(pref.serverPassword());
+
     connect(ui->pushButton_valid, SIGNAL(clicked(bool)), this, SLOT(save()));
+    connect(ui->radioButton_other, SIGNAL(toggled(bool)), this, SLOT(update()));
 }
 
 SettingsDialog::~SettingsDialog()
@@ -25,9 +36,18 @@ SettingsDialog::~SettingsDialog()
     delete ui;
 }
 
+bool SettingsDialog::update() {
+    ui->lineEdit_script->setEnabled(ui->radioButton_other->isChecked());
+    ui->lineEdit_password->setEnabled(ui->radioButton_other->isChecked());
+    return true;
+}
+
 bool SettingsDialog::save() {
     Preferences pref;
     pref.setFormatPDF((Preferences::FormatPDF) ui->comboBox_formats->currentData().toInt());
+    pref.setServerDefault(ui->radioButton_default->isChecked());
+    pref.setServerScript(ui->lineEdit_script->text());
+    pref.setServerPassword(ui->lineEdit_password->text());
     accept();
     return true;
 }
@@ -57,6 +77,13 @@ bool Preferences::read() {
                     m_formatPDF = StudentsDays;
                 else if(data == "StudentsSubjects")
                     m_formatPDF = StudentsSubjects;
+            } else if(data == "Default server:") {
+                data = in.readLine();
+                m_serverDefault = (data == "YES");
+            } else if(data == "Server script:") {
+                m_serverScript = in.readLine();
+            } else if(data == "Server password:") {
+                m_serverPassword = in.readLine();
             }
         }
     }
@@ -75,6 +102,10 @@ bool Preferences::write() {
             out << "StudentsDays\n\n";
         else
             out << "StudentsSubjects\n\n";
+        out << "Default server:\n" << (m_serverDefault ? "YES" : "NO") << "\n\n";
+        out << "Server script:\n" << m_serverScript << "\n\n";
+        out << "Server password:\n" << m_serverPassword << "\n\n";
+
         return true;
     }
     return false;
@@ -93,6 +124,24 @@ bool Preferences::setFormatPDF(FormatPDF format) {
     return write();
 }
 
+bool Preferences::setServerDefault(bool isDefault) {
+    read();
+    m_serverDefault = isDefault;
+    return write();
+}
+
+bool Preferences::setServerScript(QString script) {
+    read();
+    m_serverScript = script;
+    return write();
+}
+
+bool Preferences::setServerPassword(QString password) {
+    read();
+    m_serverPassword = password;
+    return write();
+}
+
 // Getters
 QString Preferences::dir() {
     read();
@@ -102,4 +151,19 @@ QString Preferences::dir() {
 Preferences::FormatPDF Preferences::formatPDF() {
     read();
     return m_formatPDF;
+}
+
+bool Preferences::serverDefault() {
+    read();
+    return m_serverDefault;
+}
+
+QString Preferences::serverScript() {
+    read();
+    return m_serverScript;
+}
+
+QString Preferences::serverPassword() {
+    read();
+    return m_serverPassword;
 }

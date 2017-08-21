@@ -2,9 +2,11 @@
 
 /// TO PREPARE A QUERY
 
-ODBSqlQuery::ODBSqlQuery(const QObject *receiver, const char *method) {
+ODBSqlQuery::ODBSqlQuery(QUrl url_db, QString password_db, const QObject *receiver, const char *method) {
     m_receiver = receiver;
     m_method = method;
+    m_url_db = url_db;
+    m_password_db = password_db;
 }
 
 ODBSqlQuery::~ODBSqlQuery() {
@@ -24,7 +26,7 @@ bool ODBSqlQuery::bindValue(QString key, QVariant value) {
 }
 
 ODBRequest *ODBSqlQuery::exec() {
-    const QNetworkRequest request(url_db); //On crée notre requête
+    const QNetworkRequest request(m_url_db); //On crée notre requête
 
     QNetworkAccessManager *m = new QNetworkAccessManager;
     QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
@@ -39,7 +41,7 @@ ODBRequest *ODBSqlQuery::exec() {
     }
     QHttpPart passwordPart;
     passwordPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"#password\""));
-    passwordPart.setBody(password_db.toLatin1());
+    passwordPart.setBody(m_password_db.toLatin1());
     multiPart->append(passwordPart);
     QHttpPart queryPart;
     queryPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"#query\""));
@@ -47,6 +49,9 @@ ODBRequest *ODBSqlQuery::exec() {
     multiPart->append(queryPart);
 
     QNetworkReply *r = m->post(request, multiPart);
+
+    m_data.clear();
+    m_query.clear();
 
     ODBRequest* req = new ODBRequest(r, m_receiver, m_method);
     return req;
@@ -58,7 +63,7 @@ ODBRequest* ODBSqlQuery::exec(QString query) {
 }
 
 ODBRequest* sendQueryODB(QString query, const QObject *receiver, const char *method) {
-    ODBSqlQuery q(receiver, method);
+    ODBSqlQuery q(DEFAULT INTO(receiver, method));
     return q.exec(query);
 }
 

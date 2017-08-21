@@ -10,47 +10,118 @@
     <x>0</x>
     <y>0</y>
     <width>362</width>
-    <height>230</height>
+    <height>241</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Paramètres</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
    <item>
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>Format des fichiers PDF générés</string>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Format sélectionné : </string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="comboBox_formats"/>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QLabel" name="description_formatDPF">
-        <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Format &amp;quot;élèves-jours&amp;quot; :&lt;/span&gt;&lt;br/&gt;Le kholloscope se présente sous forme d'un tableau avec les élèves sur la hauteur et les&lt;span style=&quot; font-style:italic;&quot;&gt; jours de la semaine&lt;/span&gt; sur la longueur. Il s'agit d'un format paysage.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Format &amp;quot;élèves-matières&amp;quot; :&lt;/span&gt;&lt;br/&gt;Le kholloscope se présente sous forme d'un tableau avec les élèves sur la hauteur et les&lt;span style=&quot; font-style:italic;&quot;&gt; différentes matières avec des kholles&lt;/span&gt; sur la largeur. Il s'agit d'un format portrait.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="scaledContents">
-         <bool>false</bool>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>Format des fichiers PDF générés</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Format sélectionné : </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboBox_formats"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="description_formatDPF">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Format &amp;quot;élèves-jours&amp;quot; :&lt;/span&gt;&lt;br/&gt;Le kholloscope se présente sous forme d'un tableau avec les élèves sur la hauteur et les&lt;span style=&quot; font-style:italic;&quot;&gt; jours de la semaine&lt;/span&gt; sur la longueur. Il s'agit d'un format paysage.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Format &amp;quot;élèves-matières&amp;quot; :&lt;/span&gt;&lt;br/&gt;Le kholloscope se présente sous forme d'un tableau avec les élèves sur la hauteur et les&lt;span style=&quot; font-style:italic;&quot;&gt; différentes matières avec des kholles&lt;/span&gt; sur la largeur. Il s'agit d'un format portrait.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="scaledContents">
+          <bool>false</bool>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Serveur distant</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QRadioButton" name="radioButton_default">
+         <property name="text">
+          <string>Utiliser le serveur par défaut</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="radioButton_other">
+         <property name="text">
+          <string>Utiliser un serveur personalisé :</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="lineEdit_script">
+           <property name="placeholderText">
+            <string>http://leSiteHebergeur/leScriptPHP</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="lineEdit_password">
+           <property name="echoMode">
+            <enum>QLineEdit::Password</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>          Script PHP :</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>          Mot de passe :</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item>

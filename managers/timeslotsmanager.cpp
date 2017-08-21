@@ -326,12 +326,17 @@ void TimeslotsManager::downloadTimeslots() {
     } else {
         ui->dowloadButton->setEnabled(false);
         ui->dowloadButton->setText("Téléchargement...");
-        ODBSqlQuery query(INTO(this, downloadedTimeslots));
-        query.prepare("SELECT id, time, time_start, time_end, kholleur, date, nb_pupils FROM spark_timeslots WHERE class=:class AND date>=:start AND date<=:end ORDER BY UPPER(kholleur);");
-        query.bindValue(":class", name_class);
-        query.bindValue(":start", m_date.toString("yyyy-MM-dd"));
-        query.bindValue(":end", m_date.addDays(6).toString("yyyy-MM-dd"));
-        query.exec();
+        Preferences pref;
+        ODBSqlQuery* query = NULL;
+        if(pref.serverDefault())
+                query = new ODBSqlQuery(DEFAULT INTO(this, downloadedTimeslots));
+        else    query = new ODBSqlQuery(FROM(QUrl(pref.serverScript()), pref.serverPassword()) INTO(this, downloadedTimeslots));
+        query->prepare("SELECT id, time, time_start, time_end, kholleur, date, nb_pupils FROM spark_timeslots WHERE class=:class AND date>=:start AND date<=:end ORDER BY UPPER(kholleur);");
+        query->bindValue(":class", name_class);
+        query->bindValue(":start", m_date.toString("yyyy-MM-dd"));
+        query->bindValue(":end", m_date.addDays(6).toString("yyyy-MM-dd"));
+        query->exec();
+        delete query;
     }
 }
 
