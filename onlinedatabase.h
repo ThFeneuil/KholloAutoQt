@@ -5,19 +5,23 @@
  *  slt : slot (of obj) which is call at the end of request download
  *          the argument of slt is necessary "ODBRequest*"
  *
- *  - Simply request:
- *      ODBSqlQuery query(INTO(obj, slt));
- *      query.exec("THE QUERY...");
+ *  INITIALISATION REQUEST :
+ *      - On the default server :
+ *          ODBSqlQuery query(DEFAUT INTO(obj, slt));
+ *      - On an other server :
+ *          ODBSqlQuery query(FROM("url script PHP", "password") INTO(obj, slt));
  *
- *    Possible shortcut:
+ *   EXECUTE REQUEST
+ *      - Simply request:
+ *          query.exec("THE QUERY...");
+ *      - Prepared request:
+ *          query.prepare("SELECT id FROM spark_timeslots WHERE class=:class AND date>=:start;");
+ *          query.bindValue(":class", "VALUE OF class");
+ *          query.bindValue(":start", "VALUE OF start");
+ *          query.exec();
+ *
+ *   Possible shortcut for default server:
  *      askODB("THE QUERY", obj, slt);
- *
- *  - Prepared request:
- *      ODBSqlQuery query(INTO(obj, slt));
- *      query.prepare("SELECT id FROM spark_timeslots WHERE class=:class AND date>=:start;");
- *      query.bindValue(":class", "VALUE OF class");
- *      query.bindValue(":start", "VALUE OF start");
- *      query.exec();
  *
  ************************************************************************/
 
@@ -41,7 +45,7 @@
 #define with(r, s) , SIGNAL(downloadProgress(qint64, qint64)), r, SLOT(s(qint64, qint64)))
 #define INTO(r,s) r, SLOT(s(ODBRequest*))
 #define DEFAULT default_url_db, default_password_db,
-#define FROM(s, p) s, p,
+#define FROM(s, p) QUrl(s), p,
 
 const QUrl default_url_db = QUrl("http://tfeneuilprojects.fr/odb");
 const QString default_password_db = "LE MOT DE PASSE !";
