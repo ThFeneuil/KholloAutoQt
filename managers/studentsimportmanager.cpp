@@ -34,6 +34,7 @@ bool StudentsImportManager::load(QString filename) {
     }
 
     QMessageBox msg;
+    msg.setWindowTitle("Importation");
     msg.setText("Quel est le format du nom suivant : <b>" + m_table[0].at(m1) + " " + m_table[0].at(m2) + "</b> ?");
     QAbstractButton *name_btn = (QAbstractButton*) msg.addButton("NOM Prénom", QMessageBox::ApplyRole);
     QAbstractButton *first_btn = (QAbstractButton*) msg.addButton("Prénom NOM", QMessageBox::ApplyRole);
