@@ -326,6 +326,42 @@ void TimeslotsManager::downloadTimeslots() {
     if(name_class.length() > 10) {
         QMessageBox::critical(this, "Erreur", "Le nom de la classe doit posséder au plus 10 caractères...");
     } else {
+        QSqlQuery qVerif(*m_db);
+        qVerif.prepare("SELECT COUNT(*) FROM tau_timeslots "
+                        "WHERE date>=:monday_date AND date<=:sunday_date");
+        qVerif.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
+        qVerif.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
+        qVerif.exec();
+
+        if(qVerif.next()) {
+            int nbSlots = qVerif.value(0).toInt();
+            if(nbSlots > 0) {
+                QMessageBox msg;
+                msg.setWindowTitle("Téléchargement");
+                msg.setIcon(QMessageBox::Warning);
+                msg.setText("La semaine courante possède déjà des horaires. Voulez-vous supprimer les horaires pour les remplacer par ceux qui vont être téléchargés, ou préférez-vous les garder ? <strong>Attention, si vous remplacez les horaires, les kholles qui leur sont associées vont être supprimées !</strong>");
+                QAbstractButton *keep_btn = (QAbstractButton*) msg.addButton("Garder les horaires", QMessageBox::ApplyRole);
+                QAbstractButton *replace_btn = (QAbstractButton*) msg.addButton("Remplacer les horaires (!)", QMessageBox::ApplyRole);
+                msg.addButton("Annuler", QMessageBox::ApplyRole);
+                msg.exec();
+
+                if(msg.clickedButton() == replace_btn) {
+                    //Delete all timeslots for this week
+                    qVerif.prepare("DELETE FROM tau_kholles WHERE id_timeslots IN "
+                                            "(SELECT id FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date)");
+                    qVerif.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
+                    qVerif.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
+                    qVerif.exec();
+                    qVerif.prepare("DELETE FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date");
+                    qVerif.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
+                    qVerif.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
+                    qVerif.exec();
+                } else if(msg.clickedButton() != keep_btn)
+                    return;
+            }
+        }
+
+
         ui->dowloadButton->setEnabled(false);
         ui->dowloadButton->setText("Téléchargement...");
         Preferences pref;
