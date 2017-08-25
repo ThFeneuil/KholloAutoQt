@@ -126,18 +126,21 @@ void TribesManager::updateStudentList(int id_subject) {
         Student *s = list_displayedStudents[i];
         QString text = s->getName() + " " + s->getFirst_name() + " ";
 
-        if(text.length() > 50) {
-            text.truncate(46);
-            text.append("... ");
-        }
-        text = text.leftJustified(50, ' ');
+        QListWidgetItem *item = new QListWidgetItem();
+        QFont f = item->font();
+        QFontMetrics font(f);
+
+        for(int l = text.length(); l >= 0 && font.width(text) >= 250; l--)
+            text = text.left(l) + "...";
+        while(font.width(text) < 250)
+            text += " ";
 
         if(map_students_tribes.contains(s->getId()))
             text += "\t" + map_students_tribes.value(s->getId());
         else
             text += "\tAucune tribu";
 
-        QListWidgetItem *item = new QListWidgetItem(text, ui->list_students);
+        item->setText(text);
         item->setData(Qt::UserRole, (qulonglong) s);
 
         if(map_students_tribes.contains(s->getId())) {
@@ -145,6 +148,7 @@ void TribesManager::updateStudentList(int id_subject) {
             if(map_colors.contains(tribe_name))
                 item->setBackgroundColor(map_colors[tribe_name]);
         }
+        ui->list_students->addItem(item);
     }
 }
 
@@ -238,3 +242,4 @@ void TribesManager::studentsChanged() {
     QString text = QString::number(selection.length()) + (selection.length() <= 1 ? " élève sélectionné" : " élèves sélectionnés");
     ui->student_no->setText(text);
 }
+
