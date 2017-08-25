@@ -41,9 +41,9 @@ void PrintPDF::printKholles(QList<Student *> *students, QMap<int, Kholleur *> *k
 bool PrintPDF::printKholles_StudentsDays(QList<Student *> *students, QMap<int, Kholleur *> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QMap<int, Kholle *> *kholloscope, QString filename) {
     //Create the PDF Writer
     QPdfWriter writer(filename);
-    writer.setPageSize(QPdfWriter::A3);
+    writer.setPageSize(QPdfWriter::A4);
     writer.setPageOrientation(QPageLayout::Landscape);
-    writer.setPageMargins(QMarginsF(15, 15, 15, 15), QPageLayout::Millimeter);
+    writer.setPageMargins(QMarginsF(11, 11, 11, 11), QPageLayout::Millimeter);
     writer.setCreator("SPARK Kholloscope");
 
     QPainter painter;
@@ -58,7 +58,7 @@ bool PrintPDF::printKholles_StudentsDays(QList<Student *> *students, QMap<int, K
     int height = writer.height();
 
     //Paint here
-    painter.setPen(QPen(QBrush(Qt::black), 5));
+    painter.setPen(QPen(QBrush(Qt::black), 4));
 
     //Calculate line height and cell width
 
@@ -332,9 +332,9 @@ bool PrintPDF::printKholles_StudentsDays(QList<Student *> *students, QMap<int, K
 bool PrintPDF::printKholles_StudentsSubjects(QList<Student *> *students, QMap<int, Kholleur *> *kholleurs, QMap<int, Timeslot *> *timeslots, QDate monday_date, QMap<int, Kholle *> *kholloscope, QString filename) {
     /// Create the PDF Writer
     QPdfWriter writer(filename);
-    writer.setPageSize(QPdfWriter::A3);
+    writer.setPageSize(QPdfWriter::A4);
     writer.setPageOrientation(QPageLayout::Portrait);
-    writer.setPageMargins(QMarginsF(15, 15, 15, 15), QPageLayout::Millimeter);
+    writer.setPageMargins(QMarginsF(11, 11, 11, 11), QPageLayout::Millimeter);
     writer.setCreator("SPARK Kholloscope");
 
     QPainter painter;
@@ -349,7 +349,7 @@ bool PrintPDF::printKholles_StudentsSubjects(QList<Student *> *students, QMap<in
     int height = writer.height();
 
     //Paint here
-    painter.setPen(QPen(QBrush(Qt::black), 5));
+    painter.setPen(QPen(QBrush(Qt::black), 4));
     QFont normal_font = painter.font();
 
     /// Creation of the list of subjects
@@ -491,7 +491,7 @@ bool PrintPDF::printKholles_StudentsSubjects(QList<Student *> *students, QMap<in
         displaySPARK(&painter, width, height_lastLine, row_height, normal_font);
     } else {
         QFont text_font = QFont(normal_font);
-        text_font.setPointSize(40);
+        text_font.setPointSize(28);
         painter.setFont(text_font);
         QString textInfo = "Pas de kholles cette semaine...";
         painter.drawText((width-QFontMetrics(text_font).width(textInfo))/2, (height-QFontMetrics(text_font).height())/2, textInfo);
@@ -584,7 +584,7 @@ void PrintPDF::displaySPARK(QPainter* painter, int width, int height, int maxHei
     QFont signature_font = QFont(normal);
     while(QFontMetrics(signature_font).lineSpacing() > maxHeight ||
           QFontMetrics(signature_font).width(text) > width ||
-          signature_font.pointSize() > 13)
+          signature_font.pointSize() > 9)
         signature_font.setPointSize(signature_font.pointSize() - 1);
 
     painter->setFont(signature_font);
