@@ -39,7 +39,7 @@ bool TimeTable::freeDisplayedCourses() {
     for(int i=0; i < m_displayedCourses->length(); i++) {
         // If it is a double course, delete the second part
         if(m_displayedCourses->at(i)->otherWeek)
-            delete m_displayedCourses->at(i);
+            delete m_displayedCourses->at(i)->otherWeek;
         delete m_displayedCourses->at(i);
     }
     // Clear the list
@@ -233,7 +233,7 @@ void TimeTable::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent) {
     if(dr.y() > m_sizeImg[BeginHours] + 12*m_sizeImg[BetweenHours])
         dr.setY(m_sizeImg[BeginHours] + 12*m_sizeImg[BetweenHours]);
 
-    if(creating) {
+    if(creating && m_currentGroup) {
         /// Creation of the course
         // Build the course
         Course crse;

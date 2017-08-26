@@ -54,6 +54,7 @@ bool SettingsDialog::save() {
 
 Preferences::Preferences() {
     m_dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    m_serverDefault = true;
     read();
 }
 
