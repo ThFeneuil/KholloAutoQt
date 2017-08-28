@@ -14,7 +14,7 @@ TimetableManager::TimetableManager(QSqlDatabase *db, QWidget *parent) :
     m_db = db;
 
     /// Detection when the user change the selected group
-    connect(ui->list_groups, SIGNAL(currentRowChanged(int)), this, SLOT(select_group()));
+    connect(ui->list_groups, SIGNAL(itemSelectionChanged()), this, SLOT(select_group()));
 
     /// Display the groups and the subjects
     update_list_groups();
@@ -110,9 +110,11 @@ QMap<int, Subject*> TimetableManager::update_list_subjects() {
 bool TimetableManager::select_group() {
     /** SLOT TO SELECT THE GROUP CHOOSE BY THE USER **/
 
-    QListWidgetItem* item = ui->list_groups->currentItem();
-    if(item)
-        currentScene->setCurrent_group((Group*) item->data(Qt::UserRole).toULongLong());
+    QList<QListWidgetItem*> selection = ui->list_groups->selectedItems();
+    if(selection.length() <= 0)
+        currentScene->setCurrent_group(NULL);
+    else
+        currentScene->setCurrent_group((Group*) selection[0]->data(Qt::UserRole).toULongLong());
     return true;
 }
 

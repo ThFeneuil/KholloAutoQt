@@ -243,7 +243,7 @@ void TimeTable::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent) {
     if(dr.y() > m_sizeImg[BeginHours] + 12*m_sizeImg[BetweenHours])
         dr.setY(m_sizeImg[BeginHours] + 12*m_sizeImg[BetweenHours]);
 
-    if(creating) {
+    if(creating && m_currentGroup) {
         /// Creation of the course
         // Build the course
         Course crse;
