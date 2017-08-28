@@ -35,6 +35,7 @@ public:
     bool display_scene(); // To display the timetable
     QRect *calculateRect(Course* crse, bool doubleCourse); // To build the rect which will represent a course on the timetable
     bool freeDisplayedCourses(); // To free memory with displayed courses
+    bool freeCourseSlot(CourseSlot* slot);
 
     bool setInputs(QTimeEdit* qtimeedit_start, QTimeEdit* qtimeedit_duration, QComboBox* comboBox_subjects); // To set the user inputs to modify a course
     void setCurrent_group(Group* currentGroup); // To set the selected group

@@ -38,13 +38,23 @@ bool TimeTable::freeDisplayedCourses() {
 
     for(int i=0; i < m_displayedCourses->length(); i++) {
         // If it is a double course, delete the second part
-        if(m_displayedCourses->at(i)->otherWeek)
-            delete m_displayedCourses->at(i);
-        delete m_displayedCourses->at(i);
+        freeCourseSlot(m_displayedCourses->at(i));
     }
     // Clear the list
     m_displayedCourses->clear();
     return true;
+}
+
+bool TimeTable::freeCourseSlot(CourseSlot* slot) {
+    if(slot) {
+        if(slot->otherWeek)
+            freeCourseSlot(slot->otherWeek);
+        delete slot->course;
+        delete slot->slot;
+        delete slot;
+        return true;
+    }
+    return false;
 }
 
 bool TimeTable::update_scene(int idSelec) {

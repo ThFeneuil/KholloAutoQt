@@ -32,6 +32,8 @@ TimetableManager::~TimetableManager()
     delete ui;
     free_groups();
     free_subjects();
+
+    delete currentScene;
 }
 
 bool TimetableManager::free_groups() {
