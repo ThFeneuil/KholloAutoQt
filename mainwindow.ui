@@ -85,7 +85,6 @@
     <addaction name="action_Schedule_Timetable"/>
     <addaction name="action_Schedule_Students_Groups"/>
     <addaction name="action_Schedule_Swapping_Groups"/>
-    <addaction name="action_Schedule_Tribes"/>
     <addaction name="action_Schedule_Kholles"/>
     <addaction name="action_Schedule_Events"/>
    </widget>
@@ -97,6 +96,7 @@
      <string>&amp;Kholles</string>
     </property>
     <addaction name="action_Kholles_Interface"/>
+    <addaction name="action_Schedule_Tribes"/>
     <addaction name="action_Kholles_Generate"/>
     <addaction name="action_Kholles_LastChanges"/>
     <addaction name="action_Kholles_Historic"/>
