@@ -16,8 +16,8 @@ UsersGroupsManager::UsersGroupsManager(QSqlDatabase *db, QWidget *parent) :
     /// Initialisation of the class properties
     ui->setupUi(this); // GUI
     m_db = db;
-    m_listStudents = new QList<Student*>();
-    m_listGroups = new QList<Group*>();
+    m_listStudents = new QList<qulonglong>();
+    m_listGroups = new QList<qulonglong>();
     m_shortcutNotepad = Notepad::shortcut();
     this->addAction(m_shortcutNotepad);
 
@@ -30,7 +30,7 @@ UsersGroupsManager::UsersGroupsManager(QSqlDatabase *db, QWidget *parent) :
         stdnt->setName(query.value(1).toString());
         stdnt->setFirst_name(query.value(2).toString());
         // Add the student in a list
-        m_listStudents->append(stdnt);
+        m_listStudents->append((qulonglong) stdnt);
     }
     /// Get the list of the groups
     query.exec("SELECT `id`, `name` FROM `tau_groups` ORDER BY UPPER(`name`)");
@@ -39,7 +39,7 @@ UsersGroupsManager::UsersGroupsManager(QSqlDatabase *db, QWidget *parent) :
         grp->setId(query.value(0).toInt());
         grp->setName(query.value(1).toString());
         // Add the group in a list
-        m_listGroups->append(grp);
+        m_listGroups->append((qulonglong) grp);
     }
 
     /// Connect to detect when user click on an item or on a button
@@ -61,9 +61,9 @@ UsersGroupsManager::~UsersGroupsManager() {
     delete ui; // GUI
     // Clear the lists (students and groups)
     for(int i=m_listStudents->count()-1; i>=0; i--)
-        delete m_listStudents->at(i);
+        delete ((Student*) m_listStudents->at(i));
     for(int i=m_listGroups->count()-1; i>=0; i--)
-        delete m_listGroups->at(i);
+        delete ((Group*) m_listGroups->at(i));
     // Delete the list (students and groups)
     delete m_listStudents;
     delete m_listGroups;
@@ -81,13 +81,13 @@ bool UsersGroupsManager::update_list_browse() {
     QList<qulonglong>* listToTreat = NULL;
     if(browseStd) {
         // If the browsing is with students
-        listToTreat = (QList<qulonglong>*) m_listStudents;
+        listToTreat = m_listStudents;
         ui->label_browse->setText("Elèves");
         ui->label_yes->setText("Groupes de l'élève");
         ui->label_no->setText("Autres groupes");
     }else {
         // If the browsing is with groups
-        listToTreat = (QList<qulonglong>*) m_listGroups;
+        listToTreat = m_listGroups;
         ui->label_browse->setText("Groupes");
         ui->label_yes->setText("Elèves du groupe");
         ui->label_no->setText("Autres élèves");
@@ -97,9 +97,10 @@ bool UsersGroupsManager::update_list_browse() {
     for(int i=0; i<listToTreat->count(); i++) {
         // Get the text for the item
         QString text = "";
-        if(browseStd)
-                text = ((Student*) listToTreat->at(i))->getName() + " " + ((Student*) listToTreat->at(i))->getFirst_name();
-        else    text = ((Group*) listToTreat->at(i))->getName() + " (" + QString::number(nbStudentsInGroup(((Group*) listToTreat->at(i))->getId()))+ ")";
+        if(browseStd) {
+                Student* std = (Student*) listToTreat->at(i);
+                text = std->getName() + " " + std->getFirst_name();
+        } else    text = ((Group*) listToTreat->at(i))->getName() + " (" + QString::number(nbStudentsInGroup(((Group*) listToTreat->at(i))->getId()))+ ")";
         // Create the item with the element
         QListWidgetItem *item = new QListWidgetItem(text, ui->list_browse);
         item->setData(Qt::UserRole, (qulonglong) listToTreat->at(i));
@@ -150,11 +151,11 @@ bool UsersGroupsManager::update_listsYesNo() {
 
         //Put every group into the right list
         for(int i=0; i<m_listGroups->count(); i++) {
-            QListWidgetItem *item = new QListWidgetItem(m_listGroups->at(i)->getName() + " ("+ QString::number(nbStudentsInGroup(m_listGroups->at(i)->getId())) +")");
-            item->setData(Qt::UserRole, (qulonglong) m_listGroups->at(i));
+            QListWidgetItem *item = new QListWidgetItem(((Group*) m_listGroups->at(i))->getName() + " ("+ QString::number(nbStudentsInGroup(((Group*) m_listGroups->at(i))->getId())) +")");
+            item->setData(Qt::UserRole, m_listGroups->at(i));
 
             // Use the map to identify the right list
-            if(map.contains(m_listGroups->at(i)->getId()))
+            if(map.contains(((Group*) m_listGroups->at(i))->getId()))
                     ui->list_yes->addItem(item);
             else    ui->list_no->addItem(item);
         }
@@ -175,11 +176,11 @@ bool UsersGroupsManager::update_listsYesNo() {
 
         //Put every student into the right list
         for(int i=0; i<m_listStudents->count(); i++) {
-            QListWidgetItem *item = new QListWidgetItem(m_listStudents->at(i)->getName() + " " + m_listStudents->at(i)->getFirst_name());
-            item->setData(Qt::UserRole, (qulonglong) m_listStudents->at(i));
+            QListWidgetItem *item = new QListWidgetItem(((Student*) m_listStudents->at(i))->getName() + " " + ((Student*) m_listStudents->at(i))->getFirst_name());
+            item->setData(Qt::UserRole, m_listStudents->at(i));
 
             // Use the map to identify the right list
-            if(map.contains(m_listStudents->at(i)->getId()))
+            if(map.contains(((Student*) m_listStudents->at(i))->getId()))
                     ui->list_yes->addItem(item);
             else    ui->list_no->addItem(item);
         }

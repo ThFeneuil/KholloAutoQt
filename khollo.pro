@@ -1,4 +1,4 @@
-QT += widgets sql concurrent
+QT += widgets sql concurrent network
 
 FORMS += \
     mainwindow.ui \
@@ -7,10 +7,8 @@ FORMS += \
     managers/groupsmanager.ui \
     managers/subjectsmanager.ui \
     managers/kholleursmanager.ui \
-    managers/updateteacherdialog.ui \
     managers/updatekholleurdialog.ui \
     managers/usersgroupsmanager.ui \
-	managers/coursesmanager.ui \
     managers/eventsmanager.ui \
     managers/updateeventdialog.ui \
     managers/selectgroupsdialog.ui \
@@ -25,7 +23,6 @@ FORMS += \
     managers/introtimeslots.ui \
     managers/copytimeslots.ui \
     aboutitdialog.ui \
-    contactdialog.ui \
     reviewdialog.ui \
     managers/lastchanges.ui \
     managers/updatetimeslotdialog.ui \
@@ -34,7 +31,10 @@ FORMS += \
     settingsdialog.ui \
     managers/updatesubjectdialog.ui \
     interface/interfacedialog_mac.ui \
-    interface/interfacetab_mac.ui
+    interface/interfacetab_mac.ui \
+    managers/timetablemanager.ui \
+    managers/mergekholleursmanager.ui \
+    managers/tribesmanager.ui
 
 HEADERS += \
     mainwindow.h \
@@ -47,11 +47,8 @@ HEADERS += \
     storedData/subject.h \
     managers/kholleursmanager.h \
     storedData/kholleur.h \
-    storedData/teacher.h \
-    managers/updateteacherdialog.h \
     managers/updatekholleurdialog.h \
     managers/usersgroupsmanager.h \
-	managers/coursesmanager.h \
     storedData/course.h \
     managers/eventsmanager.h \
     storedData/event.h \
@@ -72,7 +69,6 @@ HEADERS += \
     managers/copytimeslots.h \
     database.h \
     aboutitdialog.h \
-    contactdialog.h \
     reviewdialog.h \
     printpdf.h \
     managers/lastchanges.h \
@@ -83,7 +79,14 @@ HEADERS += \
     settingsdialog.h \
     managers/KholloscopeWizardPages/utilities.h \
     interface/interfaceactionsrecord.h \
-    managers/updatesubjectdialog.h
+    managers/updatesubjectdialog.h \
+    managers/timetablemanager.h \
+    managers/timetable.h \
+    onlinedatabase.h \
+    managers/mergekholleursmanager.h \
+    managers/tribesmanager.h \
+    managers/studentsimportmanager.h
+
 
 SOURCES += \
     mainwindow.cpp \
@@ -97,11 +100,8 @@ SOURCES += \
     storedData/subject.cpp \
     managers/kholleursmanager.cpp \
     storedData/kholleur.cpp \
-    storedData/teacher.cpp \
-    managers/updateteacherdialog.cpp \
     managers/updatekholleurdialog.cpp \
     managers/usersgroupsmanager.cpp \
-	managers/coursesmanager.cpp \
     storedData/course.cpp \
     managers/eventsmanager.cpp \
     storedData/event.cpp \
@@ -122,7 +122,6 @@ SOURCES += \
     managers/copytimeslots.cpp \
     database.cpp \
     aboutitdialog.cpp \
-    contactdialog.cpp \
     reviewdialog.cpp \
     printpdf.cpp \
     managers/lastchanges.cpp \
@@ -133,15 +132,22 @@ SOURCES += \
     settingsdialog.cpp \
     managers/KholloscopeWizardPages/utilities.cpp \
     interface/interfaceactionsrecord.cpp \
-    managers/updatesubjectdialog.cpp
+    managers/updatesubjectdialog.cpp \
+    managers/timetablemanager.cpp \
+    managers/timetable.cpp \
+    onlinedatabase.cpp \
+    managers/mergekholleursmanager.cpp \
+    managers/tribesmanager.cpp \
+    managers/studentsimportmanager.cpp
 	
 DISTFILES +=
 
 RESOURCES += \
     khollo.qrc
 
-VERSION = 1.1
-QMAKE_TARGET_PRODUCT = "SPARK\0"
+VERSION = 1.2
+DEFINES += "APP_VERSION='$$VERSION'"
+QMAKE_TARGET_PRODUCT = "SPARK Kholloscope\0"
 
 win32:RC_ICONS += "images/iconApp.ico"
 macx {

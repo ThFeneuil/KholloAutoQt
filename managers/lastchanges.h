@@ -55,6 +55,8 @@ public slots:
     bool update_khollesManager();
     bool delete_kholles();
 
+    bool reset_preferencesMerging();
+
 private:
     Ui::LastChanges *ui;
     QSqlDatabase *m_db;

@@ -3,13 +3,11 @@
 
 #include <QString>
 #include <QList>
-#include "storedData/teacher.h"
 #include "storedData/kholleur.h"
 #include "storedData/course.h"
 
 #define MaxWeightSubject 10
 
-class Teacher;
 class Kholleur;
 class Course;
 
@@ -25,7 +23,6 @@ class Subject
         QString getShortName() const;
         QString getColor() const;
         int getWeight() const;
-        QList<Teacher*>* teachers() const;
         QList<Kholleur*>* kholleurs() const;
         QList<Course*>* courses() const;
 
@@ -44,7 +41,6 @@ class Subject
         int m_weight;
 
         //Interface
-        QList<Teacher*>* m_teachers;
         QList<Kholleur*>* m_kholleurs;
         QList<Course*>* m_courses;
 };

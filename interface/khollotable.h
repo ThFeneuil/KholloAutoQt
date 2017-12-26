@@ -9,7 +9,6 @@
 
 #include <QGraphicsScene>
 #include <QMessageBox>
-#include <QSql>
 #include <QSqlQuery>
 #include <QPainter>
 #include <QPixmap>

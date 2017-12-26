@@ -11,6 +11,7 @@ StudentsManager::StudentsManager(QSqlDatabase *db, QWidget *parent) :
     connect(ui->pushButton_update, SIGNAL(clicked()), this, SLOT(update_student()));
     connect(ui->pushButton_delete, SIGNAL(clicked()), this, SLOT(delete_student()));
     connect(ui->list_students, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(update_student()));
+    connect(ui->btn_import, SIGNAL(clicked()), this, SLOT(import_students()));
 
     // DB
     m_db = db;
@@ -123,4 +124,22 @@ bool StudentsManager::delete_student() {
     }
 
     return true;
+}
+
+void StudentsManager::import_students() {
+    //Try to load directory preferences
+    Preferences pref;
+    QString pref_path = pref.dir();
+
+    //Get file name
+    QString filename = QFileDialog::getOpenFileName(this, "Ouvrir un fichier", pref_path + QDir::separator(), "CSV (*.csv)");
+
+    if(filename == "")
+        return;
+
+    //Use StudentsImportManager
+    StudentsImportManager manager(m_db, this);
+    if(manager.load(filename))
+        QMessageBox::information(this, "Importation", "Importation des étudiants réussie.");
+    update_list();
 }

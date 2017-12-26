@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_Schedule_Students_Groups, SIGNAL(triggered()), this, SLOT(openUsersGroupsManager()));
     connect(ui->action_Schedule_Timetable, SIGNAL(triggered()), this, SLOT(openCoursesManager()));
     connect(ui->action_Schedule_Swapping_Groups, SIGNAL(triggered()), this, SLOT(openGroupsSwappingsManager()));
+    connect(ui->action_Schedule_Tribes, SIGNAL(triggered()), this, SLOT(openTribesManager()));
     connect(ui->action_Schedule_Kholles, SIGNAL(triggered()), this, SLOT(openTimeslotsManager()));
     connect(ui->action_Schedule_Events, SIGNAL(triggered()), this, SLOT(openEventsManager()));
     connect(ui->action_Kholles_Interface, SIGNAL(triggered()), this, SLOT(openInterface()));
@@ -149,7 +150,7 @@ void MainWindow::openCoursesManager() {
 
     if(db.isOpen()) {
         // Open the manager
-        CoursesManager manager(&db, this);
+        TimetableManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -164,6 +165,20 @@ void MainWindow::openGroupsSwappingsManager() {
     if(db.isOpen()) {
         // Open the manager
         GroupsSwappingsManager manager(&db, this);
+        manager.exec();
+    }
+    else {
+        QMessageBox::critical(this, "Erreur", "La connexion à la base de données a échoué");
+    }
+}
+
+void MainWindow::openTribesManager() {
+    //Get connection information
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if(db.isOpen()) {
+        // Open the manager
+        TribesManager manager(&db, this);
         manager.exec();
     }
     else {
@@ -289,8 +304,9 @@ void MainWindow::openAboutIt() {
 }
 
 void MainWindow::openHelp(){
-    ContactDialog dialog(this);
-    dialog.exec();
+    bool success = QDesktopServices::openUrl(QUrl("file:///"+QApplication::applicationDirPath()+"/tutoriels", QUrl::TolerantMode));
+    if(! success)
+        QDesktopServices::openUrl(QUrl("file:///"+QApplication::applicationDirPath(), QUrl::TolerantMode));
 }
 
 void MainWindow::openSettings() {
@@ -299,7 +315,6 @@ void MainWindow::openSettings() {
 }
 
 void MainWindow::createKhollo() {
-    record(false);
     //Try to load directory preferences
     Preferences pref;
     QString pref_path = pref.dir();
@@ -313,6 +328,7 @@ void MainWindow::createKhollo() {
         return;
     }
 
+    record(false);
     //Save directory in preferences
     QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
     pref.setDir(dirpath);
@@ -326,7 +342,6 @@ void MainWindow::createKhollo() {
 }
 
 void MainWindow::openKhollo() {
-    record(false);
     //Try to load directory preferences
     Preferences pref;
     QString pref_path = pref.dir();
@@ -350,6 +365,7 @@ void MainWindow::openKhollo() {
 }
 
 void MainWindow::openKhollo(QString filename) {
+    record(false);
     //Save directory in preferences
     QString dirpath = QFileInfo(filename).absoluteDir().absolutePath();
     Preferences pref; pref.setDir(dirpath);
@@ -384,6 +400,7 @@ void MainWindow::updateWindow() {
     ui->action_Schedule_Timetable->setEnabled(db.isOpen());
     ui->action_Schedule_Students_Groups->setEnabled(db.isOpen());
     ui->action_Schedule_Swapping_Groups->setEnabled(db.isOpen());
+    ui->action_Schedule_Tribes->setEnabled(db.isOpen());
     ui->action_Schedule_Kholles->setEnabled(db.isOpen());
     ui->action_Schedule_Events->setEnabled(db.isOpen());
     ui->action_Kholles_Interface->setEnabled(db.isOpen());
@@ -396,8 +413,9 @@ void MainWindow::record(bool start) {
     if(start) {
         QSqlDatabase db = QSqlDatabase::database();
         QSqlQuery qInilisation(db);
-        qInilisation.prepare("INSERT INTO `tau_record`(`date`, `minutes`) VALUES(:date, 0)");
+        qInilisation.prepare("INSERT INTO `tau_record`(`date`, `minutes`, `version`) VALUES(:date, 0, :version)");
         qInilisation.bindValue(":date", QDate::currentDate().toString("yyyy-MM-dd"));
+        qInilisation.bindValue(":version", APP_VERSION);
         qInilisation.exec();
         m_idRecord = qInilisation.lastInsertId().toInt();
         if(m_idRecord >= 0) {

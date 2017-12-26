@@ -8,7 +8,6 @@
 #define INTERFACETAB_H
 
 #include <QWidget>
-#include <QSql>
 #include <QSqlQuery>
 #include <QListWidget>
 #include "storedData/subject.h"

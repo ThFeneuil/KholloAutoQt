@@ -96,6 +96,7 @@
      <string>&amp;Kholles</string>
     </property>
     <addaction name="action_Kholles_Interface"/>
+    <addaction name="action_Schedule_Tribes"/>
     <addaction name="action_Kholles_Generate"/>
     <addaction name="action_Kholles_LastChanges"/>
     <addaction name="action_Kholles_Historic"/>
@@ -171,7 +172,7 @@
   </action>
   <action name="action_DB_Kholleurs">
    <property name="text">
-    <string>E&amp;nseignants</string>
+    <string>K&amp;holleurs</string>
    </property>
   </action>
   <action name="action_Schedule_Timetable">
@@ -182,7 +183,7 @@
     <string>&amp;Emploi du temps</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+T</string>
+    <string>Ctrl+E</string>
    </property>
   </action>
   <action name="action_Schedule_Students_Groups">
@@ -235,7 +236,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Contacts</string>
+    <string>&amp;Tutoriels</string>
    </property>
   </action>
   <action name="action_AboutIt">
@@ -258,7 +259,15 @@
   </action>
   <action name="action_File_Settings">
    <property name="text">
-    <string>P&amp;aramètres</string>
+    <string>Para&amp;mètres</string>
+   </property>
+  </action>
+  <action name="action_Schedule_Tribes">
+   <property name="text">
+    <string>&amp;Tribus de kholles</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
    </property>
   </action>
  </widget>

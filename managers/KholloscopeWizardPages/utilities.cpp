@@ -66,7 +66,7 @@ QMap<int, float>* Utilities::corrected_proba(DataBase* dbase, Student *user, QLi
 }
 
 
-bool Utilities::compatible(QSqlDatabase *db, DataBase *dbase, int id_user, Timeslot *timeslot, int week) {
+bool Utilities::compatible(QSqlDatabase *db, DataBase *dbase, int id_user, Timeslot *timeslot, int week, int id_kholle_avoid, int *id_pb_kholle) {
     //Get all groups of user (the ids)
     QList<Group*> *groups = dbase->listStudents()->value(id_user)->groups();
 
@@ -109,9 +109,9 @@ bool Utilities::compatible(QSqlDatabase *db, DataBase *dbase, int id_user, Times
 
     }
 
-    //Get all kholles that can interfere with this timeslot
+    //Get all kholles that can interfere with this timeslot (except the kholle to avoid)
     QSqlQuery kholle_query(*db);
-    kholle_query.prepare("SELECT * FROM tau_kholles AS K JOIN tau_timeslots AS T ON K.`id_timeslots` = T.`id` WHERE K.`id_users`=:id_users AND T.`date`=:date AND ("
+    kholle_query.prepare("SELECT K.`id` FROM tau_kholles AS K JOIN tau_timeslots AS T ON K.`id_timeslots` = T.`id` WHERE K.`id_users`=:id_users AND T.`date`=:date AND K.`id`!=:id_avoid AND ("
                          "(T.`time_start` <= :time_start AND T.`time_end` > :time_start) OR "
                          "(T.`time_start` < :time_end AND T.`time_end` >= :time_end) OR "
                          "(T.`time_start` >= :time_start AND T.`time_end` <= :time_end))");
@@ -119,13 +119,39 @@ bool Utilities::compatible(QSqlDatabase *db, DataBase *dbase, int id_user, Times
     kholle_query.bindValue(":date", timeslot->getDate().toString("yyyy-MM-dd"));
     kholle_query.bindValue(":time_start", timeslot->getTime_start().toString("HH:mm:ss"));
     kholle_query.bindValue(":time_end", timeslot->getTime_end().toString("HH:mm:ss"));
+    kholle_query.bindValue(":id_avoid", id_kholle_avoid);
     kholle_query.exec();
 
     if(kholle_query.next()) {
+        if(id_pb_kholle != NULL) {
+            int id = kholle_query.value(0).toInt();
+            if(!kholle_query.next())
+                *id_pb_kholle = id;
+        }
         return false;
     }
 
     return true;
+}
+
+void Utilities::make_exchange(QSqlDatabase *db, DataBase *dbase, Kholle* current, Timeslot* t_current, Kholle* k, Timeslot* t, int week, QList<Kholle*> kholloscope) {
+    /** Realises the exchange locally and on DB **/
+
+    QSqlQuery query(*db);
+    query.prepare("UPDATE tau_kholles SET id_timeslots=:id_ts WHERE id=:id");
+    query.bindValue(":id", current->getId());
+    query.bindValue(":id_ts", t->getId());
+    query.exec();
+
+    query.prepare("UPDATE tau_kholles SET id_timeslots=:id_ts WHERE id=:id");
+    query.bindValue(":id", k->getId());
+    query.bindValue(":id_ts", t_current->getId());
+    query.exec();
+
+    current->setId_timeslots(t->getId());
+    current->updateStatus(dbase, db, kholloscope, week);
+    k->setId_timeslots(t_current->getId());
+    k->updateStatus(dbase, db, kholloscope, week);
 }
 
 void Utilities::quickSort(QList<Timeslot *> *list, int i, int j, QMap<int, float> *probas) {
@@ -150,18 +176,18 @@ void Utilities::quickSort(QList<Timeslot *> *list, int i, int j, QMap<int, float
     quickSort(list, pivot_index+1, j, probas);
 }
 
-int Utilities::listMax(DataBase *dbase, QList<Timeslot *> list, Student* user, QDate m_date) {
+int Utilities::listMax(QList<Timeslot *> list, QMap<int, float> *probas) {
     /** Returns the highest probability from the list or a very high score if the list is empty
         Attention ! Student must have "kholles" and other properties set (from DataBase) **/
     int i;
     bool is_empty = true;
     int max = 0;
 
-    QMap<int, float> *probas = corrected_proba(dbase, user, list, m_date);
+    //QMap<int, float> *probas = corrected_proba(dbase, user, list, m_date);
 
     for(i = 0; i < list.length(); i++) {
         float p = probas->value(list[i]->getId());
-        if(i == 0 || p > max)
+        if(p > max || i == 0)
             max = p;
         if(list[i]->getPupils() > 0) {
             /*float p = probas->value(list[i]->getId());
@@ -171,7 +197,7 @@ int Utilities::listMax(DataBase *dbase, QList<Timeslot *> list, Student* user, Q
         }
     }
 
-    delete probas;
+    //delete probas;
 
     if(is_empty)
         return 1000000;

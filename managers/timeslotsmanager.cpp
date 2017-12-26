@@ -16,6 +16,7 @@ TimeslotsManager::TimeslotsManager(QSqlDatabase *db, QDate date, QWidget *parent
     days << "" << "Lundi" << "Mardi" << "Mercredi" << "Jeudi" << "Vendredi" << "Samedi";
 
     getKholleurs();
+    displayNameClass();
 
     connect(ui->listKholleurs, SIGNAL(itemSelectionChanged()), this, SLOT(onSelection_change()));
     connect(ui->listTimeslots, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(deleteTimeslot(QListWidgetItem*)));
@@ -24,6 +25,8 @@ TimeslotsManager::TimeslotsManager(QSqlDatabase *db, QDate date, QWidget *parent
     connect(ui->deleteButton, SIGNAL(clicked()), this, SLOT(deleteTimeslot()));
     connect(ui->copyButton, SIGNAL(clicked()), this, SLOT(copyTimeslots()));
     connect(ui->copyAllButton, SIGNAL(clicked()), this, SLOT(copyAllTimeslots()));
+    connect(ui->dowloadButton, SIGNAL(clicked(bool)), this, SLOT(downloadTimeslots()));
+    connect(ui->edit_name_class, SIGNAL(editingFinished()), this, SLOT(saveNameClass()));
 
     m_shortcutNotepad = Notepad::shortcut();
     this->addAction(m_shortcutNotepad);
@@ -41,6 +44,7 @@ TimeslotsManager::~TimeslotsManager()
 void TimeslotsManager::getKholleurs() {
     //Free
     freeKholleurs();
+    ui->listKholleurs->clear();
 
     //Prepare query
     QSqlQuery query(*m_db);
@@ -266,10 +270,11 @@ void TimeslotsManager::deleteTimeslot(QListWidgetItem *item) {
                                                                  "ainsi que les <strong>kholles</strong> associées. <br /> Voulez-vous continuer ?", QMessageBox::Yes | QMessageBox::No);
 
     if(res == QMessageBox::Yes) {
+        QSqlQuery query(*m_db);
+        m_db->transaction();
         for(int i=0; i<selection.length(); i++) {
             Timeslot* ts = (Timeslot*) selection[i]->data(Qt::UserRole).toULongLong();
             //Query
-            QSqlQuery query(*m_db);
             query.prepare("DELETE FROM tau_kholles WHERE id_timeslots=:id_timeslots");
             query.bindValue(":id_timeslots", ts->getId());
             query.exec();
@@ -277,6 +282,7 @@ void TimeslotsManager::deleteTimeslot(QListWidgetItem *item) {
             query.bindValue(":id", ts->getId());
             query.exec();
         }
+        m_db->commit();
         //Update
         update_list_timeslots(((Kholleur*)kholleurs[0]->data(Qt::UserRole).toULongLong())->getId());
     }
@@ -313,4 +319,163 @@ void TimeslotsManager::copyAllTimeslots() {
     if(selection.length() > 0) {
         update_list_timeslots(((Kholleur*) selection[0]->data(Qt::UserRole).toULongLong())->getId());
     }
+}
+
+void TimeslotsManager::downloadTimeslots() {
+    QString name_class = ui->edit_name_class->text();
+    if(name_class.length() > 10) {
+        QMessageBox::critical(this, "Erreur", "Le nom de la classe doit posséder au plus 10 caractères...");
+    } else {
+        QSqlQuery qVerif(*m_db);
+        qVerif.prepare("SELECT COUNT(*) FROM tau_timeslots "
+                        "WHERE date>=:monday_date AND date<=:sunday_date");
+        qVerif.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
+        qVerif.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
+        qVerif.exec();
+
+        if(qVerif.next()) {
+            int nbSlots = qVerif.value(0).toInt();
+            if(nbSlots > 0) {
+                QMessageBox msg;
+                msg.setWindowTitle("Téléchargement");
+                msg.setIcon(QMessageBox::Warning);
+                msg.setText("La semaine courante possède déjà des horaires. Voulez-vous supprimer les horaires pour les remplacer par ceux qui vont être téléchargés, ou préférez-vous les garder ? <strong>Attention, si vous remplacez les horaires, les kholles qui leur sont associées vont être supprimées !</strong>");
+                QAbstractButton *keep_btn = (QAbstractButton*) msg.addButton("Garder les horaires", QMessageBox::ApplyRole);
+                QAbstractButton *replace_btn = (QAbstractButton*) msg.addButton("Remplacer les horaires (!)", QMessageBox::ApplyRole);
+                msg.addButton("Annuler", QMessageBox::ApplyRole);
+                msg.exec();
+
+                if(msg.clickedButton() == replace_btn) {
+                    //Delete all timeslots for this week
+                    qVerif.prepare("DELETE FROM tau_kholles WHERE id_timeslots IN "
+                                            "(SELECT id FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date)");
+                    qVerif.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
+                    qVerif.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
+                    qVerif.exec();
+                    qVerif.prepare("DELETE FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date");
+                    qVerif.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
+                    qVerif.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
+                    qVerif.exec();
+                } else if(msg.clickedButton() != keep_btn)
+                    return;
+            }
+        }
+
+
+        ui->dowloadButton->setEnabled(false);
+        ui->dowloadButton->setText("Téléchargement...");
+        Preferences pref;
+        ODBSqlQuery* query = NULL;
+        if(pref.serverDefault())
+                query = new ODBSqlQuery(DEFAULT INTO(this, downloadedTimeslots));
+        else    query = new ODBSqlQuery(FROM(pref.serverScript(), pref.serverPassword()) INTO(this, downloadedTimeslots));
+        query->prepare("SELECT id, time, time_start, time_end, kholleur, date, nb_pupils, subject FROM spark_timeslots WHERE class=:class AND date>=:start AND date<=:end ORDER BY UPPER(kholleur);");
+        query->bindValue(":class", name_class);
+        query->bindValue(":start", m_date.toString("yyyy-MM-dd"));
+        query->bindValue(":end", m_date.addDays(6).toString("yyyy-MM-dd"));
+        query->exec();
+        delete query;
+    }
+}
+
+void TimeslotsManager::downloadedTimeslots(ODBRequest *req) {
+
+    if(req->lastError() == "") {
+        QSqlQuery query(*m_db);
+        query.exec("SELECT name, id_kholleurs FROM tau_merge_kholleurs");
+        QMap<QString, int>* idKholleurs = new QMap<QString, int>;
+        while(query.next())
+            idKholleurs->insert(query.value(0).toString(), query.value(1).toInt());
+
+        QList<Kholleur*>* anonymousKholleurs = new QList<Kholleur*>;
+        QList<QMap<QString, QVariant>*>* res = req->result();
+        for(int i=0; i<res->length(); i++) {
+            QMap<QString, QVariant>* row = res->at(i);
+            // We avoid a "MergeSubjectsManager" concatenating the subjet with the name of the kholleur...
+            QString name_khll = row->value("kholleur").toString() + " (" + row->value("subject").toString() + ")";
+
+            if(idKholleurs->contains(name_khll) == false && (anonymousKholleurs->length() == 0 || anonymousKholleurs->last()->getName() != name_khll)) {
+                Kholleur* khll = new Kholleur;
+                khll->setName(name_khll);
+                khll->setPupils(row->value("nb_pupils").toInt());
+                khll->setPreparation(row->value("time_start").toTime().secsTo(row->value("time").toTime()) / 60);
+                khll->setDuration(row->value("time").toTime().secsTo(row->value("time_end").toTime()) / 60);
+                anonymousKholleurs->append(khll);
+            }
+        }
+
+        if(anonymousKholleurs->length() > 0) {
+            MergeKholleursManager manager(m_db, anonymousKholleurs, idKholleurs, this);
+            if(manager.exec() == QDialog::Rejected) {
+                ui->dowloadButton->setText("Télécharger");
+                ui->dowloadButton->setEnabled(true);
+                delete req;
+                QMessageBox::information(this, "Opération anulée", "Téléchargement annulé...");
+                return;
+            }
+        }
+
+        QString queryInsert_str = "";
+        int nbTimeslots = 0;
+        for(int i=0; i<res->length(); i++) {
+            QMap<QString, QVariant>* row = res->at(i);
+            Timeslot* slot = new Timeslot;
+            slot->setId(row->value("id").toInt());
+            slot->setTime(row->value("time").toTime());
+            slot->setTime_start(row->value("time_start").toTime());
+            slot->setTime_end(row->value("time_end").toTime());
+            // We avoid a "MergeSubjectsManager" concatenating the subjet with the name of the kholleur...
+            QString name_khll = row->value("kholleur").toString() + " (" + row->value("subject").toString() + ")";
+            slot->setDate(row->value("date").toDate());
+            slot->setPupils(row->value("nb_pupils").toInt());
+
+            if(idKholleurs->contains(name_khll)) {
+                slot->setId_kholleurs(idKholleurs->value(name_khll));
+                queryInsert_str += (queryInsert_str != "") ? ", " : "";
+                queryInsert_str += "('"+slot->getTime().toString("hh:mm:ss")+"', '"+slot->getTime_start().toString("hh:mm:ss")+"', '"+slot->getTime_end().toString("hh:mm:ss")+"', ";
+                queryInsert_str += QString::number(slot->getId_kholleurs())+", '"+slot->getDate().toString("yyyy-MM-dd")+"', "+QString::number(slot->getPupils())+")";
+                nbTimeslots++;
+            } else    QMessageBox::information(this, "Error", "FAIL");
+
+            delete slot;
+        }
+
+        if(queryInsert_str != "") {
+            queryInsert_str = "INSERT INTO tau_timeslots(time, time_start, time_end, id_kholleurs, date, pupils) VALUES"+queryInsert_str+";";
+            query.exec(queryInsert_str);
+            QMessageBox::information(this, "Succés", "Le téléchargement a réussi : "+QString::number(nbTimeslots)+" horaire(s) de kholle téléchargé(s).");
+        } else {
+            QMessageBox::information(this, "Succés", "Aucun horaire de kholle n'a été trouvé...");
+        }
+    } else
+        QMessageBox::critical(this, "Error", req->lastError());
+
+    delete req;
+    ui->dowloadButton->setText("Télécharger");
+    ui->dowloadButton->setEnabled(true);
+    getKholleurs();
+    QList<QListWidgetItem*> selection = ui->listKholleurs->selectedItems();
+    if(selection.length() > 0) {
+        update_list_timeslots(((Kholleur*) selection[0]->data(Qt::UserRole).toULongLong())->getId());
+    }
+}
+
+void TimeslotsManager::displayNameClass() {
+    QSqlQuery query(*m_db);
+    query.exec("SELECT `value` FROM `tau_general` WHERE `key`='name_class';");
+
+    //Treat
+    if(query.next()) {
+        ui->edit_name_class->setText(query.value(0).toString());
+    } else {
+        query.exec("INSERT INTO `tau_general`(`key`, `value`) VALUES('name_class', '');");
+        ui->edit_name_class->setText("");
+    }
+}
+
+void TimeslotsManager::saveNameClass() {
+    QSqlQuery query(*m_db);
+    query.prepare("UPDATE `tau_general` SET `value`=:value WHERE `key`='name_class';");
+    query.bindValue(":value", ui->edit_name_class->text());
+    query.exec();
 }

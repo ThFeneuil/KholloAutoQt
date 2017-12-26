@@ -6,12 +6,13 @@
 #include <QByteArray>
 #include <QTimer>
 #include <QtGlobal>
+#include <QDesktopServices>
 #include "managers/studentsmanager.h"
 #include "managers/groupsmanager.h"
 #include "managers/subjectsmanager.h"
 #include "managers/kholleursmanager.h"
 #include "managers/usersgroupsmanager.h"
-#include "managers/coursesmanager.h"
+#include "managers/tribesmanager.h"
 #include "managers/introtimeslots.h"
 #include "managers/eventsmanager.h"
 #include "managers/kholloscopewizard.h"
@@ -20,11 +21,11 @@
 #include "interface/introinterface.h"
 #include "managers/lastchanges.h"
 #include "aboutitdialog.h"
-#include "contactdialog.h"
 #include "reviewdialog.h"
 #include "kscopemanager.h"
 #include "settingsdialog.h"
 #include "notepad.h"
+#include "managers/timetablemanager.h"
 
 namespace Ui {
 class MainWindow;
@@ -49,6 +50,7 @@ public slots:
     void openUsersGroupsManager();
     void openCoursesManager();
     void openGroupsSwappingsManager();
+    void openTribesManager();
     void openTimeslotsManager();
     void openEventsManager();
     void openInterface();

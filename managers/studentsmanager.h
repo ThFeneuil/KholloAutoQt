@@ -5,8 +5,11 @@
 #include <QtSql>
 #include <QMessageBox>
 #include <QQueue>
+#include <QFileDialog>
 #include "storedData/student.h"
 #include "managers/updatestudentdialog.h"
+#include "managers/studentsimportmanager.h"
+#include "settingsdialog.h"
 
 
 namespace Ui {
@@ -27,6 +30,7 @@ public slots:
     bool add_student();
     bool update_student();
     bool delete_student();
+    void import_students();
 
 private:
     Ui::StudentsManager *ui;

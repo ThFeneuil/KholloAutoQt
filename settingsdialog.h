@@ -22,6 +22,7 @@ public:
 
 public slots:
     bool save();
+    bool update();
 
 private:
     Ui::SettingsDialog *ui;
@@ -41,14 +42,23 @@ public:
     // Setters
     bool setDir(QString dir);
     bool setFormatPDF(FormatPDF format);
+    bool setServerDefault(bool isDefault);
+    bool setServerScript(QString script);
+    bool setServerPassword(QString password);
 
     // Getters
     QString dir();
     FormatPDF formatPDF();
+    bool serverDefault();
+    QString serverScript();
+    QString serverPassword();
 
 private:
     QString m_dir;
     FormatPDF m_formatPDF;
+    bool m_serverDefault;
+    QString m_serverScript;
+    QString m_serverPassword;
 };
 
 #endif // SETTINGSDIALOG_H

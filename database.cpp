@@ -5,7 +5,6 @@ DataBase::DataBase(QSqlDatabase *db) {
     m_listStudents = new QMap<int, Student*>();
     m_listGroups = new QMap<int, Group*>();
     m_listSubjects = new QMap<int, Subject*>();
-    m_listTeachers = new QMap<int, Teacher*>();
     m_listKholleurs = new QMap<int, Kholleur*>();
     m_listCourses = new QMap<int, Course*>();
     m_listTimeslots = new QMap<int, Timeslot*>();
@@ -31,11 +30,6 @@ DataBase::~DataBase() {
     while (iSubjects.hasNext()) {
         iSubjects.next();
         delete iSubjects.value();
-    }
-    QMapIterator<int, Teacher*> iTeachers(*m_listTeachers);
-    while (iTeachers.hasNext()) {
-        iTeachers.next();
-        delete iTeachers.value();
     }
     QMapIterator<int, Kholleur*> iKholleurs(*m_listKholleurs);
     while (iKholleurs.hasNext()) {
@@ -66,7 +60,6 @@ DataBase::~DataBase() {
     delete m_listStudents;
     delete m_listGroups ;
     delete m_listSubjects;
-    delete m_listTeachers;
     delete m_listKholleurs;
     delete m_listCourses;
     delete m_listTimeslots;
@@ -82,9 +75,6 @@ QMap<int, Group*>* DataBase::listGroups() const {
 }
 QMap<int, Subject*>* DataBase::listSubjects() const {
     return m_listSubjects;
-}
-QMap<int, Teacher*>* DataBase::listTeachers() const {
-    return m_listTeachers;
 }
 QMap<int, Kholleur*>* DataBase::listKholleurs() const {
     return m_listKholleurs;
@@ -162,23 +152,6 @@ bool DataBase::load(QProgressBar* progressBar) {
 
     if(progressBar) progressBar->setValue(30); // Indicator
 
-    QSqlQuery qTeachers(*m_db);
-    qTeachers.exec("SELECT id, name, id_subjects FROM tau_teachers");
-    while (qTeachers.next()) {
-        Teacher* tcher = new Teacher();
-        tcher->setId(qTeachers.value(0).toInt());
-        tcher->setName(qTeachers.value(1).toString());
-        tcher->setId_subjects(qTeachers.value(2).toInt());
-
-        m_listTeachers->insert(tcher->getId(), tcher);
-
-        tcher->setSubject(m_listSubjects->value(tcher->getId_subjects()));
-        if(tcher->getId_subjects())
-            m_listSubjects->value(tcher->getId_subjects())->teachers()->append(tcher);
-    }
-
-    if(progressBar) progressBar->setValue(40); // Indicator
-
     QSqlQuery qKholleurs(*m_db);
     qKholleurs.exec("SELECT id, name, id_subjects, duration, preparation, pupils FROM tau_kholleurs");
     while (qKholleurs.next()) {
@@ -201,8 +174,8 @@ bool DataBase::load(QProgressBar* progressBar) {
 
     QSqlQuery qCourses(*m_db);
     if(m_conditionCourses != "")
-            qCourses.exec("SELECT id, id_subjects, time_start, time_end, id_groups, id_teachers, id_day, id_week FROM tau_courses WHERE " + m_conditionCourses);
-    else    qCourses.exec("SELECT id, id_subjects, time_start, time_end, id_groups, id_teachers, id_day, id_week FROM tau_courses");
+            qCourses.exec("SELECT id, id_subjects, time_start, time_end, id_groups, id_day, id_week FROM tau_courses WHERE " + m_conditionCourses);
+    else    qCourses.exec("SELECT id, id_subjects, time_start, time_end, id_groups, id_day, id_week FROM tau_courses");
     while (qCourses.next()) {
         Course* course = new Course();
         course->setId(qCourses.value(0).toInt());
@@ -210,18 +183,15 @@ bool DataBase::load(QProgressBar* progressBar) {
         course->setTime_start(qCourses.value(2).toTime());
         course->setTime_end(qCourses.value(3).toTime());
         course->setId_groups(qCourses.value(4).toInt());
-        course->setId_teachers(qCourses.value(5).toInt());
-        course->setId_day(qCourses.value(6).toInt());
-        course->setId_week(qCourses.value(7).toInt());
+        course->setId_day(qCourses.value(5).toInt());
+        course->setId_week(qCourses.value(6).toInt());
 
         m_listCourses->insert(course->getId(), course);
 
         course->setSubject(m_listSubjects->value(course->getId_subjects()));
         course->setGroup(m_listGroups->value(course->getId_groups()));
-        course->setTeacher(m_listTeachers->value(course->getId_teachers()));
         m_listSubjects->value(course->getId_subjects())->courses()->append(course);
         m_listGroups->value(course->getId_groups())->courses()->append(course);
-        m_listTeachers->value(course->getId_teachers())->courses()->append(course);
     }
 
     if(progressBar) progressBar->setValue(60); // Indicator
