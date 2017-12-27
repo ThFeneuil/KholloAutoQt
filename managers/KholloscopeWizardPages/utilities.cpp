@@ -134,6 +134,10 @@ bool Utilities::compatible(QSqlDatabase *db, DataBase *dbase, int id_user, Times
     return true;
 }
 
+bool Utilities::compatible(Timeslot *t1, Timeslot *t2) {
+    return (t1->getDate() != t2->getDate() || t1->getTime_end() <= t2->getTime_start() || t1->getTime_start() >= t2->getTime_end());
+}
+
 void Utilities::make_exchange(QSqlDatabase *db, DataBase *dbase, Kholle* current, Timeslot* t_current, Kholle* k, Timeslot* t, int week, QList<Kholle*> kholloscope) {
     /** Realises the exchange locally and on DB **/
 

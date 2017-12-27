@@ -154,3 +154,8 @@ macx {
     QMAKE_INFO_PLIST = Info.plist
     ICON = "images/iconApp.icns"
 }
+
+win32: LIBS += -L$$PWD/GLPK/ -lglpk_4_64
+
+INCLUDEPATH += $$PWD/GLPK
+DEPENDPATH += $$PWD/GLPK

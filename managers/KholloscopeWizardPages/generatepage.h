@@ -27,6 +27,7 @@
 #include "mainwindow.h"
 #include "printpdf.h"
 #include "utilities.h"
+#include "GLPK/glpk.h"
 
 #define TIMEOUT_INT 30000 //in msec
 #define MAX_ITERATION 100
@@ -57,35 +58,22 @@ public:
 
     QList<Subject *> *testAvailability();
 
-    void constructPoss();
-    void clearPoss();
-
-    QMap<int, QList<Timeslot*> > *updatePoss(int id_user, Timeslot *current);
-    void resetPoss(int id_user, QMap<int, QList<Timeslot*> > *old);
-
-    working_index *findMax();
     Kholle* createKholle(int id_student, Timeslot* ts);
+    void set_constraint_row(glp_prob *P, int i, QVector<int> vect);
     bool generate();
+    void finished(bool success);
 
     void setStatus();
     bool exchange(int index, ExchangeType type, int score_limit);
 
-    void force();
-    bool treatImpossible(int index, Kholle::Status stat_correct);
-    int remainImpossible(Kholle::Status stat);
-
     void display(int *errors, int *warnings);
     void displayCollision(int *collisions);
-    void displayBlocking();
     void displayConclusion(int errors, int warnings, int collisions);
 
     void freeKholles();
 
 public slots:
     void saveKholles();
-    void finished();
-    void abort();
-    void timeout();
     void show_notepad_collisions();
     void show_notepad_khollo();
 
@@ -98,10 +86,7 @@ private:
     int m_week;
     QDate m_date;
 
-    QMap<int, QMap<int, QList<Timeslot*> > > poss;
     QMap<int, QMap<int, QMap<int, float>* > > probabilities;
-    int profondeur;
-    working_index last_index;
     QList<Kholle*> kholloscope;
 
     QMap<int, bool> m_downgraded;
@@ -109,9 +94,6 @@ private:
     QString khollo_message;
     QString collisions_message;
 
-    bool m_timeout;
-    bool m_abort;
-    QFutureWatcher<bool> m_watcher;
     QMessageBox *m_box;
 };
 
