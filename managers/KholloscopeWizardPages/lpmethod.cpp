@@ -5,7 +5,7 @@ LPMethod::LPMethod(QSqlDatabase *db, QDate date, int week) : GenerationMethod(db
 
 }
 
-bool LPMethod::start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) {
+void LPMethod::start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) {
 
     testAvailability(selected_subjects, input);
 
@@ -14,13 +14,11 @@ bool LPMethod::start(QList<Subject*> *selected_subjects, QMap<int, QList<Student
     saveInSql();
     setKhollesStatus();
 
-    return success;
+    emit generationEnd(success ? 0 : 1);
 }
 
 bool LPMethod::generate(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) {
-    qDebug() << 40;
     glp_term_hook(lpMethodsaveLog, this);
-    qDebug() << 41;
 
     //Transform input
     QMap<int, QVector<int> > map_students_subjects; //Subjects vector corresponding to each Student

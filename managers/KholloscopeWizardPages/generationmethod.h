@@ -13,12 +13,15 @@
 
 #define NAME_FILE_LOG "gen_log.txt"
 
-class GenerationMethod
+class GenerationMethod : public QObject
 {
+    Q_OBJECT
+
 public:
     GenerationMethod(QSqlDatabase *db, QDate date, int week);
     virtual ~GenerationMethod();
-    virtual bool start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) = 0;
+    void launch(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
+    virtual void start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) = 0;
     void commit();
     void rollback();
     void log(QString text, bool canBeDisplayed);
@@ -37,6 +40,10 @@ public:
 
 private:
     void setPupilsOnTimeslots();
+
+signals:
+    void newLogInfo(QString text);
+    void generationEnd(int status);
 
 private:
     QSqlDatabase *m_db;

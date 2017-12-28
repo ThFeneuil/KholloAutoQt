@@ -14,8 +14,7 @@ GeneratePage::GeneratePage(QSqlDatabase *db, QWidget *parent) :
     m_genMethod = NULL;
 
     //Create message
-    m_box = new QMessageBox(QMessageBox::Information, "Génération automatique", "Génération en cours. Veuillez patienter...",
-                            QMessageBox::NoButton, this);
+    m_box = new GenerationWaitingDialog(this);
 
     //Pointer to MainWindow
     m_window = parent;
@@ -62,9 +61,12 @@ void GeneratePage::initializePage() {
     }
     delete problem_subjects;
 
+    m_genMethod->launch(((KholloscopeWizard*) wizard())->get_assoc_subjects(), ((KholloscopeWizard*) wizard())->get_input());
+
+    m_box->clear();
+    connect(m_genMethod, SIGNAL(newLogInfo(QString)), m_box, SLOT(addLogEvent(QString)));
+    connect(m_genMethod, SIGNAL(generationEnd(int)), this, SLOT(finished(int)));
     m_box->show();
-    //Start generating
-    finished(m_genMethod->start(((KholloscopeWizard*) wizard())->get_assoc_subjects(), ((KholloscopeWizard*) wizard())->get_input()));
 }
 
 void GeneratePage::cleanupPage() {
@@ -78,7 +80,9 @@ void GeneratePage::cleanupPage() {
     ui->tableKhollo->clear();
 }
 
-void GeneratePage::finished(bool success) {
+void GeneratePage::finished(int status) {
+    bool success = (status == 0);
+
     /** Called when the background process finishes **/
     timestamp = QString::number(QDateTime::currentMSecsSinceEpoch());
 

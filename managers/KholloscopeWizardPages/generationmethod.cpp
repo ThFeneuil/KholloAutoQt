@@ -31,6 +31,10 @@ GenerationMethod::~GenerationMethod() {
     delete m_dbase;
 }
 
+void GenerationMethod::launch(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) {
+    QtConcurrent::run(this, &GenerationMethod::start, selected_subjects, input);
+}
+
 void GenerationMethod::commit() {
     m_db->commit();
 }
@@ -79,6 +83,8 @@ bool GenerationMethod::compatible(int id_user, Timeslot *timeslot, int week, int
 }
 
 void GenerationMethod::log(QString text, bool canBeDisplayed) {
+    if(canBeDisplayed)
+        emit newLogInfo(text);
     if(m_out_log != NULL)
         (*m_out_log) << text;
 }

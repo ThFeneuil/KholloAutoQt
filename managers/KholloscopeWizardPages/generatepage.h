@@ -29,13 +29,7 @@
 #include "utilities.h"
 #include "GLPK/glpk.h"
 #include "lpmethod.h"
-
-struct working_index {
-    int current_student;
-    int current_subject;
-    int max;
-};
-
+#include "managers/KholloscopeWizardPages/generationwaitingdialog.h"
 
 namespace Ui {
 class GeneratePage;
@@ -56,7 +50,6 @@ public:
 
     //void set_constraint_row(glp_prob *P, int i, QVector<int> vect);
     //bool generate();
-    void finished(bool success);
 
     //void setStatus();
     //bool exchange(int index, ExchangeType type, int score_limit);
@@ -68,6 +61,7 @@ public:
     void freeKholles();
 
 public slots:
+    void finished(int status);
     void saveKholles();
     void show_notepad_collisions();
     void show_notepad_khollo();
@@ -89,7 +83,7 @@ private:
     QString khollo_message;
     QString collisions_message;
 
-    QMessageBox *m_box;
+    GenerationWaitingDialog *m_box;
 };
 
 #endif // GENERATEPAGE_H

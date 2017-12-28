@@ -34,7 +34,8 @@ FORMS += \
     interface/interfacetab_mac.ui \
     managers/timetablemanager.ui \
     managers/mergekholleursmanager.ui \
-    managers/tribesmanager.ui
+    managers/tribesmanager.ui \
+    managers/KholloscopeWizardPages/generationwaitingdialog.ui
 
 HEADERS += \
     mainwindow.h \
@@ -88,7 +89,8 @@ HEADERS += \
     managers/studentsimportmanager.h \
     managers/KholloscopeWizardPages/generationmethod.h \
     managers/KholloscopeWizardPages/fivewavesmethod.h \
-    managers/KholloscopeWizardPages/lpmethod.h
+    managers/KholloscopeWizardPages/lpmethod.h \
+    managers/KholloscopeWizardPages/generationwaitingdialog.h
 
 
 SOURCES += \
@@ -144,7 +146,8 @@ SOURCES += \
     managers/studentsimportmanager.cpp \
     managers/KholloscopeWizardPages/generationmethod.cpp \
     managers/KholloscopeWizardPages/fivewavesmethod.cpp \
-    managers/KholloscopeWizardPages/lpmethod.cpp
+    managers/KholloscopeWizardPages/lpmethod.cpp \
+    managers/KholloscopeWizardPages/generationwaitingdialog.cpp
 	
 DISTFILES +=
 

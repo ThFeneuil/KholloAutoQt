@@ -8,7 +8,7 @@ class LPMethod : public GenerationMethod
 {
 public:
     LPMethod(QSqlDatabase *db, QDate date, int week);
-    virtual bool start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
+    virtual void start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
 
 private:
     bool generate(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
