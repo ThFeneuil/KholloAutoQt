@@ -85,7 +85,10 @@ HEADERS += \
     onlinedatabase.h \
     managers/mergekholleursmanager.h \
     managers/tribesmanager.h \
-    managers/studentsimportmanager.h
+    managers/studentsimportmanager.h \
+    managers/KholloscopeWizardPages/generationmethod.h \
+    managers/KholloscopeWizardPages/fivewavesmethod.h \
+    managers/KholloscopeWizardPages/lpmethod.h
 
 
 SOURCES += \
@@ -138,7 +141,10 @@ SOURCES += \
     onlinedatabase.cpp \
     managers/mergekholleursmanager.cpp \
     managers/tribesmanager.cpp \
-    managers/studentsimportmanager.cpp
+    managers/studentsimportmanager.cpp \
+    managers/KholloscopeWizardPages/generationmethod.cpp \
+    managers/KholloscopeWizardPages/fivewavesmethod.cpp \
+    managers/KholloscopeWizardPages/lpmethod.cpp
 	
 DISTFILES +=
 
