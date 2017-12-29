@@ -156,6 +156,7 @@ macx {
 }
 
 win32: LIBS += -L$$PWD/GLPK/ -lglpk_4_64
+macx: LIBS += -L$$PWD/GLPK/ -lglpk.40
 
 INCLUDEPATH += $$PWD/GLPK
 DEPENDPATH += $$PWD/GLPK
