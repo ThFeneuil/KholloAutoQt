@@ -28,18 +28,8 @@
 #include "printpdf.h"
 #include "utilities.h"
 #include "GLPK/glpk.h"
-
-#define TIMEOUT_INT 30000 //in msec
-#define MAX_ITERATION 100
-
-struct working_index {
-    int current_student;
-    int current_subject;
-    int max;
-};
-
-
-enum ExchangeType {Collisions, Warnings, All};
+#include "lpmethod.h"
+#include "managers/KholloscopeWizardPages/generationwaitingdialog.h"
 
 namespace Ui {
 class GeneratePage;
@@ -54,17 +44,15 @@ public:
     ~GeneratePage();
     void initializePage();
     void cleanupPage();
-    void setPupilsOnTimeslots();
+    //void setPupilsOnTimeslots();
 
-    QList<Subject *> *testAvailability();
+    //QList<Subject *> *testAvailability();
 
-    Kholle* createKholle(int id_student, Timeslot* ts);
-    void set_constraint_row(glp_prob *P, int i, QVector<int> vect);
-    bool generate();
-    void finished(bool success);
+    //void set_constraint_row(glp_prob *P, int i, QVector<int> vect);
+    //bool generate();
 
-    void setStatus();
-    bool exchange(int index, ExchangeType type, int score_limit);
+    //void setStatus();
+    //bool exchange(int index, ExchangeType type, int score_limit);
 
     void display(int *errors, int *warnings);
     void displayCollision(int *collisions);
@@ -73,6 +61,7 @@ public:
     void freeKholles();
 
 public slots:
+    void finished(int status);
     void saveKholles();
     void show_notepad_collisions();
     void show_notepad_khollo();
@@ -82,19 +71,19 @@ private:
     QObject *m_window;
     QSqlDatabase *m_db;
     DataBase *m_dbase;
-    QFile *log_file;
+    GenerationMethod *m_genMethod;
     int m_week;
     QDate m_date;
 
     QMap<int, QMap<int, QMap<int, float>* > > probabilities;
-    QList<Kholle*> kholloscope;
+    //QList<Kholle*> kholloscope;
 
     QMap<int, bool> m_downgraded;
     QString timestamp;
     QString khollo_message;
     QString collisions_message;
 
-    QMessageBox *m_box;
+    GenerationWaitingDialog *m_box;
 };
 
 #endif // GENERATEPAGE_H
