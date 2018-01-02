@@ -16,17 +16,43 @@ enum ExchangeType {Collisions, Warnings, All};
 
 class FiveWavesMethod : public GenerationMethod
 {
+    Q_OBJECT
+
 public:
     FiveWavesMethod(QSqlDatabase *db, QDate date, int week);
+    void launch(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
     virtual void start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
 
+public slots:
+    void abort();
+
 private:
+    void constructPoss(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
+    void clearPoss();
+
+    QMap<int, QList<Timeslot*> > *updatePoss(int id_user, Timeslot *current);
+    void resetPoss(int id_user, QMap<int, QList<Timeslot*> > *old);
+
     working_index* findMax();
+    Kholle *create_add_kholle(Student *s, Timeslot* ts);
+    bool wave_1();
+
+    void force();
+    bool treatImpossible(int index, Kholle::Status stat_correct);
+    int remainImpossible(Kholle::Status stat);
+
     bool exchange(int index, ExchangeType type, int score_limit);
-    bool generate();
+
+private slots:
+    void timeout();
 
 private:
     QMap<int, QMap<int, QList<Timeslot*> > > m_poss;
+    QMap<int, QMap<int, QMap<int, float>* > > m_probabilities;
+    working_index last_index;
+    QMap<int, bool> m_downgraded;
+    bool m_timeout;
+    bool m_abort;
 };
 
 #endif // FIVEWAVESMETHOD_H

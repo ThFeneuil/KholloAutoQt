@@ -61,12 +61,12 @@ void GeneratePage::initializePage() {
     }
     delete problem_subjects;
 
-    m_genMethod->launch(((KholloscopeWizard*) wizard())->get_assoc_subjects(), ((KholloscopeWizard*) wizard())->get_input());
-
     m_box->clear();
     connect(m_genMethod, SIGNAL(newLogInfo(QString)), m_box, SLOT(addLogEvent(QString)));
     connect(m_genMethod, SIGNAL(generationEnd(int)), this, SLOT(finished(int)));
     m_box->show();
+
+    m_genMethod->launch(((KholloscopeWizard*) wizard())->get_assoc_subjects(), ((KholloscopeWizard*) wizard())->get_input());
 }
 
 void GeneratePage::cleanupPage() {

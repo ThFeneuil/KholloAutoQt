@@ -62,6 +62,11 @@ float GenerationMethod::proba(Student *user, Timeslot *timeslot, QDate m_date) {
     return Utilities::proba(m_dbase, user, timeslot, m_date);
 }
 
+QMap<int, float> *GenerationMethod::corrected_proba(Student* user, QList<Timeslot*> timeslots, QDate m_date) {
+    //User from DataBase !!!
+    return Utilities::corrected_proba(m_dbase, user, timeslots, m_date);
+}
+
 QDate GenerationMethod::date() const {
     return m_date;
 }

@@ -29,6 +29,7 @@
 #include "utilities.h"
 #include "GLPK/glpk.h"
 #include "lpmethod.h"
+#include "fivewavesmethod.h"
 #include "managers/KholloscopeWizardPages/generationwaitingdialog.h"
 
 namespace Ui {
@@ -58,7 +59,7 @@ public:
     void displayCollision(int *collisions);
     void displayConclusion(int errors, int warnings, int collisions);
 
-    void freeKholles();
+    //void freeKholles();
 
 public slots:
     void finished(int status);
@@ -75,10 +76,10 @@ private:
     int m_week;
     QDate m_date;
 
-    QMap<int, QMap<int, QMap<int, float>* > > probabilities;
+    //QMap<int, QMap<int, QMap<int, float>* > > probabilities;
     //QList<Kholle*> kholloscope;
 
-    QMap<int, bool> m_downgraded;
+    //QMap<int, bool> m_downgraded;
     QString timestamp;
     QString khollo_message;
     QString collisions_message;

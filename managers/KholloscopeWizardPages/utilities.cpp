@@ -153,8 +153,10 @@ void Utilities::make_exchange(QSqlDatabase *db, DataBase *dbase, Kholle* current
     query.exec();
 
     current->setId_timeslots(t->getId());
+    current->setTimeslot(t);
     current->updateStatus(dbase, db, kholloscope, week);
     k->setId_timeslots(t_current->getId());
+    k->setTimeslot(t_current);
     k->updateStatus(dbase, db, kholloscope, week);
 }
 
