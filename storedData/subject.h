@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QList>
+#include "storedData/storeddata.h"
 #include "storedData/kholleur.h"
 #include "storedData/course.h"
 
@@ -11,14 +12,13 @@
 class Kholleur;
 class Course;
 
-class Subject
+class Subject : public StoredData
 {
     public:
         Subject();
         ~Subject();
 
         //Getters
-        int getId() const;
         QString getName() const;
         QString getShortName() const;
         QString getColor() const;
@@ -27,14 +27,16 @@ class Subject
         QList<Course*>* courses() const;
 
         //Setters
-        void setId(int id);
         void setName(QString name);
+        void setName(QVariant name);
         void setShortName(QString shortName);
+        void setShortName(QVariant shortName);
         void setColor(QString color);
+        void setColor(QVariant color);
         void setWeight(int weight);
+        void setWeight(QVariant weight);
 
     private:
-        int m_id;
         QString m_name;
         QString m_shortName;
         QString m_color;

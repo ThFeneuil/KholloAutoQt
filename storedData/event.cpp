@@ -1,7 +1,6 @@
 #include "storedData/event.h"
 
 Event::Event() {
-    m_id = 0;
     m_name = "";
     m_comment = "";
     m_start = QDateTime::currentDateTime();
@@ -14,9 +13,6 @@ Event::~Event() {
 }
 
 //Getters
-int Event::getId() const {
-    return m_id;
-}
 QString Event::getName() const {
     return m_name;
 }
@@ -34,9 +30,6 @@ QList<Group*>* Event::groups() const {
 }
 
 //Setters
-void Event::setId(int id) {
-    m_id = id;
-}
 void Event::setName(QString name) {
     m_name = name;
 }

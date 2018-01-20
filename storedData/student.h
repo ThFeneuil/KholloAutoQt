@@ -3,20 +3,20 @@
 
 #include <QString>
 #include <QList>
+#include "storedData/storeddata.h"
 #include "storedData/group.h"
 #include "storedData/kholle.h"
 
 class Group;
 class Kholle;
 
-class Student
+class Student : public StoredData
 {
     public:
         Student();
         ~Student();
 
         //Getters
-        int getId() const;
         QString getName() const;
         QString getFirst_name() const;
         QString getEmail() const;
@@ -24,13 +24,14 @@ class Student
         QList<Kholle*>* kholles() const; // Interface
 
         //Setters
-        void setId(int id);
         void setName(QString name);
+        void setName(QVariant name);
         void setFirst_name(QString first_name);
+        void setFirst_name(QVariant first_name);
         void setEmail(QString email);
+        void setEmail(QVariant email);
 
     private:
-        int m_id;
         QString m_name;
         QString m_first_name;
         QString m_email;

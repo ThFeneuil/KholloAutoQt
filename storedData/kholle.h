@@ -2,6 +2,7 @@
 #define Kholle_H
 
 #include <QtSql>
+#include "storedData/storeddata.h"
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
 #include "managers/KholloscopeWizardPages/utilities.h"
@@ -18,7 +19,7 @@ struct stat_info {
     int id_pb_kholle;
 };
 
-class Kholle
+class Kholle : public StoredData
 {
 
 public:
@@ -28,7 +29,6 @@ public:
     enum Status {OK, Warning, Error, Incompatible, Impossible}; //Generation, the status are in order from best to worst
 
     //Getters
-    int getId() const;
     int getId_students() const;
     int getId_timeslots() const;
     Student* student() const; // Interface
@@ -39,7 +39,6 @@ public:
     int id_pb_kholle() const; //Generation
 
     //Setters
-    void setId(int id);
     void setId_students(int id_students);
     void setId_timeslots(int id_timeslots);
     void setStudent(Student* stud); // Interface
@@ -58,7 +57,6 @@ public:
     static bool kholloscope_contains(int id, QList<Kholle*> kholloscope);
 
 private:
-    int m_id;
     int m_id_students;
     int m_id_timeslots;
 

@@ -1,7 +1,6 @@
 #include "storedData/subject.h"
 
 Subject::Subject() {
-    m_id = 0;
     m_name = "";
     m_shortName = "";
     m_color = "";
@@ -16,9 +15,6 @@ Subject::~Subject() {
 }
 
 //Getters
-int Subject::getId() const {
-    return m_id;
-}
 QString Subject::getName() const {
     return m_name;
 }
@@ -39,21 +35,30 @@ QList<Course*>* Subject::courses() const {
 }
 
 //Setters
-void Subject::setId(int id) {
-    m_id = id;
-}
 void Subject::setName(QString name) {
     m_name = name;
+}
+void Subject::setName(QVariant name) {
+    setName(name.toString());
 }
 void Subject::setShortName(QString shortName) {
     m_shortName = shortName;
 }
+void Subject::setShortName(QVariant shortName) {
+    setShortName(shortName.toString());
+}
 void Subject::setColor(QString color) {
     m_color = color;
+}
+void Subject::setColor(QVariant color) {
+    setColor(color.toString());
 }
 void Subject::setWeight(int weight) {
     if(weight < 0)
         m_weight = 0;
     else
         m_weight = (weight > MaxWeightSubject) ? MaxWeightSubject : weight;
+}
+void Subject::setWeight(QVariant weight) {
+    setWeight(weight.toInt());
 }

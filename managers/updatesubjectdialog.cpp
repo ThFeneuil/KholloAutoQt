@@ -34,13 +34,10 @@ bool UpdateSubjectDialog::update_subject() {
         QMessageBox::critical(this, "Erreur", "Il faut renseigner un nom long et un nom court pour la matière.");
         return false;
     } else {
-        QSqlQuery query(*m_db);
-        query.prepare("UPDATE tau_subjects SET name=:long, shortName=:short, weight=:weight WHERE id=:id");
-        query.bindValue(":long", name);
-        query.bindValue(":short", shortName);
-        query.bindValue(":weight", weight);
-        query.bindValue(":id", m_subject->getId());
-        query.exec();
+        m_subject->setName(name);
+        m_subject->setShortName(shortName);
+        m_subject->setWeight(weight);
+        SubjectsDBInterface(m_db).update(m_subject);
 
         accept();
     }

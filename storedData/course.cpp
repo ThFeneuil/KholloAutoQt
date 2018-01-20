@@ -2,7 +2,6 @@
 
 Course::Course()
 {
-    m_id = 0;
     m_id_subjects = 0;
     m_id_groups = 0;
     m_id_day = 0;
@@ -17,10 +16,6 @@ Course::~Course() {
 }
 
 //Getters
-int Course::getId() const {
-    return m_id;
-}
-
 int Course::getId_subjects() const {
     return m_id_subjects;
 }
@@ -52,10 +47,6 @@ Group* Course::group() const {
 
 
 //Setters
-void Course::setId(int id) {
-    m_id = id;
-}
-
 void Course::setId_subjects(int id_subjects) {
     m_id_subjects = id_subjects;
 }

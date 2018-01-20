@@ -144,16 +144,16 @@ void StudentsImportManager::findMaxes(int *max1, int *max2) {
 
 void StudentsImportManager::insertStudents(int indexName, int indexFirstName) {
     m_db->transaction();
+    StudentsDBInterface inter(m_db);
     for(int i = 0; i < m_table.length(); i++) {
         QString name = m_table[i].at(indexName);
         QString first_name = m_table[i].at(indexFirstName);
 
-        QSqlQuery query(*m_db);
-        query.prepare("INSERT INTO tau_users(name, first_name, email) VALUES(:name, :first_name, :email)");
-        query.bindValue(":name", name);
-        query.bindValue(":first_name", first_name);
-        query.bindValue(":email", "");
-        query.exec();
+        Student *s = new Student();
+        s->setName(name);
+        s->setFirst_name(first_name);
+        inter.insert(s);
+        delete s;
     }
     m_db->commit();
 }

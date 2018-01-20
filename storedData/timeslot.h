@@ -4,20 +4,20 @@
 #include <QTime>
 #include <QRect>
 #include <QList>
+#include "storedData/storeddata.h"
 #include "storedData/kholle.h"
 #include "storedData/kholleur.h"
 
 class Kholleur;
 class Kholle;
 
-class Timeslot
+class Timeslot : public StoredData
 {
 public:
     Timeslot();
     ~Timeslot();
 
     //Getters
-    int getId() const;
     QTime getTime_start() const;
     QTime getTime() const;
     QTime getTime_end() const;
@@ -30,7 +30,6 @@ public:
     bool isDeleted() const;
 
     //Setters
-    void setId(int id);
     void setTime_start(QTime time_start);
     void setTime(QTime time);
     void setTime_end(QTime time_end);
@@ -45,7 +44,6 @@ public:
     int weeksTo(Timeslot* ts);
 
 private:
-    int m_id;
     QTime m_time_start;
     QTime m_time;
     QTime m_time_end;

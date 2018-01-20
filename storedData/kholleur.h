@@ -3,20 +3,20 @@
 
 #include <QString>
 #include <QList>
+#include "storedData/storeddata.h"
 #include "storedData/subject.h"
 #include "storedData/timeslot.h"
 
 class Subject;
 class Timeslot;
 
-class Kholleur
+class Kholleur : public StoredData
 {
     public:
         Kholleur();
         ~Kholleur();
 
         //Getters
-        int getId() const;
         QString getName() const;
         int getId_subjects() const;
         int getDuration() const;
@@ -26,7 +26,6 @@ class Kholleur
         QList<Timeslot*>* timeslots() const; // Interface
 
         //Setters
-        void setId(int id);
         void setName(QString name);
         void setId_subjects(int id_subjects);
         void setDuration(int duration);
@@ -35,7 +34,6 @@ class Kholleur
         void setSubject(Subject* subj);
 
     private:
-        int m_id;
         QString m_name;
         int m_id_subjects;
         int m_duration;

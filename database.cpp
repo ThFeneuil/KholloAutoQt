@@ -10,6 +10,7 @@ DataBase::DataBase(QSqlDatabase *db) {
     m_listTimeslots = new QMap<int, Timeslot*>();
     m_listEvents = new QMap<int, Event*>();
     m_listKholles = new QMap<int, Kholle*>();
+    m_listTempKholles = new QMap<int, Kholle*>();
 
     m_conditionCourses = "";
     m_conditionTimeslots = "";
@@ -57,6 +58,12 @@ DataBase::~DataBase() {
         delete iKholles.value();
     }
 
+    QMapIterator<int, Kholle*> iTempKholles(*m_listTempKholles);
+    while (iTempKholles.hasNext()) {
+        iTempKholles.next();
+        delete iTempKholles.value();
+    }
+
     delete m_listStudents;
     delete m_listGroups ;
     delete m_listSubjects;
@@ -65,6 +72,7 @@ DataBase::~DataBase() {
     delete m_listTimeslots;
     delete m_listEvents;
     delete m_listKholles;
+    delete m_listTempKholles;
 }
 
 QMap<int, Student*>* DataBase::listStudents() const {
@@ -90,6 +98,9 @@ QMap<int, Event*>* DataBase::listEvents() const {
 }
 QMap<int, Kholle*>* DataBase::listKholles() const {
     return m_listKholles;
+}
+QMap<int, Kholle*>* DataBase::listTempKholles() const {
+    return m_listTempKholles;
 }
 
 void DataBase::setConditionCourses(QString condition) {
@@ -255,16 +266,29 @@ bool DataBase::load(QProgressBar* progressBar) {
         klle->setId_timeslots(qKholles.value(2).toInt());
 
         if(m_listTimeslots->value(klle->getId_timeslots())) {
-            m_listKholles->insert(klle->getId(), klle);
-
-            klle->setStudent(m_listStudents->value(klle->getId_students()));
-            klle->setTimeslot(m_listTimeslots->value(klle->getId_timeslots()));
-            m_listStudents->value(klle->getId_students())->kholles()->append(klle);
-            m_listTimeslots->value(klle->getId_timeslots())->kholles()->append(klle);
+            addKholle(klle, false);
         }
     }
 
     if(progressBar) progressBar->setValue(100); // Indicator
 
     return true;
+}
+
+bool DataBase::addKholle(Kholle *klle, bool isTemporary) {
+    if(klle->getId() && listStudents()->contains(klle->getId_students()) && listTimeslots()->contains(klle->getId_timeslots())) {
+        if(isTemporary)
+            m_listTempKholles->insert(klle->getId(), klle);
+        else
+            m_listKholles->insert(klle->getId(), klle);
+
+        klle->setStudent(m_listStudents->value(klle->getId_students()));
+        klle->setTimeslot(m_listTimeslots->value(klle->getId_timeslots()));
+        m_listStudents->value(klle->getId_students())->kholles()->append(klle);
+        m_listTimeslots->value(klle->getId_timeslots())->kholles()->append(klle);
+
+        return true;
+    }
+
+    return false;
 }

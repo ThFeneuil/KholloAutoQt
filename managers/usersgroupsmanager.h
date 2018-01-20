@@ -16,6 +16,10 @@
 #include <QListWidgetItem>
 #include "storedData/student.h"
 #include "storedData/group.h"
+#include "storedData/studentgrouplink.h"
+#include "DB/studentgrouplinksdbinterface.h"
+#include "DB/studentsdbinterface.h"
+#include "DB/studentsdbinterface.h"
 #include "notepad.h"
 
 namespace Ui {

@@ -5,6 +5,7 @@
 #include <QtSql>
 #include <QMessageBox>
 #include "storedData/subject.h"
+#include "DB/subjectsdbinterface.h"
 
 namespace Ui {
 class UpdateSubjectDialog;

@@ -2,7 +2,6 @@
 
 Timeslot::Timeslot()
 {
-    m_id = 0;
     m_id_kholleurs = 0;
     m_date = QDate::currentDate();
     m_pupils = 0;
@@ -15,10 +14,6 @@ Timeslot::~Timeslot() {
 }
 
 //Getters
-int Timeslot::getId() const {
-    return m_id;
-}
-
 QTime Timeslot::getTime_start() const {
     return m_time_start;
 }
@@ -57,10 +52,6 @@ bool Timeslot::isDeleted() const {
 
 
 //Setters
-void Timeslot::setId(int id) {
-    m_id = id;
-}
-
 void Timeslot::setTime_start(QTime time_start) {
     m_time_start = time_start;
 }

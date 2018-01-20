@@ -36,20 +36,12 @@ bool SubjectsManager::update_list() {
     free_subjects();
 
     // Make the request
-    QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, shortName, weight FROM tau_subjects ORDER BY UPPER(name), UPPER(shortName)");
+    queue_displayedSubjects = SubjectsDBInterface(m_db).load("ORDER BY UPPER(name), UPPER(shortName)");
 
     // Treat the request
-    while (query.next()) {
-        Subject* subj = new Subject();
-        subj->setId(query.value(0).toInt());
-        subj->setName(query.value(1).toString());
-        subj->setShortName(query.value(2).toString());
-        subj->setWeight(query.value(3).toInt());
-
+    for (Subject *subj : queue_displayedSubjects) {
         QListWidgetItem *item = new QListWidgetItem(subj->getName() + " (" + subj->getShortName() + ") : " + QString::number(subj->getWeight()), ui->list_subjects);
         item->setData(Qt::UserRole, (qulonglong) subj);
-        queue_displayedSubjects.enqueue(subj);
     }
 
     return true;
@@ -64,12 +56,12 @@ bool SubjectsManager::add_subject() {
         QMessageBox::critical(this, "Erreur", "Il faut renseigner à la fois le nom long et le nom court.");
         return false;
     } else {
-        QSqlQuery query(*m_db);
-        query.prepare("INSERT INTO tau_subjects(name, shortName, color, weight) VALUES(:long, :short, '', :weight)");
-        query.bindValue(":long", name);
-        query.bindValue(":short", shortName);
-        query.bindValue(":weight", weight);
-        query.exec();
+        Subject *s = new Subject();
+        s->setName(name);
+        s->setShortName(shortName);
+        s->setWeight(weight);
+        SubjectsDBInterface(m_db).insert(s);
+        delete s;
 
         ui->lineEdit_long->clear();
         ui->lineEdit_short->clear();
@@ -92,26 +84,9 @@ bool SubjectsManager::delete_subject() {
                 "Vous êtes sur le point de supprimer la matière <strong>" + subj->getName() + " (" + subj->getShortName() + ")</strong> ainsi que toutes les <strong>données associées</strong> : cours, kholleurs, horaires de kholles, kholles.<br /> Voulez-vous continuer ?",
                 QMessageBox::Yes | QMessageBox::Cancel);
         if(res == QMessageBox::Yes) {
-            QSqlQuery query(*m_db);
-            query.prepare("DELETE FROM tau_courses WHERE id_subjects=:id_subjects");
-            query.bindValue(":id_subjects", subj->getId());
-            query.exec();
-            query.prepare("DELETE FROM tau_kholles WHERE id_timeslots IN "
-                            "(SELECT id FROM tau_timeslots WHERE id_kholleurs IN "
-                                "(SELECT id FROM tau_kholleurs WHERE id_subjects = :id_subjects))");
-            query.bindValue(":id_subjects", subj->getId());
-            query.exec();
-            query.prepare("DELETE FROM tau_timeslots WHERE id_kholleurs IN "
-                            "(SELECT id FROM tau_kholleurs WHERE id_subjects = :id_subjects)");
-            query.bindValue(":id_subjects", subj->getId());
-            query.exec();
-            query.prepare("DELETE FROM tau_kholleurs WHERE id_subjects = :id_subjects");
-            query.bindValue(":id_subjects", subj->getId());
-            query.exec();
-            query.prepare("DELETE FROM tau_subjects WHERE id=:id");
-            query.bindValue(":id", subj->getId());
-            query.exec();
-
+            m_db->transaction();
+            SubjectsDBInterface(m_db).remove(subj->getId());
+            m_db->commit();
             update_list();;
         }
     }

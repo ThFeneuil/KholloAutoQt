@@ -4,18 +4,18 @@
 #include <QString>
 #include <QTime>
 #include <QList>
+#include "storedData/storeddata.h"
 #include "storedData/group.h"
 
 class Group;
 
-class Event
+class Event : public StoredData
 {
 public:
     Event();
     ~Event();
 
     //Getters
-    int getId() const;
     QString getName() const;
     QString getComment() const;
     QDateTime getStart() const;
@@ -23,14 +23,12 @@ public:
     QList<Group*>* groups() const; // Interface
 
     //Setters
-    void setId(int id);
     void setName(QString name);
     void setComment(QString comment);
     void setStart(QDateTime start);
     void setEnd(QDateTime end);
 
 private:
-    int m_id;
     QString m_name;
     QString m_comment;
     QDateTime m_start;

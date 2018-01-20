@@ -3,19 +3,19 @@
 
 #include <QString>
 #include <QTime>
+#include "storedData/storeddata.h"
 #include "storedData/subject.h"
 #include "storedData/group.h"
 
 class Subject;
 class Group;
 
-class Course {
+class Course : public StoredData {
 public:
     Course();
     ~Course();
 
     //Getters
-    int getId() const;
     int getId_subjects() const;
     QTime getTime_start() const;
     QTime getTime_end() const;
@@ -26,7 +26,6 @@ public:
     Group* group() const;  // Interface
 
     //Setters
-    void setId(int id);
     void setId_subjects(int id_subjects);
     void setTime_start(QTime time_start);
     void setTime_end(QTime time_end);
@@ -37,7 +36,6 @@ public:
     void setGroup(Group* grp);  // Interface
 
 private:
-    int m_id;
     int m_id_subjects;
     QTime m_time_start;
     QTime m_time_end;

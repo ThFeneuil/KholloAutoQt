@@ -90,7 +90,16 @@ HEADERS += \
     managers/KholloscopeWizardPages/generationmethod.h \
     managers/KholloscopeWizardPages/fivewavesmethod.h \
     managers/KholloscopeWizardPages/lpmethod.h \
-    managers/KholloscopeWizardPages/generationwaitingdialog.h
+    managers/KholloscopeWizardPages/generationwaitingdialog.h \
+    storedData/storeddata.h \
+    DB/dbinterface.h \
+    DB/studentsdbinterface.h \
+    DB/groupsdbinterface.h \
+    DB/dependencysolver.h \
+    DB/dbinterface_impl.h \
+    storedData/studentgrouplink.h \
+    DB/studentgrouplinksdbinterface.h \
+    DB/subjectsdbinterface.h
 
 
 SOURCES += \
@@ -147,7 +156,14 @@ SOURCES += \
     managers/KholloscopeWizardPages/generationmethod.cpp \
     managers/KholloscopeWizardPages/fivewavesmethod.cpp \
     managers/KholloscopeWizardPages/lpmethod.cpp \
-    managers/KholloscopeWizardPages/generationwaitingdialog.cpp
+    managers/KholloscopeWizardPages/generationwaitingdialog.cpp \
+    storedData/storeddata.cpp \
+    DB/studentsdbinterface.cpp \
+    DB/groupsdbinterface.cpp \
+    DB/dependencysolver.cpp \
+    storedData/studentgrouplink.cpp \
+    DB/studentgrouplinksdbinterface.cpp \
+    DB/subjectsdbinterface.cpp
 	
 DISTFILES +=
 

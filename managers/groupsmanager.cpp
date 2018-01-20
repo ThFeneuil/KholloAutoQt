@@ -32,17 +32,12 @@ bool GroupsManager::update_list() {
     free_groups();
 
     // Make the request
-    QSqlQuery query(*m_db);
-    query.exec("SELECT id, name FROM tau_groups ORDER BY UPPER(name)");
+    queue_displayedGroups = GroupsDBInterface(m_db).load("ORDER BY UPPER(name)");
 
     // Treat the request
-    while (query.next()) {
-        Group* grp = new Group();
-        grp->setId(query.value(0).toInt());
-        grp->setName(query.value(1).toString());
+    for (Group *grp : queue_displayedGroups) {
         QListWidgetItem *item = new QListWidgetItem(grp->getName(), ui->list_groups);
         item->setData(Qt::UserRole, (qulonglong) grp);
-        queue_displayedGroups.enqueue(grp);
     }
 
     return true;
@@ -55,10 +50,10 @@ bool GroupsManager::add_group() {
         QMessageBox::critical(this, "Erreur", "Il faut renseigner le nom du groupe.");
         return false;
     } else {
-        QSqlQuery query(*m_db);
-        query.prepare("INSERT INTO tau_groups(name) VALUES(:name)");
-        query.bindValue(":name", name);
-        query.exec();
+        Group *g = new Group();
+        g->setName(name);
+        GroupsDBInterface(m_db).insert(g);
+        delete g;
 
         ui->lineEdit_name->clear();
 
@@ -80,21 +75,11 @@ bool GroupsManager::delete_group() {
                 "Vous êtes sur le point de supprimer le groupe <strong>\"" + grp->getName() + "\"</strong> ainsi que les <strong>cours</strong> associés.<br /> Voulez-vous continuer ?",
                 QMessageBox::Yes | QMessageBox::Cancel);
         if(res == QMessageBox::Yes) {
-            QSqlQuery query(*m_db);
-            query.prepare("DELETE FROM tau_courses WHERE id_groups=:id_groups");
-            query.bindValue(":id_groups", grp->getId());
-            query.exec();
-            query.prepare("DELETE FROM tau_events_groups WHERE id_groups=:id_groups");
-            query.bindValue(":id_groups", grp->getId());
-            query.exec();
-            query.prepare("DELETE FROM tau_groups_users WHERE id_groups=:id_groups");
-            query.bindValue(":id_groups", grp->getId());
-            query.exec();
-            query.prepare("DELETE FROM tau_groups WHERE id=:id");
-            query.bindValue(":id", grp->getId());
-            query.exec();
+            m_db->transaction();
+            GroupsDBInterface(m_db).remove(grp->getId());
+            m_db->commit();
 
-            update_list();;
+            update_list();
         }
     }
 

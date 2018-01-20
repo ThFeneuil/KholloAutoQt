@@ -1,7 +1,6 @@
 #include "storedData/group.h"
 
 Group::Group() {
-    m_id = 0;
     m_name = "";
     m_students = new QList<Student*>();
     m_courses = new QList<Course*>();
@@ -15,9 +14,6 @@ Group::~Group() {
 }
 
 //Getters
-int Group::getId() const {
-    return m_id;
-}
 QString Group::getName() const {
     return m_name;
 }
@@ -32,10 +28,9 @@ QList<Event*>* Group::events() const {
 }
 
 //Setters
-void Group::setId(int id) {
-    m_id = id;
-}
 void Group::setName(QString name) {
     m_name = name;
 }
-
+void Group::setName(QVariant name) {
+    setName(name.toString());
+}
