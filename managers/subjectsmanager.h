@@ -7,7 +7,6 @@
 #include <QQueue>
 #include <QColorDialog>
 #include "storedData/subject.h"
-#include "DB/subjectsdbinterface.h"
 #include "managers/updatesubjectdialog.h"
 
 namespace Ui {

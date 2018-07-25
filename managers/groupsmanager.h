@@ -6,7 +6,6 @@
 #include <QMessageBox>
 #include <QQueue>
 #include "storedData/group.h"
-#include "DB/groupsdbinterface.h"
 
 namespace Ui {
 class GroupsManager;

@@ -9,7 +9,14 @@ GroupsSwappingsManager::GroupsSwappingsManager(QSqlDatabase *db, QWidget *parent
     m_db = db;
     m_listGroups = new QList<Group*>();
 
-    *m_listGroups = GroupsDBInterface(m_db).load("ORDER BY UPPER(`name`)");
+    QSqlQuery query(*m_db);
+    query.exec("SELECT `id`, `name` FROM `tau_groups` ORDER BY UPPER(`name`)");
+    while(query.next()) {
+        Group* grp = new Group();
+        grp->setId(query.value(0).toInt());
+        grp->setName(query.value(1).toString());
+        m_listGroups->append(grp);
+    }
 
     for(int i=0; i<m_listGroups->count(); i++) {
         Group* grp = m_listGroups->at(i);
@@ -49,26 +56,20 @@ bool GroupsSwappingsManager::swapGroups() {
                 "Vous êtes sur le point d'échanger les <strong>élèves</strong> entre le groupe <strong>"+gr1->getName()+"</strong> et le groupe <strong>"+gr2->getName()+"</strong>. <br />"
                 "Voulez-vous continuez ?", QMessageBox::Yes |QMessageBox::Cancel);
         if(res == QMessageBox::Yes) {
-            m_db->transaction();
-            StudentGroupLinksDBInterface inter(m_db);
-            QList<StudentGroupLink*> grp1 = inter.load("WHERE `id_groups` = " + QString::number(gr1->getId()));
-            QList<StudentGroupLink*> grp2 = inter.load("WHERE `id_groups` = " + QString::number(gr2->getId()));
-            int numRowsAffected = grp1.count() + grp2.count();
-
-            for(StudentGroupLink *l : grp1) {
-                l->setId_groups(gr2->getId());
-                inter.update(l);
-                delete l;
-            }
-            grp1.clear();
-
-            for(StudentGroupLink *l : grp2) {
-                l->setId_groups(gr1->getId());
-                inter.update(l);
-                delete l;
-            }
-            grp2.clear();
-            m_db->commit();
+            int numRowsAffected = 0;
+            QSqlQuery query(*m_db);
+            query.prepare("UPDATE `tau_groups_users` SET `id_groups` = 0 WHERE `id_groups` = :idGrp1");
+            query.bindValue(":idGrp1", gr1->getId());
+            query.exec();
+            query.prepare("UPDATE `tau_groups_users` SET `id_groups` = :idGrp1 WHERE `id_groups` = :idGrp2");
+            query.bindValue(":idGrp1", gr1->getId());
+            query.bindValue(":idGrp2", gr2->getId());
+            query.exec();
+            numRowsAffected += query.numRowsAffected();
+            query.prepare("UPDATE `tau_groups_users` SET `id_groups` = :idGrp2 WHERE `id_groups` = 0");
+            query.bindValue(":idGrp2", gr2->getId());
+            query.exec();
+            numRowsAffected += query.numRowsAffected();
 
             ui->infoArea->setPlainText("Echange effectué : " + QString::number(numRowsAffected) + " élèves affectés...");
         }

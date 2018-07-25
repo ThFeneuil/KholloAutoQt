@@ -22,14 +22,22 @@ UsersGroupsManager::UsersGroupsManager(QSqlDatabase *db, QWidget *parent) :
     this->addAction(m_shortcutNotepad);
 
     /// Get the list of the students
-    QList<Student *> sdts = StudentsDBInterface(m_db).load("ORDER BY UPPER(`name`), UPPER(`first_name`)");
-    for (Student *stdnt : sdts) {
+    QSqlQuery query(*m_db);
+    query.exec("SELECT `id`, `name`, `first_name` FROM `tau_users` ORDER BY UPPER(`name`), UPPER(`first_name`)");
+    while (query.next()) {
+        Student* stdnt = new Student();
+        stdnt->setId(query.value(0).toInt());
+        stdnt->setName(query.value(1).toString());
+        stdnt->setFirst_name(query.value(2).toString());
         // Add the student in a list
         m_listStudents->append((qulonglong) stdnt);
     }
     /// Get the list of the groups
-    QList<Group *> grps = GroupsDBInterface(m_db).load("ORDER BY UPPER(`name`)");
-    for (Group *grp : grps) {
+    query.exec("SELECT `id`, `name` FROM `tau_groups` ORDER BY UPPER(`name`)");
+    while (query.next()) {
+        Group* grp = new Group();
+        grp->setId(query.value(0).toInt());
+        grp->setName(query.value(1).toString());
         // Add the group in a list
         m_listGroups->append((qulonglong) grp);
     }
@@ -131,12 +139,15 @@ bool UsersGroupsManager::update_listsYesNo() {
         Student *student = (Student*) item->data(Qt::UserRole).toULongLong();
 
         // Get groups of student
-        QList<StudentGroupLink*> student_gr = StudentGroupLinksDBInterface(m_db).load("WHERE `id_users`=" + QString::number(student->getId()));
+        QSqlQuery student_gr(*m_db);
+        student_gr.prepare("SELECT `id_groups` FROM `tau_groups_users` WHERE `id_users`=:id_users");
+        student_gr.bindValue(":id_users", student->getId());
+        student_gr.exec();
 
         // Create a map to identify quickly if the selected student is in a group
         QMap<int, bool> map;
-        for(StudentGroupLink *link : student_gr)
-            map.insert(link->getId_groups(), true);
+        while(student_gr.next())
+            map.insert(student_gr.value(0).toInt(), true);
 
         //Put every group into the right list
         for(int i=0; i<m_listGroups->count(); i++) {
@@ -153,12 +164,15 @@ bool UsersGroupsManager::update_listsYesNo() {
         Group *grp = (Group*) item->data(Qt::UserRole).toULongLong();
 
         //Get students of group
-        QList<StudentGroupLink*> group_std = StudentGroupLinksDBInterface(m_db).load("WHERE id_groups=" + QString::number(grp->getId()));
+        QSqlQuery group_std(*m_db);
+        group_std.prepare("SELECT id_users FROM tau_groups_users WHERE id_groups=:id_groups");
+        group_std.bindValue(":id_groups", grp->getId());
+        group_std.exec();
 
         // Create a map to identify quickly if a student is in the selected group
         QMap<int, bool> map;
-        for(StudentGroupLink *link : group_std)
-            map.insert(link->getId_students(), true);
+        while(group_std.next())
+            map.insert(group_std.value(0).toInt(), true);
 
         //Put every student into the right list
         for(int i=0; i<m_listStudents->count(); i++) {
@@ -187,9 +201,9 @@ bool UsersGroupsManager::add_elements() {
         return false;
     }
 
-    //Use interface to insert items
-    m_db->transaction();
-    StudentGroupLinksDBInterface inter(m_db);
+    // Prepare the query (to make only one global query)
+    QString queryStr = "INSERT INTO tau_groups_users(id_groups, id_users) VALUES";
+    QMap<QString, qulonglong> bindValuesMap;
 
     /// Get selected elements in linking lists
     for(int i=0; i<selection.count(); i++) {
@@ -207,15 +221,24 @@ bool UsersGroupsManager::add_elements() {
             student = (Student*) itemFromNo->data(Qt::UserRole).toULongLong();
         }
 
-        // Add the link
-        StudentGroupLink *link = new StudentGroupLink();
-        link->setId_groups(group->getId());
-        link->setId_students(student->getId());
-        inter.insert(link);
-        delete link;
+        // Add the link in the variables preparing the query
+        if(i) queryStr += ", ";
+        QString varGrp = ":idGroup" + QString::number(i), varStd = ":idUser" + QString::number(i);
+        queryStr += "("+varGrp+", "+varStd+")";
+        bindValuesMap.insert(varGrp, (qulonglong) group->getId());
+        bindValuesMap.insert(varStd, (qulonglong) student->getId());
     }
 
-    m_db->commit();
+    /// Make the query
+    QSqlQuery queryInsert(*m_db);
+    queryInsert.prepare(queryStr);
+    // Add the bind values
+    QMapIterator<QString, qulonglong> i(bindValuesMap);
+    while (i.hasNext()) {
+        i.next();
+        queryInsert.bindValue(i.key(), i.value());
+    }
+    queryInsert.exec();
 
     /// Update the linking lists
     update_listsYesNo();
@@ -242,9 +265,9 @@ bool UsersGroupsManager::remove_elements() {
         return false;
     }
 
-    //Use interface to delete links
-    m_db->transaction();
-    StudentGroupLinksDBInterface inter(m_db);
+    // Prepare the query (to make only one global query)
+    QString queryStr = "DELETE FROM tau_groups_users WHERE ";
+    QMap<QString, qulonglong> bindValuesMap;
 
     /// Get selected elements in linking lists
     for(int i=0; i<selection.count(); i++) {
@@ -262,14 +285,24 @@ bool UsersGroupsManager::remove_elements() {
             student = (Student*) itemFromYes->data(Qt::UserRole).toULongLong();
         }
 
-        // Get the link for this couple
-        QList<StudentGroupLink *> to_delete = inter.load("WHERE id_groups = " + QString::number(group->getId())
-                                                         + " AND id_users = " + QString::number(student->getId()));
-        // Delete the link
-        for(StudentGroupLink *link : to_delete)
-            inter.remove(link->getId());
+        // Add the action to remove the link in the variables preparing the query
+        if(i) queryStr += " OR ";
+        QString varGrp = ":idGroup" + QString::number(i), varStd = ":idUser" + QString::number(i);
+        queryStr += "(id_groups = "+varGrp+" AND id_users = "+varStd+")";
+        bindValuesMap.insert(varGrp, (qulonglong) group->getId());
+        bindValuesMap.insert(varStd, (qulonglong) student->getId());
     }
-    m_db->commit();
+
+    /// Make the query
+    QSqlQuery queryDelete(*m_db);
+    queryDelete.prepare(queryStr);
+    // Add the bind values
+    QMapIterator<QString, qulonglong> i(bindValuesMap);
+    while (i.hasNext()) {
+        i.next();
+        queryDelete.bindValue(i.key(), i.value());
+    }
+    queryDelete.exec();
 
     /// Update the linking lists
     update_listsYesNo();

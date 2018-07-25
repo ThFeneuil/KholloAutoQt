@@ -35,12 +35,19 @@ bool StudentsManager::update_list() {
     free_students();
 
     // Make the request
-    queue_displayedStudents = StudentsDBInterface(m_db).load("ORDER BY UPPER(name), UPPER(first_name)");
+    QSqlQuery query(*m_db);
+    query.exec("SELECT id, name, first_name, email FROM tau_users ORDER BY UPPER(name), UPPER(first_name)");
 
     // Treat the request
-    for (Student *stdnt : queue_displayedStudents) {
+    while (query.next()) {
+        Student* stdnt = new Student();
+        stdnt->setId(query.value(0).toInt());
+        stdnt->setName(query.value(1).toString());
+        stdnt->setFirst_name(query.value(2).toString());
+        stdnt->setEmail(query.value(3).toString());
         QListWidgetItem *item = new QListWidgetItem(stdnt->getName() + ", " + stdnt->getFirst_name() + ", " + stdnt->getEmail(), ui->list_students);
         item->setData(Qt::UserRole, (qulonglong) stdnt);
+        queue_displayedStudents.enqueue(stdnt);
     }
 
     return true;
@@ -55,13 +62,12 @@ bool StudentsManager::add_student() {
         QMessageBox::critical(this, "Erreur", "Il faut renseigner le nom et le prénom.");
         return false;
     } else {
-        Student *s = new Student();
-        s->setName(name);
-        s->setFirst_name(firstName);
-        s->setEmail(email);
-
-        StudentsDBInterface(m_db).insert(s);
-        delete s;
+        QSqlQuery query(*m_db);
+        query.prepare("INSERT INTO tau_users(name, first_name, email) VALUES(:name, :firstName, :email)");
+        query.bindValue(":name", name);
+        query.bindValue(":firstName", firstName);
+        query.bindValue(":email", email);
+        query.exec();
 
         ui->lineEdit_name->clear();
         ui->lineEdit_firstName->clear();
@@ -102,9 +108,16 @@ bool StudentsManager::delete_student() {
                 "Vous êtes sur le point de supprimer <strong>" + stdnt->getFirst_name() + " " + stdnt->getName() + "</strong> ainsi que ses <strong>kholles</strong>.<br /> Voulez-vous continuer ?",
                 QMessageBox::Yes | QMessageBox::Cancel);
         if(res == QMessageBox::Yes) {
-            m_db->transaction();
-            StudentsDBInterface(m_db).remove(stdnt->getId());
-            m_db->commit();
+            QSqlQuery query(*m_db);
+            query.prepare("DELETE FROM tau_groups_users WHERE id_users=:id_users");
+            query.bindValue(":id_users", stdnt->getId());
+            query.exec();
+            query.prepare("DELETE FROM tau_kholles WHERE id_users=:id_users");
+            query.bindValue(":id_users", stdnt->getId());
+            query.exec();
+            query.prepare("DELETE FROM tau_users WHERE id=:id");
+            query.bindValue(":id", stdnt->getId());
+            query.exec();
 
             update_list();
         }

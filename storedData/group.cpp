@@ -31,6 +31,3 @@ QList<Event*>* Group::events() const {
 void Group::setName(QString name) {
     m_name = name;
 }
-void Group::setName(QVariant name) {
-    setName(name.toString());
-}

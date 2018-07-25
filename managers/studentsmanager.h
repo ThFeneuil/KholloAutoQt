@@ -7,7 +7,6 @@
 #include <QQueue>
 #include <QFileDialog>
 #include "storedData/student.h"
-#include "DB/studentsdbinterface.h"
 #include "managers/updatestudentdialog.h"
 #include "managers/studentsimportmanager.h"
 #include "settingsdialog.h"

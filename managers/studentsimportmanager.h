@@ -7,7 +7,6 @@
 #include <QString>
 #include <QStringList>
 #include <QtSql>
-#include "DB/studentsdbinterface.h"
 
 class StudentsImportManager
 {

@@ -30,11 +30,13 @@ bool UpdateStudentDialog::update_student() {
         QMessageBox::critical(this, "Erreur", "Il faut renseigner le nom et le prénom.");
         return false;
     } else {
-        m_student->setName(name);
-        m_student->setFirst_name(firstName);
-        m_student->setEmail(email);
-
-        StudentsDBInterface(m_db).update(m_student);
+        QSqlQuery query(*m_db);
+        query.prepare("UPDATE tau_users SET name=:name, first_name=:fname, email=:email WHERE id=:id");
+        query.bindValue(":name", name);
+        query.bindValue(":fname", firstName);
+        query.bindValue(":email", email);
+        query.bindValue(":id", m_student->getId());
+        query.exec();
 
         accept();
     }

@@ -8,7 +8,6 @@
 #include <QQueue>
 #include "storedData/kholleur.h"
 #include "storedData/subject.h"
-#include "DB/subjectsdbinterface.h"
 
 namespace Ui {
 class UpdateKholleurDialog;

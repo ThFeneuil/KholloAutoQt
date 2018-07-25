@@ -38,27 +38,15 @@ QList<Course*>* Subject::courses() const {
 void Subject::setName(QString name) {
     m_name = name;
 }
-void Subject::setName(QVariant name) {
-    setName(name.toString());
-}
 void Subject::setShortName(QString shortName) {
     m_shortName = shortName;
 }
-void Subject::setShortName(QVariant shortName) {
-    setShortName(shortName.toString());
-}
 void Subject::setColor(QString color) {
     m_color = color;
-}
-void Subject::setColor(QVariant color) {
-    setColor(color.toString());
 }
 void Subject::setWeight(int weight) {
     if(weight < 0)
         m_weight = 0;
     else
         m_weight = (weight > MaxWeightSubject) ? MaxWeightSubject : weight;
-}
-void Subject::setWeight(QVariant weight) {
-    setWeight(weight.toInt());
 }

@@ -28,13 +28,9 @@ class Subject : public StoredData
 
         //Setters
         void setName(QString name);
-        void setName(QVariant name);
         void setShortName(QString shortName);
-        void setShortName(QVariant shortName);
         void setColor(QString color);
-        void setColor(QVariant color);
         void setWeight(int weight);
-        void setWeight(QVariant weight);
 
     private:
         QString m_name;

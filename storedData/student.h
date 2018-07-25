@@ -25,11 +25,8 @@ class Student : public StoredData
 
         //Setters
         void setName(QString name);
-        void setName(QVariant name);
         void setFirst_name(QString first_name);
-        void setFirst_name(QVariant first_name);
         void setEmail(QString email);
-        void setEmail(QVariant email);
 
     private:
         QString m_name;

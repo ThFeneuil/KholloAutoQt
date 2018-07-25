@@ -5,8 +5,6 @@
 #include <QSqlQuery>
 #include <QMessageBox>
 #include "storedData/group.h"
-#include "DB/groupsdbinterface.h"
-#include "DB/studentgrouplinksdbinterface.h"
 #include "notepad.h"
 
 namespace Ui {

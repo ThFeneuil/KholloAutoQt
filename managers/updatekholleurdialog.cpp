@@ -21,12 +21,20 @@ UpdateKholleurDialog::UpdateKholleurDialog(QSqlDatabase *db, Kholleur *khll, boo
     connect(ui->pushButton_update, SIGNAL(clicked()), this, SLOT(update_kholleur()));
 
     // Make the request for the subjects
-    queue_subjects = SubjectsDBInterface(m_db).load("ORDER BY shortName");
+    QSqlQuery query(*m_db);
+    query.exec("SELECT id, name, shortName, color FROM tau_subjects ORDER BY shortName");
 
     // Treat the request & Display the subjects in the comboBox
     ui->comboBox_subjects->addItem("", (qulonglong) 0);
-    for (Subject *subj : queue_subjects) {
+    while (query.next()) {
+        Subject* subj = new Subject();
+        subj->setId(query.value(0).toInt());
+        subj->setName(query.value(1).toString());
+        subj->setShortName(query.value(2).toString());
+        subj->setColor(query.value(3).toString());
+
         ui->comboBox_subjects->addItem(subj->getShortName(), (qulonglong) subj);
+        queue_subjects.enqueue(subj);
 
         // To select the correct subject
         if(m_kholleur->getId_subjects() == subj->getId()) {

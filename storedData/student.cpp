@@ -34,18 +34,9 @@ QList<Kholle*>* Student::kholles() const {
 void Student::setName(QString name) {
     m_name = name;
 }
-void Student::setName(QVariant name) {
-    setName(name.toString());
-}
 void Student::setFirst_name(QString first_name) {
     m_first_name = first_name;
 }
-void Student::setFirst_name(QVariant first_name) {
-    setFirst_name(first_name.toString());
-}
 void Student::setEmail(QString email) {
     m_email = email;
-}
-void Student::setEmail(QVariant email) {
-    setEmail(email.toString());
 }

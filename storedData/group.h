@@ -26,7 +26,6 @@ class Group : public StoredData
 
         //Setters
         void setName(QString name);
-        void setName(QVariant name);
 
     private:
         QString m_name;

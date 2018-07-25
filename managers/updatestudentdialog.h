@@ -5,7 +5,6 @@
 #include <QtSql>
 #include <QMessageBox>
 #include "storedData/student.h"
-#include "DB/studentsdbinterface.h"
 
 namespace Ui {
 class UpdateStudentDialog;
