@@ -124,10 +124,11 @@ void GeneratePage::display(int *errors, int *warnings) {
         Student* student = m_genMethod->listStudents()->value(kholloscope[i]->getId_students());
         Timeslot* timeslot = m_genMethod->listTimeslots()->value(kholloscope[i]->getId_timeslots());
         Subject* subject = timeslot->kholleur()->subject();
+        QString sub_name = subject ? subject->getShortName() : "";
         Kholleur* kholleur = timeslot->kholleur();
 
         int weeks = kholloscope[i]->weeks();
-        QTableWidgetItem *left = new QTableWidgetItem(student->getName() + ", " + subject->getShortName() + " :");
+        QTableWidgetItem *left = new QTableWidgetItem(student->getName() + ", " + sub_name + " :");
 
         if(kholloscope[i]->status() == Kholle::OK) {
             left->setIcon(QIcon(QPixmap(":/images/ok.png")));
@@ -147,7 +148,7 @@ void GeneratePage::display(int *errors, int *warnings) {
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaine");
             ui->tableKhollo->setItem(i, 1, right);
 
-            khollo_message += student->getName() + " " + student->getFirst_name() + ", " + subject->getShortName() + " : Furieux\n";
+            khollo_message += student->getName() + " " + student->getFirst_name() + ", " + sub_name + " : Furieux\n";
             (*errors)++;
         }
         else {
@@ -156,7 +157,7 @@ void GeneratePage::display(int *errors, int *warnings) {
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaines");
             ui->tableKhollo->setItem(i, 1, right);
 
-            khollo_message += student->getName() + " " + student->getFirst_name() + ", " + subject->getShortName() + " : Déçu\n";
+            khollo_message += student->getName() + " " + student->getFirst_name() + ", " + sub_name + " : Déçu\n";
             (*warnings)++;
         }
         ui->tableKhollo->setItem(i, 0, left);
@@ -194,7 +195,8 @@ void GeneratePage::displayCollision(int *collisions) {
             QList<Kholle*> *day = list->at(i);
             int total = 0;
             for(int j = 0; j < day->length(); j++) {
-                total += day->at(j)->timeslot()->kholleur()->subject()->getWeight();
+                if(day->at(j)->timeslot()->kholleur()->subject() != NULL)
+                    total += day->at(j)->timeslot()->kholleur()->subject()->getWeight();
             }
 
             if(day->length() > 0 && total > MaxWeightSubject) {
@@ -207,7 +209,8 @@ void GeneratePage::displayCollision(int *collisions) {
                 collisions_message += s->getName() + " " + s->getFirst_name() + ", " + days[i] + " : ";
 
                 for(int j = 0; j < day->length(); j++) {
-                    QString sub_name = day->at(j)->timeslot()->kholleur()->subject()->getShortName();
+                    Subject *sub = day->at(j)->timeslot()->kholleur()->subject();
+                    QString sub_name = sub ? sub->getShortName() : "";
                     QTableWidgetItem *right = new QTableWidgetItem(sub_name + " " + day->at(j)->timeslot()->getTime_start().toString());
                     ui->tableCollision->setItem(r + j, 1, right);
                     collisions_message += sub_name + " / ";
@@ -268,7 +271,7 @@ void GeneratePage::saveKholles() {
 
     //Open interface if checkbox selected
     if(ui->interfaceCheckBox->isChecked()) {
-        ((MainWindow*) m_window)->triggerInterface(m_date, m_week);
+        ((MainWindow*) m_window)->openInterfaceWithDate(m_date, m_week);
     }
 }
 

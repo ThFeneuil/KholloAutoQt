@@ -130,7 +130,8 @@ bool KholleursManager::delete_kholleur() {
         if(res == QMessageBox::Yes) {
             // Update the DB if it is a positive answer
             QSqlQuery query(*m_db);
-            query.prepare("DELETE FROM tau_kholles WHERE id_timeslots IN "
+            //Done by SQLITE
+            /*query.prepare("DELETE FROM tau_kholles WHERE id_timeslots IN "
                             "(SELECT id FROM tau_timeslots WHERE id_kholleurs=:id_kholleurs)");
             query.bindValue(":id_kholleurs", khll->getId());
             query.exec();
@@ -139,7 +140,7 @@ bool KholleursManager::delete_kholleur() {
             query.exec();
             query.prepare("DELETE FROM tau_merge_kholleurs WHERE id_kholleurs=:id_kholleurs");
             query.bindValue(":id_kholleurs", khll->getId());
-            query.exec();
+            query.exec();*/
             query.prepare("DELETE FROM tau_kholleurs WHERE id=:id");
             query.bindValue(":id", khll->getId());
             query.exec();

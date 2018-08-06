@@ -11,7 +11,7 @@ LastChanges::LastChanges(QSqlDatabase *db, int id_week, QDate *monday, QWidget *
     m_db = db;
     m_monday = monday;
     m_id_week = id_week;
-    days << "" << "Lundi" << "Mardi" << "Mercredi" << "Jeudi" << "Vendredi" << "Samedi";
+    days << "" << "Lundi" << "Mardi" << "Mercredi" << "Jeudi" << "Vendredi" << "Samedi" << "Dimanche";
     m_shortcutNotepad = Notepad::shortcut();
     this->addAction(m_shortcutNotepad);
 
@@ -402,9 +402,9 @@ bool LastChanges::save_timeslotsChanges() {
         }
 
         if(final->isDeleted()) {
-            query.prepare("DELETE FROM `tau_kholles` WHERE `id_timeslots` = :id_timeslots");
+            /*query.prepare("DELETE FROM `tau_kholles` WHERE `id_timeslots` = :id_timeslots");
             query.bindValue(":id", final->getId());
-            query.exec();
+            query.exec();*/
             query.prepare("DELETE FROM `tau_timeslots` WHERE `id` = :id");
             query.bindValue(":id", final->getId());
             query.exec();

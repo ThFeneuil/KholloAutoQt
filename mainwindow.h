@@ -69,9 +69,6 @@ public slots:
     void record(bool start = true);
     void updateRecord();
 
-signals:
-    void triggerInterface(QDate date, int id_week);
-
 private:
     Ui::MainWindow *ui;
     KScopeManager kscopemanager;

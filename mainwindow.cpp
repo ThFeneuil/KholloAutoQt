@@ -29,8 +29,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_Help, SIGNAL(triggered()), this, SLOT(openHelp()));
     connect(ui->action_AboutIt, SIGNAL(triggered()), this, SLOT(openAboutIt()));
 
-    connect(this, SIGNAL(triggerInterface(QDate,int)), this, SLOT(openInterfaceWithDate(QDate,int)));
-
     m_shortcutNotepad = Notepad::shortcut();
     this->addAction(m_shortcutNotepad);
 

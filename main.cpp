@@ -6,7 +6,6 @@
 #include <QTranslator>
 #include <QLocale>
 #include <QLibraryInfo>
-#include "storedData/student.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);

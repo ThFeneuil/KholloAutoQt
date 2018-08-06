@@ -1,6 +1,7 @@
 #include "kscopemanager.h"
 
 KScopeManager::KScopeManager() {
+    ///In order of dependencies !! A table can only be dependent on tables BEFORE it in the list !!
     tables << "tau_users" << "tau_groups" << "tau_groups_users" << "tau_subjects";
     tables << "tau_kholleurs" << "tau_courses" << "tau_record" << "tau_timeslots";
     tables << "tau_events" << "tau_events_groups" << "tau_kholles" << "tau_merge_kholleurs";
@@ -12,12 +13,19 @@ KScopeManager::~KScopeManager() {
 }
 
 bool KScopeManager::createFile(QString path) {
+    //Try deleting the file if it exists
+    QSqlDatabase::database().close();
+    QFile f(path); f.remove();
+
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(path);
     if (!db.open()) {
         QMessageBox::critical(NULL, "Echec", "Impossible d'ouvrir la base de données générée...");
         return false;
     }
+
+    //Enable foreign keys
+    db.exec("PRAGMA foreign_keys = 1;");
 
     db.transaction();
     for(int i=0; i<tables.count(); i++)
@@ -38,6 +46,10 @@ bool KScopeManager::openFile(QString path) {
         QMessageBox::critical(NULL, "Echec", "Impossible d'ouvrir la base de données...");
         return false;
     }
+
+    //Enable foreign keys
+    db.exec("PRAGMA foreign_keys = 1;");
+
     int nbRectifications = checkDBStructure(&db);
     if(nbRectifications < 0)
         QMessageBox::critical(NULL, "Echec", "Votre kholloscope est corrompu. :'( <br />Néanmoins, il a été chargé pour permettre d'identifier le problème.<br /> Par conséquence, il est possible que le logiciel ne supporte pas ce fichier.");
@@ -83,6 +95,19 @@ int KScopeManager::checkDBStructure(QSqlDatabase* db) {
 
         }
     }
+
+    //Test integrity of database
+    if(db->exec("PRAGMA foreign_key_check;").next()) {
+        QMessageBox::critical(NULL, "Erreur", "La base de données est corrompue <br/> Echec de \'foreign_key_check\'");
+        return -1;
+    }
+
+    QSqlQuery q = db->exec("PRAGMA integrity_check;");
+    if(q.next() && q.value(0).toString() != "ok") {
+        QMessageBox::critical(NULL, "Erreur", "La base de données est corrompue <br/> Echec de \'integrity_check\'");
+        return -1;
+    }
+
     return nbRectifications;
 }
 
@@ -126,13 +151,15 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             qCreate.exec("CREATE TABLE `tau_groups_users` ( "
                             "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
                             "`id_groups`	INTEGER NOT NULL DEFAULT 0, "
-                            "`id_users`	INTEGER NOT NULL DEFAULT 0 "
+                            "`id_users`	INTEGER NOT NULL DEFAULT 0, "
+                            "FOREIGN KEY(`id_users`) REFERENCES `tau_users`(`id`) ON DELETE CASCADE, "
+                            "FOREIGN KEY(`id_groups`) REFERENCES `tau_groups`(`id`) ON DELETE CASCADE "
                         ");");
             break;
             case Check:
                 columns.insert("id", Id);
-                columns.insert("id_groups", Int);
-                columns.insert("id_users", Int);
+                columns.insert("id_groups", ForeignKey);
+                columns.insert("id_users", ForeignKey);
             break;
         }
     } else if(nameTable == "tau_subjects") {
@@ -184,15 +211,17 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
                             "`time_end`	TEXT NOT NULL DEFAULT '', "
                             "`id_groups`	INTEGER NOT NULL DEFAULT 0, "
                             "`id_day`	INTEGER NOT NULL DEFAULT 0, "
-                            "`id_week`	INTEGER NOT NULL DEFAULT 0 "
+                            "`id_week`	INTEGER NOT NULL DEFAULT 0, "
+                            "FOREIGN KEY(`id_groups`) REFERENCES `tau_groups`(`id`) ON DELETE CASCADE, "
+                            "FOREIGN KEY(`id_subjects`) REFERENCES `tau_subjects`(`id`) ON DELETE CASCADE "
                         ");");
             break;
             case Check:
                 columns.insert("id", Id);
-                columns.insert("id_subjects", Int);
+                columns.insert("id_subjects", ForeignKey);
                 columns.insert("time_start", Text);
                 columns.insert("time_end", Text);
-                columns.insert("id_groups", Int);
+                columns.insert("id_groups", ForeignKey);
                 columns.insert("id_day", Int);
                 columns.insert("id_week", Int);
             break;
@@ -207,14 +236,15 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
                             "`id_kholleurs`	INTEGER NOT NULL DEFAULT 0, "
                             "`date`	TEXT NOT NULL DEFAULT '', "
                             "`time_start`	TEXT NOT NULL DEFAULT '', "
-                            "`pupils`	INTEGER NOT NULL DEFAULT 0 "
+                            "`pupils`	INTEGER NOT NULL DEFAULT 0, "
+                            "FOREIGN KEY(`id_kholleurs`) REFERENCES `tau_kholleurs`(`id`) ON DELETE CASCADE "
                         ");");
             break;
             case Check:
                 columns.insert("id", Id);
                 columns.insert("time", Text);
                 columns.insert("time_end", Text);
-                columns.insert("id_kholleurs", Int);
+                columns.insert("id_kholleurs", ForeignKey);
                 columns.insert("date", Text);
                 columns.insert("time_start", Text);
                 columns.insert("pupils", Int);
@@ -245,13 +275,15 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             qCreate.exec("CREATE TABLE `tau_events_groups` ( "
                             "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
                             "`id_events`	INTEGER NOT NULL DEFAULT 0, "
-                            "`id_groups`	INTEGER NOT NULL DEFAULT 0 "
+                            "`id_groups`	INTEGER NOT NULL DEFAULT 0, "
+                            "FOREIGN KEY(`id_events`) REFERENCES `tau_events`(`id`) ON DELETE CASCADE, "
+                            "FOREIGN KEY(`id_groups`) REFERENCES `tau_groups`(`id`) ON DELETE CASCADE "
                         ");");
             break;
             case Check:
                 columns.insert("id", Id);
-                columns.insert("id_events", Int);
-                columns.insert("id_groups", Int);
+                columns.insert("id_events", ForeignKey);
+                columns.insert("id_groups", ForeignKey);
             break;
         }
     } else if(nameTable == "tau_kholles") {
@@ -260,13 +292,15 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             qCreate.exec("CREATE TABLE `tau_kholles` ( "
                           "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
                           "`id_users`	INTEGER NOT NULL DEFAULT 0, "
-                          "`id_timeslots`	INTEGER NOT NULL DEFAULT 0 "
+                          "`id_timeslots`	INTEGER NOT NULL DEFAULT 0, "
+                          "FOREIGN KEY(`id_users`) REFERENCES `tau_users`(`id`) ON DELETE CASCADE, "
+                          "FOREIGN KEY(`id_timeslots`) REFERENCES `tau_timeslots`(`id`) ON DELETE CASCADE "
                       ");");
             break;
             case Check:
                 columns.insert("id", Id);
-                columns.insert("id_users", Int);
-                columns.insert("id_timeslots", Int);
+                columns.insert("id_users", ForeignKey);
+                columns.insert("id_timeslots", ForeignKey);
             break;
         }
     } else if(nameTable == "tau_record") {
@@ -292,13 +326,14 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
             qCreate.exec("CREATE TABLE `tau_merge_kholleurs` ( "
                           "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
                           "`name`	TEXT NOT NULL DEFAULT '', "
-                          "`id_kholleurs`	INTEGER NOT NULL DEFAULT 0 "
+                          "`id_kholleurs`	INTEGER NOT NULL DEFAULT 0, "
+                          "FOREIGN KEY(`id_kholleurs`) REFERENCES `tau_kholleurs`(`id`) ON DELETE CASCADE "
                       ");");
             break;
             case Check:
                 columns.insert("id", Id);
                 columns.insert("name", Text);
-                columns.insert("id_kholleurs", Int);
+                columns.insert("id_kholleurs", ForeignKey);
             break;
         }
     } else if(nameTable == "tau_general") {
@@ -323,13 +358,15 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
                           "`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "
                           "`id_users`	INTEGER NOT NULL DEFAULT 0, "
                           "`id_subjects`	INTEGER NOT NULL DEFAULT 0, "
-                          "`name_tribe`    TEXT NOT NULL DEFAULT '' "
+                          "`name_tribe`    TEXT NOT NULL DEFAULT '', "
+                          "FOREIGN KEY(`id_users`) REFERENCES `tau_users`(`id`) ON DELETE CASCADE, "
+                          "FOREIGN KEY(`id_subjects`) REFERENCES `tau_subjects`(`id`) ON DELETE CASCADE "
                       ");");
             break;
             case Check:
                 columns.insert("id", Id);
-                columns.insert("id_users", Int);
-                columns.insert("id_subjects", Int);
+                columns.insert("id_users", ForeignKey);
+                columns.insert("id_subjects", ForeignKey);
                 columns.insert("name_tribe", Text);
             break;
         }
@@ -341,9 +378,10 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
     if(action == Check && columns.count()>0) {
         QSqlRecord rec = db->record(nameTable);
         QSqlQuery qCheck(*db);
+        QMap<QString, DataType> missing_cols(columns);
         for(int i=0; i<rec.count(); i++)
-            columns.remove(rec.fieldName(i));
-        QMapIterator<QString, DataType> i(columns);
+            missing_cols.remove(rec.fieldName(i));
+        QMapIterator<QString, DataType> i(missing_cols);
         while(i.hasNext()) {
             i.next();
             switch(i.value()) {
@@ -359,11 +397,49 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
                     qCheck.exec("ALTER TABLE `"+nameTable+"` ADD `"+i.key()+"` TEXT NOT NULL DEFAULT '';");
                     nbRectifications++;
                     break;
+                case ForeignKey:
+                    QMessageBox::critical(NULL, "Fichier corrompu", "Clé étrangère " + i.key() + " de la table " + nameTable + " est manquante <br /> Le problème ne peut être résolu.");
+                    return -1;
+                    break;
             }
         }
 
+        /// TEST IF FOREIGN KEYS CORRECTLY REGISTERED !!
+        bool copy = false;
+        QMap<QString, DataType> not_fk(columns);
+
+        qCheck.exec("PRAGMA foreign_key_list(`" + nameTable + "`);");
+        while(qCheck.next())
+            not_fk.remove(qCheck.value("from").toString());
+
+        foreach(DataType type, not_fk)
+            if(type == ForeignKey) {
+                copy = true;
+                break;
+            }
+
+        //If foreign keys not correct => need to copy the table
+        if(copy) {
+            QSqlQuery qComp(*db);
+            qComp.exec("ALTER TABLE `" + nameTable + "` RENAME TO `" + nameTable + "_compatibility`;");
+            tablesStructures(db, nameTable, Create);
+
+            QString structure = "";
+            QList<QString> col_names = columns.keys();
+            for(int i = 0; i < col_names.length(); i++) {
+                if(structure != "")
+                    structure += ", ";
+                structure += col_names[i];
+            }
+
+            qComp.exec("INSERT INTO `" + nameTable + "`(" + structure + ") "
+                                                     "SELECT " + structure + " FROM `" + nameTable + "_compatibility`");
+            qComp.exec("DROP TABLE `" + nameTable + "_compatibility`");
+            nbRectifications++;
+        }
+
         /// COMPATIBILITY WITH OLD KSCOPE FILE (version <= v1.1 ) : DATA TEACHER !!
-        if(nameTable == "tau_courses") {
+        /*if(nameTable == "tau_courses") {
             QSqlQuery qCompatibility(*db);
             /// Test if the software can add a course
             qCompatibility.exec("INSERT INTO tau_courses(id_subjects, time_start, time_end, id_groups, id_day, id_week) VALUES(0, 'TEST_COMPATIBILITY', 'TEST_COMPATIBILITY', 0, 0, 0)");
@@ -406,7 +482,7 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
                     QMessageBox::critical(NULL, "Vieux fichier", "Vous avez choisi d'ignorer cette opération. Le logiciel pourra rencontrer des erreurs lors de son exécution avec ce fichier...");
             } else
                 qCompatibility.exec("DELETE FROM tau_courses WHERE id_subjects=0 AND time_start='TEST_COMPATIBILITY' AND time_end='TEST_COMPATIBILITY' AND id_groups=0 AND id_day=0 AND id_week=0");
-        }
+        }*/
     }
 
     return nbRectifications;

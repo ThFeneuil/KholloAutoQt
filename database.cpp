@@ -177,7 +177,7 @@ bool DataBase::load(QProgressBar* progressBar) {
         m_listKholleurs->insert(khll->getId(), khll);
 
         khll->setSubject(m_listSubjects->value(khll->getId_subjects()));
-        if(khll->getId_subjects())
+        if(m_listSubjects->contains(khll->getId_subjects()))
             m_listSubjects->value(khll->getId_subjects())->kholleurs()->append(khll);
     }
 

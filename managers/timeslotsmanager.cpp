@@ -13,7 +13,7 @@ TimeslotsManager::TimeslotsManager(QSqlDatabase *db, QDate date, QWidget *parent
     m_date = date;
 
     //Initialise days
-    days << "" << "Lundi" << "Mardi" << "Mercredi" << "Jeudi" << "Vendredi" << "Samedi";
+    days << "" << "Lundi" << "Mardi" << "Mercredi" << "Jeudi" << "Vendredi" << "Samedi" << "Dimanche";
 
     getKholleurs();
     displayNameClass();
@@ -275,9 +275,10 @@ void TimeslotsManager::deleteTimeslot(QListWidgetItem *item) {
         for(int i=0; i<selection.length(); i++) {
             Timeslot* ts = (Timeslot*) selection[i]->data(Qt::UserRole).toULongLong();
             //Query
-            query.prepare("DELETE FROM tau_kholles WHERE id_timeslots=:id_timeslots");
+            //Done by SQLITE
+            /*query.prepare("DELETE FROM tau_kholles WHERE id_timeslots=:id_timeslots");
             query.bindValue(":id_timeslots", ts->getId());
-            query.exec();
+            query.exec();*/
             query.prepare("DELETE FROM tau_timeslots WHERE id=:id");
             query.bindValue(":id", ts->getId());
             query.exec();
@@ -347,11 +348,12 @@ void TimeslotsManager::downloadTimeslots() {
 
                 if(msg.clickedButton() == replace_btn) {
                     //Delete all timeslots for this week
-                    qVerif.prepare("DELETE FROM tau_kholles WHERE id_timeslots IN "
+                    //Done by SQLITE
+                    /*qVerif.prepare("DELETE FROM tau_kholles WHERE id_timeslots IN "
                                             "(SELECT id FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date)");
                     qVerif.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
                     qVerif.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));
-                    qVerif.exec();
+                    qVerif.exec();*/
                     qVerif.prepare("DELETE FROM tau_timeslots WHERE date>=:monday_date AND date<=:sunday_date");
                     qVerif.bindValue(":monday_date", m_date.toString("yyyy-MM-dd"));
                     qVerif.bindValue(":sunday_date", m_date.addDays(6).toString("yyyy-MM-dd"));

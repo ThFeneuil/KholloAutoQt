@@ -22,7 +22,7 @@ UpdateKholleurDialog::UpdateKholleurDialog(QSqlDatabase *db, Kholleur *khll, boo
 
     // Make the request for the subjects
     QSqlQuery query(*m_db);
-    query.exec("SELECT id, name, shortName, color FROM tau_subjects ORDER BY shortName");
+    query.exec("SELECT id, name, shortName, color FROM tau_subjects ORDER BY UPPER(shortName)");
 
     // Treat the request & Display the subjects in the comboBox
     ui->comboBox_subjects->addItem("", (qulonglong) 0);

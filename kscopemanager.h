@@ -18,7 +18,7 @@ public:
         Create, Check
     };
     enum DataType {
-        Id, Int, Text
+        Id, Int, Text, ForeignKey
     };
 
     KScopeManager();

@@ -109,12 +109,13 @@ bool StudentsManager::delete_student() {
                 QMessageBox::Yes | QMessageBox::Cancel);
         if(res == QMessageBox::Yes) {
             QSqlQuery query(*m_db);
-            query.prepare("DELETE FROM tau_groups_users WHERE id_users=:id_users");
+            //Done by SQLITE
+            /*query.prepare("DELETE FROM tau_groups_users WHERE id_users=:id_users");
             query.bindValue(":id_users", stdnt->getId());
             query.exec();
             query.prepare("DELETE FROM tau_kholles WHERE id_users=:id_users");
             query.bindValue(":id_users", stdnt->getId());
-            query.exec();
+            query.exec();*/
             query.prepare("DELETE FROM tau_users WHERE id=:id");
             query.bindValue(":id", stdnt->getId());
             query.exec();

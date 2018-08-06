@@ -58,6 +58,12 @@ bool GroupsSwappingsManager::swapGroups() {
         if(res == QMessageBox::Yes) {
             int numRowsAffected = 0;
             QSqlQuery query(*m_db);
+
+            //Defer foreign keys for change --> foreign key only checked when commit() is called -->
+            // allows to set id_groups to 0
+            query.exec("PRAGMA defer_foreign_keys = 1");
+            m_db->transaction();
+
             query.prepare("UPDATE `tau_groups_users` SET `id_groups` = 0 WHERE `id_groups` = :idGrp1");
             query.bindValue(":idGrp1", gr1->getId());
             query.exec();
@@ -71,6 +77,11 @@ bool GroupsSwappingsManager::swapGroups() {
             query.exec();
             numRowsAffected += query.numRowsAffected();
 
+            //Commit and turn off deferring
+            m_db->commit();
+            query.exec("PRAGMA defer_foreign_keys = 0");
+
+
             ui->infoArea->setPlainText("Echange effectué : " + QString::number(numRowsAffected) + " élèves affectés...");
         }
     } else {
@@ -80,6 +91,12 @@ bool GroupsSwappingsManager::swapGroups() {
         if(res == QMessageBox::Yes) {
             int numRowsAffected = 0;
             QSqlQuery query(*m_db);
+
+            //Defer foreign keys for change --> foreign key only checked when commit() is called -->
+            // allows to set id_groups to 0
+            query.exec("PRAGMA defer_foreign_keys = 1");
+            m_db->transaction();
+
             query.prepare("UPDATE `tau_courses` SET `id_groups` = 0 WHERE `id_groups` = :idGrp1");
             query.bindValue(":idGrp1", gr1->getId());
             query.exec();
@@ -92,6 +109,11 @@ bool GroupsSwappingsManager::swapGroups() {
             query.bindValue(":idGrp2", gr2->getId());
             query.exec();
             numRowsAffected += query.numRowsAffected();
+
+            //Commit and turn off deferring
+            m_db->commit();
+            query.exec("PRAGMA defer_foreign_keys = 0");
+
             ui->infoArea->setPlainText("Echange effectué : " + QString::number(numRowsAffected) + " horaires de cours affectés...");
         }
     }
