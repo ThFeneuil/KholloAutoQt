@@ -19,7 +19,9 @@ UsersPage::~UsersPage()
 
 void UsersPage::initializePage() {
     //Clear the page
-    ui->tabWidget->clear();
+    //ui->tabWidget->clear();
+    while(ui->tabWidget->count())
+        delete ui->tabWidget->widget(0);
 
     list_selected_subjects = ((KholloscopeWizard*) wizard())->get_assoc_subjects();
 

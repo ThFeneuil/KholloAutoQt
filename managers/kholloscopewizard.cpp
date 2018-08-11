@@ -21,7 +21,10 @@ KholloscopeWizard::KholloscopeWizard(QSqlDatabase *db, QWidget *parent) :
     //Add pages
     addPage(new SubjectsPage(db));
     addPage(new UsersPage(db));
-    addPage(new GeneratePage(db, parent));
+
+    GeneratePage *gen_page = new GeneratePage(db);
+    connect(gen_page, SIGNAL(interfaceTriggered(QDate,int)), this, SIGNAL(interfaceTriggered(QDate,int)));
+    addPage(gen_page);
 
     m_shortcutNotepad = Notepad::shortcut();
     this->addAction(m_shortcutNotepad);

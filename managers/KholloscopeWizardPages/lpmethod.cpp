@@ -6,15 +6,18 @@ LPMethod::LPMethod(QSqlDatabase *db, QDate date, int week) : GenerationMethod(db
 }
 
 void LPMethod::start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) {
-
-    testAvailability(selected_subjects, input);
-
+    log("GENERATION DU " + date().toString("dd/MM/yyyy"), true);
     log("\n\nDébut de la génération...\n", true);
     bool success = generate(selected_subjects, input);
     saveInSql();
     setKhollesStatus();
 
-    emit generationEnd(success ? 0 : 1);
+    if(m_abort) {
+        emit generationEnd(GEN_CANCELLED);
+        return;
+    }
+
+    emit generationEnd(success ? GEN_SUCCESS : GEN_FAIL);
 }
 
 bool LPMethod::generate(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) {
@@ -124,6 +127,8 @@ bool LPMethod::generate(QList<Subject*> *selected_subjects, QMap<int, QList<Stud
     if(glp_mip_status(P) != GLP_OPT) {
         foreach(Kholle *k, map_vars_kholles)
             delete k;
+
+        glp_delete_prob(P);
         return false;
     }
 
@@ -136,6 +141,7 @@ bool LPMethod::generate(QList<Subject*> *selected_subjects, QMap<int, QList<Stud
         }
     }
 
+    glp_delete_prob(P);
     return true;
 }
 

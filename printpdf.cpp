@@ -356,7 +356,7 @@ bool PrintPDF::printKholles_StudentsSubjects(QList<Student *> *students, QMap<in
     QMap<int, Subject*> subjects_map;
     foreach(Kholle* k, *kholloscope) {
         Subject* s = timeslots->value(k->getId_timeslots())->kholleur()->subject();
-        if(! subjects_map.contains(s->getId()))
+        if(s && !subjects_map.contains(s->getId()))
             subjects_map.insert(s->getId(), s);
     }
     QList<int> subjects_list;
@@ -392,7 +392,8 @@ bool PrintPDF::printKholles_StudentsSubjects(QList<Student *> *students, QMap<in
     foreach(Kholle* k, *kholloscope) {
         int id_stdnt = k->getId_students();
         int id_subject = timeslots->value(k->getId_timeslots())->kholleur()->getId_subjects();
-        grid->at(assoc_students[id_stdnt])->at(assoc_subjects[id_subject])->append(k);
+        if(assoc_subjects.contains(id_subject))
+            grid->at(assoc_students[id_stdnt])->at(assoc_subjects[id_subject])->append(k);
     }
 
     //Number of rows (one student can be have many rows)

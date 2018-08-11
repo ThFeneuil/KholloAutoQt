@@ -7,6 +7,7 @@ FiveWavesMethod::FiveWavesMethod(QSqlDatabase *db, QDate date, int week) : Gener
 
 void FiveWavesMethod::launch(QList<Subject *> *selected_subjects, QMap<int, QList<Student *> > *input) {
     //Start a timeout timer
+    m_timeout = false;
     QTimer::singleShot(TIMEOUT_INT, this, SLOT(timeout()));
 
     GenerationMethod::launch(selected_subjects, input);
@@ -14,23 +15,41 @@ void FiveWavesMethod::launch(QList<Subject *> *selected_subjects, QMap<int, QLis
 
 void FiveWavesMethod::start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) {
     last_index.current_student = -1; //Set to impossible value
-    m_abort = false;
-    m_timeout = false;
+    last_index.current_subject = -1;
+    last_index.max = -1;
 
     //Initialise random number generator
     qsrand((uint)QTime::currentTime().msecsSinceStartOfDay());
 
+    log("GENERATION DU " + date().toString("dd/MM/yyyy"), true);
     log("\n\nDébut de la génération...\n", true);
 
     //Prepare the table
     constructPoss(selected_subjects, input);
 
-    // Wave 1
+    /// Wave 1
     bool res = wave_1();
 
-    if(m_timeout) {
-        log("Timeout ! (" + QString::number(TIMEOUT_INT / 1000) + " s)\n", true);
-        force();
+    //Cancelled generation
+    if(m_abort) {
+        //displayBlocking();
+        clearPoss();
+        emit generationEnd(GEN_CANCELLED);
+        return;
+    }
+
+    //Failed wave 1 => timeout or no solution
+    if(!res) {
+        if(!m_timeout) {
+            //displayBlocking();
+            clearPoss();
+            emit generationEnd(GEN_FAIL);
+            return;
+        }
+        else {
+            log("Timeout ! (" + QString::number(TIMEOUT_INT / 1000) + " s)\n", true);
+            force();
+        }
     }
 
     log("Fin du premier jet...\n", true);
@@ -39,69 +58,57 @@ void FiveWavesMethod::start(QList<Subject*> *selected_subjects, QMap<int, QList<
 
     setKhollesStatus();
 
-    if(!res && !m_timeout) {
-        log("Echec de la génération...\nAffichage de l'endroit du blockage.\n\n", true);
-        //displayBlocking();
-        clearPoss();
-        emit generationEnd(1);
-        return;
-    }
-    else {
-        if(m_timeout) {
-            log("Traitement des kholles impossibles et incompatibles...\n\n", true);
+    ///Case failed wave 1 => treat impossible
+    if(!res && m_timeout) {
+        log("Traitement des kholles impossibles et incompatibles...\n\n", true);
 
-            for(int i = 0; i < MAX_ITERATION && (remainImpossible(Kholle::Impossible) != -1 || remainImpossible(Kholle::Incompatible) != -1); i++) {
-                ///First phase : treat impossible
-                for(int i = 0; i < MAX_ITERATION && remainImpossible(Kholle::Impossible) != -1; i++)
-                    treatImpossible(0, Kholle::Impossible);
+        for(int i = 0; i < MAX_ITERATION && (remainImpossible(Kholle::Impossible) != -1 || remainImpossible(Kholle::Incompatible) != -1); i++) {
+            ///First phase : treat impossible
+            for(int i = 0; i < MAX_ITERATION && remainImpossible(Kholle::Impossible) != -1; i++)
+                treatImpossible(0, Kholle::Impossible);
 
-                ///Second phase : treat incompatible
-                for(int i = 0; i < MAX_ITERATION && remainImpossible(Kholle::Incompatible) != -1; i++)
-                    treatImpossible(0, Kholle::Incompatible);
-            }
+            ///Second phase : treat incompatible
+            for(int i = 0; i < MAX_ITERATION && remainImpossible(Kholle::Incompatible) != -1; i++)
+                treatImpossible(0, Kholle::Incompatible);
+        }
 
-            int index = remainImpossible(Kholle::Impossible);
+        int index = remainImpossible(Kholle::Impossible);
+        if(index != -1) {
+            last_index.current_student = kholloscope()->at(index)->getId_students();
+            last_index.current_subject = kholloscope()->at(index)->timeslot()->kholleur()->getId_subjects();
+        }
+        else {
+            index = remainImpossible(Kholle::Incompatible);
             if(index != -1) {
                 last_index.current_student = kholloscope()->at(index)->getId_students();
                 last_index.current_subject = kholloscope()->at(index)->timeslot()->kholleur()->getId_subjects();
             }
-            else {
-                index = remainImpossible(Kholle::Incompatible);
-                if(index != -1) {
-                    last_index.current_student = kholloscope()->at(index)->getId_students();
-                    last_index.current_subject = kholloscope()->at(index)->timeslot()->kholleur()->getId_subjects();
-                }
-            }
-
-            if(index != -1) {
-                log("Echec de la génération...\nAffichage de l'endroit du blockage.\n\n", true);
-                //displayBlocking();
-                //freeKholles();
-                rollback();
-                clearPoss();
-                emit generationEnd(1);
-                return;
-            }
         }
 
-        log("Traitement des collisions...\n", true);
-        exchange(0, Collisions, 0);
-
-        log("Traitement des furieux et déçus...\n", true);
-        exchange(0, Warnings, 40);
-
-        log("Amélioration du score...\n\n", true);
-        exchange(0, All, 15);
-
-        clearPoss();
-        emit generationEnd(0);
+        if(index != -1) {
+            //displayBlocking();
+            clearPoss();
+            emit generationEnd(m_abort ? GEN_CANCELLED : GEN_FAIL);
+            return;
+        }
     }
+
+    log("Traitement des collisions...\n", true);
+    exchange(0, Collisions, 0);
+
+    log("Traitement des furieux et déçus...\n", true);
+    exchange(0, Warnings, 40);
+
+    log("Amélioration du score...\n\n", true);
+    exchange(0, All, 15);
+
+    clearPoss();
+    emit generationEnd(m_abort ? GEN_CANCELLED : GEN_SUCCESS);
 }
 
 void FiveWavesMethod::constructPoss(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) {
     /** To construct the 3D table of possibilities - a list for every (Student, Subject) couple **/
 
-    log("GENERATION DU " + date().toString("dd/MM/yyyy"), true);
     log("\n\nConstruction de la table des possibilités, avec les scores suivants : \n\n", false);
 
     int i, j, k;
@@ -283,7 +290,7 @@ bool FiveWavesMethod::wave_1() {
     last_index.max = index->max;
 
     //If abort needed, finish
-    if(m_abort) {
+    if(m_abort || m_timeout) {
         free(index);
         return false;
     }
@@ -315,7 +322,7 @@ bool FiveWavesMethod::wave_1() {
             }
 
             //If abort needed, return false
-            if(m_abort) {
+            if(m_abort || m_timeout) {
                 delete old;
                 free(index);
                 return false;
@@ -353,7 +360,7 @@ void FiveWavesMethod::force() {
                 if(loop[k]->getPupils() > 0) {
                     success = true;
                     create_add_kholle(listStudents()->value(u_keys[j]), loop[k]);
-                    updatePoss(u_keys[j], loop[k]);
+                    delete updatePoss(u_keys[j], loop[k]);
                 }
             }
 
@@ -364,7 +371,7 @@ void FiveWavesMethod::force() {
                             if(ts->getDate() >= date() && ts->getDate() <= date().addDays(6)) {
                                 //All conditions respected (not compatibility) => insert new Kholle
                                 Kholle *k = create_add_kholle(listStudents()->value(u_keys[j]), ts);
-                                updatePoss(u_keys[j], ts);
+                                delete updatePoss(u_keys[j], ts);
 
                                 k->setStatus(Kholle::Impossible);
                                 break;
@@ -405,7 +412,7 @@ bool FiveWavesMethod::treatImpossible(int index, Kholle::Status stat_correct) {
                 float p1 = m_probabilities.value(t_current->kholleur()->getId_subjects()).value(s_current->getId())->value(t->getId());
                 float p2 = m_probabilities.value(t->kholleur()->getId_subjects()).value(s->getId())->value(t_current->getId());
 
-                if(p1+p2 > max_score || i == 0) {
+                if(p1+p2 > max_score || max_index == -1) {
                     max_score = p1+p2;
                     max_index = i;
                 }
@@ -441,7 +448,7 @@ bool FiveWavesMethod::treatImpossible(int index, Kholle::Status stat_correct) {
                     && info->status <= Kholle::Incompatible) {
                 float p = m_probabilities.value(t->kholleur()->getId_subjects()).value(s->getId())->value(t_current->getId());
 
-                if(p > max_score || i == 0) {
+                if(p > max_score || max_index == -1) {
                     max_score = p;
                     max_index = i;
                 }
@@ -656,12 +663,20 @@ bool FiveWavesMethod::exchange(int index, ExchangeType type, int score_limit) {
     return exchange(index + 1, type, score_limit);
 }
 
-
-void FiveWavesMethod::abort() {
-    m_abort = true;
+void FiveWavesMethod::timeout() {
+    m_timeout = true;
 }
 
-void FiveWavesMethod::timeout() {
-    m_abort = true;
-    m_timeout = true;
+void FiveWavesMethod::displayBlocking() {
+    if(last_index.current_student == -1)
+        return;
+
+    QString message = "La génération a été interrompue ou n’a pas pu être finie. Le dernier élément sur lequel a travaillé le logiciel est le couple suivant : <br />";
+    message += "Matière : <strong>" + m_dbase->listSubjects()->value(last_index.current_subject)->getName() + "</strong> <br />";
+    message += "Élève : <strong>" + m_dbase->listStudents()->value(last_index.current_student)->getName() + ", "
+            + m_dbase->listStudents()->value(last_index.current_student)->getFirst_name() + "</strong> <br />";
+    message += "Il est donc probable qu’il y ait une incohérence au niveau de cette matière ou de cet/cette élève. "
+               "Veuillez vérifier les horaires de kholles, groupes, emplois du temps correspondants.";
+
+    QMessageBox::warning(NULL, "La génération n'a pas abouti...", message);
 }

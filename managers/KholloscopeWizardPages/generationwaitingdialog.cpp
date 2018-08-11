@@ -6,6 +6,7 @@ GenerationWaitingDialog::GenerationWaitingDialog(QWidget *parent) :
     ui(new Ui::GenerationWaitingDialog)
 {
     ui->setupUi(this);
+    connect(ui->pushButton_cancel, SIGNAL(clicked(bool)), this, SLOT(reject()));
 }
 
 GenerationWaitingDialog::~GenerationWaitingDialog()
@@ -20,4 +21,8 @@ void GenerationWaitingDialog::addLogEvent(QString text) {
 
 void GenerationWaitingDialog::clear() {
      ui->textEdit_logArea->clear();
+}
+
+void GenerationWaitingDialog::reject() {
+    emit cancelled();
 }

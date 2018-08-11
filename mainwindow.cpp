@@ -257,6 +257,7 @@ void MainWindow::openKholloscope() {
     if(db.isOpen()) {
         // Open the manager
         KholloscopeWizard manager(&db, this);
+        connect(&manager, SIGNAL(interfaceTriggered(QDate,int)), this, SLOT(openInterfaceWithDate(QDate,int)), Qt::QueuedConnection);
         manager.exec();
     }
     else {

@@ -18,6 +18,10 @@ public:
 
 public slots:
     void addLogEvent(QString text);
+    void reject();
+
+signals:
+    void cancelled();
 
 private:
     Ui::GenerationWaitingDialog *ui;

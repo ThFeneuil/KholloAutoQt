@@ -7,6 +7,7 @@ GenerationMethod::GenerationMethod(QSqlDatabase *db, QDate date, int week)
 
     m_date = date;
     m_week = week;
+    m_abort = false;
 
     m_out_log = NULL;
     m_log_file = new QFile(QCoreApplication::applicationDirPath() + QDir::separator() + NAME_FILE_LOG);
@@ -21,6 +22,8 @@ GenerationMethod::GenerationMethod(QSqlDatabase *db, QDate date, int week)
 }
 
 GenerationMethod::~GenerationMethod() {
+    rollback();
+
     delete m_log_file;
     delete m_out_log;
 
@@ -32,14 +35,41 @@ GenerationMethod::~GenerationMethod() {
 }
 
 void GenerationMethod::launch(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) {
-    QtConcurrent::run(this, &GenerationMethod::start, selected_subjects, input);
+
+    //Warning if not enough free space for everyone...
+    QList<Subject*> *problem_subjects = testAvailability(selected_subjects, input);
+    bool no_space = problem_subjects->length() > 0;
+    if(no_space) {
+        QString warning_text = "Il n'y a pas suffisamment d'horaires de kholles libres pour accommoder tous les élèves sélectionnés dans ";
+        warning_text += (problem_subjects->length() >= 2 ? "les matières suivantes : <br />" : "la matière suivante : <br />");
+        int i;
+        for(i = 0; i < problem_subjects->length(); i++)
+            warning_text += "<strong>" + problem_subjects->at(i)->getName() + "</strong> <br />";
+        QMessageBox::warning(NULL, "Attention", warning_text);
+    }
+    delete problem_subjects;
+
+    if(no_space) {
+        emit generationEnd(GEN_FAIL);
+        return;
+    }
+
+    m_future = QtConcurrent::run(this, &GenerationMethod::start, selected_subjects, input);
+}
+
+void GenerationMethod::abort() {
+    log("Annulation de la génération...\n\n", true);
+    m_abort = true;
+    m_future.waitForFinished();
 }
 
 void GenerationMethod::commit() {
+    m_future.waitForFinished();
     m_db->commit();
 }
 
 void GenerationMethod::rollback() {
+    m_future.waitForFinished();
     m_db->rollback();
 }
 

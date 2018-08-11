@@ -41,6 +41,9 @@ public:
 
     QMap<int, QList<Student*> > *get_input();
 
+signals:
+    void interfaceTriggered(QDate, int);
+
 private:
     Ui::KholloscopeWizard *ui;
     QSqlDatabase *m_db;

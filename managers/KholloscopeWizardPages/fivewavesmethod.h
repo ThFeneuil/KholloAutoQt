@@ -23,9 +23,6 @@ public:
     void launch(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
     virtual void start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
 
-public slots:
-    void abort();
-
 private:
     void constructPoss(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
     void clearPoss();
@@ -43,6 +40,8 @@ private:
 
     bool exchange(int index, ExchangeType type, int score_limit);
 
+    void displayBlocking();
+
 private slots:
     void timeout();
 
@@ -52,7 +51,6 @@ private:
     working_index last_index;
     QMap<int, bool> m_downgraded;
     bool m_timeout;
-    bool m_abort;
 };
 
 #endif // FIVEWAVESMETHOD_H

@@ -16,9 +16,6 @@ GeneratePage::GeneratePage(QSqlDatabase *db, QWidget *parent) :
     //Create message
     m_box = new GenerationWaitingDialog(this);
 
-    //Pointer to MainWindow
-    m_window = parent;
-
     //Connect buttons to slots
     connect(ui->notepad_khollo, SIGNAL(clicked()), this, SLOT(show_notepad_khollo()));
     connect(ui->notepad_collisions, SIGNAL(clicked()), this, SLOT(show_notepad_collisions()));
@@ -32,6 +29,7 @@ GeneratePage::~GeneratePage() {
 
     delete m_box;
     delete m_genMethod;
+    delete m_dbase;
 }
 
 void GeneratePage::initializePage() {
@@ -49,21 +47,10 @@ void GeneratePage::initializePage() {
     delete m_genMethod; m_genMethod = NULL;
     m_genMethod = new LPMethod(m_db, m_date, m_week);
 
-    //Warning if not enough free space for everyone...
-    QList<Subject*> *problem_subjects = m_genMethod->testAvailability(((KholloscopeWizard*) wizard())->get_assoc_subjects(), ((KholloscopeWizard*) wizard())->get_input());
-    if(problem_subjects->length() > 0) {
-        QString warning_text = "Il n'y a pas suffisamment d'horaires de kholles libres pour accommoder tous les élèves sélectionnés dans ";
-        warning_text += (problem_subjects->length() >= 2 ? "les matières suivantes : <br />" : "la matière suivante : <br />");
-        int i;
-        for(i = 0; i < problem_subjects->length(); i++)
-            warning_text += "<strong>" + problem_subjects->at(i)->getName() + "</strong> <br />";
-        QMessageBox::warning(this, "Attention", warning_text);
-    }
-    delete problem_subjects;
-
     m_box->clear();
     connect(m_genMethod, SIGNAL(newLogInfo(QString)), m_box, SLOT(addLogEvent(QString)));
-    connect(m_genMethod, SIGNAL(generationEnd(int)), this, SLOT(finished(int)));
+    connect(m_box, SIGNAL(cancelled()), m_genMethod, SLOT(abort()));
+    connect(m_genMethod, SIGNAL(generationEnd(int)), this, SLOT(finished(int)), Qt::QueuedConnection);
     m_box->show();
 
     m_genMethod->launch(((KholloscopeWizard*) wizard())->get_assoc_subjects(), ((KholloscopeWizard*) wizard())->get_input());
@@ -78,24 +65,38 @@ void GeneratePage::cleanupPage() {
 
     //Clear list
     ui->tableKhollo->clear();
+    ui->tableCollision->clear();
 }
 
 void GeneratePage::finished(int status) {
-    bool success = (status == 0);
-
     /** Called when the background process finishes **/
     timestamp = QString::number(QDateTime::currentMSecsSinceEpoch());
 
-    if(!success) {
-        m_genMethod->log("Erreur ! Il n'y a aucune solution...\n", true);
+    if(status != GenerationMethod::GEN_SUCCESS) {
+        ui->tabWidget->setEnabled(false);
+        ui->checkBox->setEnabled(false); ui->checkBox->setChecked(false);
+        ui->printCheckBox->setEnabled(false); ui->printCheckBox->setChecked(false);
+
         m_box->hide();
-        QMessageBox::critical(this, "Erreur", "Solution non trouvée... :'(");
+
+        if(status == GenerationMethod::GEN_CANCELLED) {
+            m_genMethod->log("Génération annulée\n", true);
+            QMessageBox::critical(this, "Génération automatique", "La génération a été annulée par l'utilisateur");
+        }
+        if(status == GenerationMethod::GEN_FAIL) {
+            m_genMethod->log("Echec de la génération : pas de solution...\n", true);
+            QMessageBox::critical(this, "Echec", "Solution non trouvée... :'(");
+        }
         return;
     }
 
+    ui->tabWidget->setEnabled(true);
+    ui->checkBox->setEnabled(true); ui->checkBox->setChecked(true);
+    ui->printCheckBox->setEnabled(true); ui->printCheckBox->setChecked(true);
+
     m_genMethod->log("Affichage du kholloscope...\n", true);
 
-    delete m_dbase;
+    delete m_dbase; m_dbase = NULL;
     m_dbase = new DataBase(m_db);
     m_dbase->setConditionTimeslots("`date` >= '"+ m_date.toString("yyyy-MM-dd") +"' AND `date` < '" + m_date.addDays(7).toString("yyyy-MM-dd") + "'");
     m_dbase->load();
@@ -271,7 +272,7 @@ void GeneratePage::saveKholles() {
 
     //Open interface if checkbox selected
     if(ui->interfaceCheckBox->isChecked()) {
-        ((MainWindow*) m_window)->openInterfaceWithDate(m_date, m_week);
+        emit interfaceTriggered(m_date, m_week);
     }
 }
 

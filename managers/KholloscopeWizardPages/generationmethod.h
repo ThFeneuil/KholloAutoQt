@@ -6,6 +6,7 @@
 #include <QStandardPaths>
 #include <QtConcurrentRun>
 #include <QSqlDatabase>
+#include <QFutureWatcher>
 
 #include "managers/KholloscopeWizardPages/utilities.h"
 #include "storedData/timeslot.h"
@@ -18,6 +19,9 @@ class GenerationMethod : public QObject
     Q_OBJECT
 
 public:
+
+    enum GenerationStatus { GEN_SUCCESS, GEN_FAIL, GEN_CANCELLED };
+
     GenerationMethod(QSqlDatabase *db, QDate date, int week);
     virtual ~GenerationMethod();
     virtual void launch(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
@@ -48,15 +52,20 @@ signals:
     void newLogInfo(QString text);
     void generationEnd(int status);
 
+public slots:
+    void abort();
+
 protected:
     QSqlDatabase *m_db;
     DataBase *m_dbase;
+    bool m_abort;
 
 private:
     QFile *m_log_file;
     QTextStream* m_out_log;
     int m_week;
     QDate m_date;
+    QFuture<void> m_future; //Information about status of other thread
 
     QList<Kholle*> *m_kholloscope;
 };

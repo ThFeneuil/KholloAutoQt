@@ -67,9 +67,11 @@ public slots:
     void show_notepad_collisions();
     void show_notepad_khollo();
 
+signals:
+    void interfaceTriggered(QDate, int);
+
 private:
     Ui::GeneratePage *ui;
-    QObject *m_window;
     QSqlDatabase *m_db;
     DataBase *m_dbase;
     GenerationMethod *m_genMethod;
