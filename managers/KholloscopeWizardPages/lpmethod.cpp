@@ -127,11 +127,28 @@ bool LPMethod::generate(QList<Subject*> *selected_subjects, QMap<int, QList<Stud
     }
 
     //Run algorithm
-    glp_simplex(P, NULL);
-    glp_intopt(P, NULL);
+    std::jmp_buf env;
+    if(!setjmp(env)) { //If 0 it's the original execution, else it's the error handling code jump
+        m_abortComplete = false;
+        glp_error_hook(lpMethodErrorHook, &env);
+        glp_simplex(P, NULL);
+        glp_intopt(P, NULL);
+    }
+    else {
+        qDebug() << "Error";
+        foreach(Kholle *k, map_vars_kholles)
+            delete k;
+
+        glp_error_hook(NULL, NULL);
+        //glp_delete_prob(P);
+        return false;
+    }
+
+    glp_error_hook(NULL, NULL);
     qDebug() << glp_get_obj_val(P);
 
     if(glp_mip_status(P) != GLP_OPT) {
+        qDebug() << "exit";
         foreach(Kholle *k, map_vars_kholles)
             delete k;
 
@@ -161,10 +178,27 @@ void LPMethod::set_constraint_row(glp_prob *P, int i, QVector<int> vect) {
     glp_set_mat_row(P, i, vect.length(), ind.data(), vals.data());
 }
 
+bool LPMethod::aborted() {
+    return m_abort;
+}
+
 int lpMethodsaveLog(void *info, const char *s) {
     LPMethod* m = (LPMethod*) info;
+
+    if(m->aborted() && !m->m_abortComplete) {
+        m->m_abortComplete = true;
+        glp_error("");
+    }
+
     m->log(s, true);
     return 1;
+}
+
+void lpMethodErrorHook(void *info) {
+    /* free GLPK memory */
+    glp_free_env();
+    /* safely return */
+    std::longjmp(*((jmp_buf*)info), 1);
 }
 
 void LPMethod::treatCollision(int index, int score_limit) {
