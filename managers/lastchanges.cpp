@@ -11,6 +11,8 @@ LastChanges::LastChanges(QSqlDatabase *db, int id_week, QDate *monday, QWidget *
     m_db = db;
     m_monday = monday;
     m_id_week = id_week;
+    setWindowTitle("Outil de dépannage : semaine du " + m_monday->toString("dd/MM/yyyy") + " (" + (m_id_week == 1 ? "paire" : "impaire") + ")");
+
     days << "" << "Lundi" << "Mardi" << "Mercredi" << "Jeudi" << "Vendredi" << "Samedi" << "Dimanche";
     m_shortcutNotepad = Notepad::shortcut();
     this->addAction(m_shortcutNotepad);

@@ -29,7 +29,7 @@ bool KScopeManager::createFile(QString path) {
 
     db.transaction();
     for(int i=0; i<tables.count(); i++)
-        tablesStructures(&db, tables[i], Create);
+        tablesStructures(&db, tables[i], Create, NULL);
     db.commit();
 
     return true;
@@ -82,14 +82,15 @@ int KScopeManager::checkDBStructure(QSqlDatabase* db) {
     int nbRectifications = 0;
     if(db->driverName() == "QSQLITE") {
         QStringList tab = db->tables();
+        int alertIrreversibleMsg = QMessageBox::Retry;
         for(int i=0; i<tables.count(); i++) {
             if(tab.contains(tables[i])) {
-                int res = tablesStructures(db, tables[i], Check);
+                int res = tablesStructures(db, tables[i], Check, &alertIrreversibleMsg);
                 if(res >= 0)
                     nbRectifications += res;
                 else return -1;
             }else {
-                tablesStructures(db, tables[i], Create);
+                tablesStructures(db, tables[i], Create, NULL);
                 nbRectifications++;
             }
 
@@ -111,7 +112,7 @@ int KScopeManager::checkDBStructure(QSqlDatabase* db) {
     return nbRectifications;
 }
 
-int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionType action) {
+int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionType action, int *alertIrreversibleMsg) {
     QSqlQuery qCreate(*db);
     QMap<QString, DataType> columns;
     int nbRectifications = 0;
@@ -420,22 +421,35 @@ int KScopeManager::tablesStructures(QSqlDatabase* db, QString nameTable, ActionT
 
         //If foreign keys not correct => need to copy the table
         if(copy) {
-            QSqlQuery qComp(*db);
-            qComp.exec("ALTER TABLE `" + nameTable + "` RENAME TO `" + nameTable + "_compatibility`;");
-            tablesStructures(db, nameTable, Create);
+            int res = alertIrreversibleMsg ? (*alertIrreversibleMsg) : QMessageBox::Yes;
+            if(res == QMessageBox::Retry) {
+                res = QMessageBox::warning(NULL, "Vieux fichier", "Le fichier que vous tentez d'ouvrir a été généré par une ancienne version du logiciel, et doit donc subir une opération irréversible pour fonctionner correctement sur cette version. "
+                                 "Cette opération vous empêchera de retravailler avec ce fichier sur une version plus ancienne. Voulez-vous effectuer cette opération ?", QMessageBox::Yes | QMessageBox::No);
+                if(alertIrreversibleMsg)
+                    *alertIrreversibleMsg = res;
 
-            QString structure = "";
-            QList<QString> col_names = columns.keys();
-            for(int i = 0; i < col_names.length(); i++) {
-                if(structure != "")
-                    structure += ", ";
-                structure += col_names[i];
+                if(res != QMessageBox::Yes)
+                    QMessageBox::critical(NULL, "Vieux fichier", "Vous avez choisi d'ignorer cette opération. Le logiciel pourra rencontrer des erreurs lors de son exécution avec ce fichier...");
             }
 
-            qComp.exec("INSERT INTO `" + nameTable + "`(" + structure + ") "
-                                                     "SELECT " + structure + " FROM `" + nameTable + "_compatibility`");
-            qComp.exec("DROP TABLE `" + nameTable + "_compatibility`");
-            nbRectifications++;
+            if(res == QMessageBox::Yes) {
+                QSqlQuery qComp(*db);
+                qComp.exec("ALTER TABLE `" + nameTable + "` RENAME TO `" + nameTable + "_compatibility`;");
+                tablesStructures(db, nameTable, Create, NULL);
+
+                QString structure = "";
+                QList<QString> col_names = columns.keys();
+                for(int i = 0; i < col_names.length(); i++) {
+                    if(structure != "")
+                        structure += ", ";
+                    structure += col_names[i];
+                }
+
+                qComp.exec("INSERT INTO `" + nameTable + "`(" + structure + ") "
+                                                         "SELECT " + structure + " FROM `" + nameTable + "_compatibility`");
+                qComp.exec("DROP TABLE `" + nameTable + "_compatibility`");
+                nbRectifications++;
+            }
         }
 
         /// COMPATIBILITY WITH OLD KSCOPE FILE (version <= v1.1 ) : DATA TEACHER !!

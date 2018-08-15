@@ -12,6 +12,8 @@ void LPMethod::start(QList<Subject*> *selected_subjects, QMap<int, QList<Student
     saveInSql();
     setKhollesStatus();
 
+    treatCollision(0, 50);
+
     if(m_abort) {
         emit generationEnd(GEN_CANCELLED);
         return;
@@ -54,6 +56,7 @@ bool LPMethod::generate(QList<Subject*> *selected_subjects, QMap<int, QList<Stud
     foreach(Student *s, *listStudents()) {
         QVector<int> selected_subjects = map_students_subjects.value(s->getId());
         QMap<int, QVector<int>> map;
+        QMap<int, float> p_map;
 
         for(int j = 0; j < selected_subjects.length(); j++) {
             int id_sub = selected_subjects[j];
@@ -68,7 +71,9 @@ bool LPMethod::generate(QList<Subject*> *selected_subjects, QMap<int, QList<Stud
                     glp_add_cols(P, 1); //add a variable
                     numcols++;
                     glp_set_col_kind(P, numcols, GLP_BV); //the variable is binary (either timeslot is selected (1) or not (0))
-                    glp_set_obj_coef(P, numcols, proba(s, ts, date())); //the coef is the probability
+                    p_map.insert(ts->getId(), proba(s, ts, date())); //add proba to (student, timeslot)
+                    glp_set_obj_coef(P, numcols, p_map.value(ts->getId())); //the coef is the probability
+                    qDebug() << p_map.value(ts->getId());
 
                     vect.append(numcols); //add the variable to (student, subject)
 
@@ -107,6 +112,7 @@ bool LPMethod::generate(QList<Subject*> *selected_subjects, QMap<int, QList<Stud
             set_constraint_row(P, numrows, vect);
         }
         map_students_vars.insert(s->getId(), map);
+        m_probabilities.insert(s->getId(), p_map);
     }
 
 
@@ -123,6 +129,7 @@ bool LPMethod::generate(QList<Subject*> *selected_subjects, QMap<int, QList<Stud
     //Run algorithm
     glp_simplex(P, NULL);
     glp_intopt(P, NULL);
+    qDebug() << glp_get_obj_val(P);
 
     if(glp_mip_status(P) != GLP_OPT) {
         foreach(Kholle *k, map_vars_kholles)
@@ -158,4 +165,86 @@ int lpMethodsaveLog(void *info, const char *s) {
     LPMethod* m = (LPMethod*) info;
     m->log(s, true);
     return 1;
+}
+
+void LPMethod::treatCollision(int index, int score_limit) {
+    /** Exchange timeslots between people in the kholloscope solve collisions **/
+
+    while(index < kholloscope()->length() &&
+          Utilities::sum_day(m_db, kholloscope()->at(index)->getId_students(), kholloscope()->at(index)->timeslot()->getDate()) <= MaxWeightSubject)
+        index++;
+
+    if(index >= kholloscope()->length())
+        return;
+
+    Kholle* current = kholloscope()->at(index);
+    Timeslot* t_current = current->timeslot();
+    Student* s_current = current->student();
+
+    float max_score = 0;
+    int max_index = -1;
+    for(int i = 0; i < kholloscope()->length(); i++) {
+        if(i == index)
+            continue;
+
+        Kholle* k = kholloscope()->at(i);
+        Timeslot* t = k->timeslot();
+        Student* s = k->student();
+
+        if(m_downgraded.contains(s->getId()) && m_downgraded.value(s->getId()))
+            continue;
+
+        if(t_current->getDate() == t->getDate())
+            continue;
+
+        if(t_current->kholleur()->getId_subjects() == t->kholleur()->getId_subjects()) {
+            if(compatible(s_current->getId(), t, week(), current->getId())
+                    && compatible(s->getId(), t_current, week(), k->getId())) {
+                int sub_weight = t_current->kholleur()->subject()->getWeight();
+                int w_current_old = Utilities::sum_day(m_db, s_current->getId(), t_current->getDate());
+                int w_current_new = Utilities::sum_day(m_db, s_current->getId(), t->getDate()) + (t_current->getDate() != t->getDate() ? sub_weight : 0);
+                int w_old = Utilities::sum_day(m_db, s->getId(), t->getDate());
+                int w_new = Utilities::sum_day(m_db, s->getId(), t_current->getDate()) + (t_current->getDate() != t->getDate() ? sub_weight : 0);
+
+                QMap<int, float> p_current = m_probabilities.value(s_current->getId());
+                QMap<int, float> p = m_probabilities.value(s->getId());
+
+                stat_info *info1 = Kholle::calculateStatus(m_db, m_dbase, s_current->getId(), t, week(), *kholloscope(), current->getId());
+                stat_info *info2 = Kholle::calculateStatus(m_db, m_dbase, s->getId(), t_current, week(), *kholloscope(), k->getId());
+
+                bool weight_ok = (w_current_new <= MaxWeightSubject || w_current_new < w_current_old)
+                                && (w_new <= MaxWeightSubject || w_new < w_old);
+                bool status_ok = (info1->status <= current->status()
+                                && info2->status <= k->status());
+                bool probas_ok = (p_current.value(t->getId()) + p.value(t_current->getId())
+                                - p_current.value(t_current->getId()) - p.value(t->getId()))
+                                    >= -score_limit;
+
+                if(weight_ok && status_ok && probas_ok) {
+                    float delta_proba = p_current.value(t->getId()) + p.value(t_current->getId())
+                                            - p_current.value(t_current->getId()) - p.value(t->getId());
+                    if(max_index == -1 || delta_proba > max_score) {
+                        max_index = i;
+                        max_score = delta_proba;
+                    }
+                }
+
+                free(info1);
+                free(info2);
+            }
+        }
+    }
+
+    if(max_index != -1) {
+        Kholle* k = kholloscope()->at(max_index);
+        Timeslot* t = k->timeslot();
+        Student* s = k->student();
+
+        m_downgraded.insert(s->getId(), true);
+        m_downgraded.insert(s_current->getId(), false);
+
+        Utilities::make_exchange(m_db, m_dbase, current, t_current, k, t, week(), *kholloscope());
+    }
+
+    return treatCollision(index + 1, score_limit);
 }

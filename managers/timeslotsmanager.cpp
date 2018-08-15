@@ -11,6 +11,7 @@ TimeslotsManager::TimeslotsManager(QSqlDatabase *db, QDate date, QWidget *parent
     //DB and date
     m_db = db;
     m_date = date;
+    setWindowTitle("Horaires de kholles : semaine du " + m_date.toString("dd/MM/yyyy"));
 
     //Initialise days
     days << "" << "Lundi" << "Mardi" << "Mercredi" << "Jeudi" << "Vendredi" << "Samedi" << "Dimanche";

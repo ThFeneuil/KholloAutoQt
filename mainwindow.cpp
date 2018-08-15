@@ -61,7 +61,14 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
     // Pour détecter si l'utilisateur ouvre directement un fichier sous Mac
     if(event->type() == QEvent::FileOpen) {
         // Si l'event FileOpen a été appelé, on effectue nos opérations (ouvrir le fichier)
-        openKhollo(((QFileOpenEvent*)event)->file());
+        QString file = ((QFileOpenEvent*)event)->file();
+        QString suffix = QFileInfo(file).suffix().toUpper();
+        // Check the file suffix
+        if(suffix == "KSCOPE") {
+            openKhollo(file); // Try to open the file
+        } else {
+            QMessageBox::critical(this, "Fichier non pris en charge", "Erreur : Fichier " + QFileInfo(file).suffix().toUpper() + " non pris en charge.");
+        }
         return true;
     } else {
         // Sinon, le programme s'est exécuté à partir de son icône et non de celle d'un autre fichier s'ouvrant avec lui

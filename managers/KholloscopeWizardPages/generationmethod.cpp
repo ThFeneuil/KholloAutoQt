@@ -84,7 +84,7 @@ void GenerationMethod::setPupilsOnTimeslots() {
     //Loop through all timeslots and update number of pupils
     foreach(Timeslot* ts, *map) {
         if(ts->getDate() >= m_date && ts->getDate() <= m_date.addDays(6))
-            ts->setPupils(ts->getPupils() - ts->kholles()->length());
+            ts->setPupils(std::max(ts->getPupils() - ts->kholles()->length(), 0));
     }
 }
 

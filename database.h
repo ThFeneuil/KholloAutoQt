@@ -38,12 +38,10 @@ public:
     QMap<int, Timeslot*>* listTimeslots() const;
     QMap<int, Event*>* listEvents() const;
     QMap<int, Kholle*>* listKholles() const;
-    QMap<int, Kholle*>* listTempKholles() const;
 
     void setConditionCourses(QString condition);
     void setConditionTimeslots(QString condition);
 
-    bool addKholle(Kholle *klle, bool isTemporary);
 
 public slots:
     bool load(QProgressBar* progressBar = NULL);
@@ -57,7 +55,6 @@ private:
     QMap<int, Timeslot*>* m_listTimeslots;
     QMap<int, Event*>* m_listEvents;
     QMap<int, Kholle*>* m_listKholles;
-    QMap<int, Kholle*>* m_listTempKholles;
 
     QString m_conditionCourses;
     QString m_conditionTimeslots;

@@ -10,5 +10,8 @@
         <file>images/ok.png</file>
         <file>images/warning.png</file>
         <file>images/delete.png</file>
+        <file>images/angry.png</file>
+        <file>images/happy.png</file>
+        <file>images/medium.png</file>
     </qresource>
 </RCC>

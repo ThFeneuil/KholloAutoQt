@@ -27,7 +27,7 @@ public:
     bool openFile(QString path);
     bool openLocalhostDB();
     int checkDBStructure(QSqlDatabase* db);
-    int tablesStructures(QSqlDatabase* db, QString nameTable, ActionType action);
+    int tablesStructures(QSqlDatabase* db, QString nameTable, ActionType action, int *alertIrreversibleMsg);
 
 private:
     QStringList tables;

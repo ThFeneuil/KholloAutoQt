@@ -132,7 +132,7 @@ void GeneratePage::display(int *errors, int *warnings) {
         QTableWidgetItem *left = new QTableWidgetItem(student->getName() + ", " + sub_name + " :");
 
         if(kholloscope[i]->status() == Kholle::OK) {
-            left->setIcon(QIcon(QPixmap(":/images/ok.png")));
+            left->setIcon(QIcon(QPixmap(":/images/happy.png")));
 
 
             QTableWidgetItem *right = NULL;
@@ -144,7 +144,7 @@ void GeneratePage::display(int *errors, int *warnings) {
 
         }
         else if(kholloscope[i]->status() == Kholle::Error) {
-            left->setIcon(QIcon(QPixmap(":/images/error.png")));
+            left->setIcon(QIcon(QPixmap(":/images/angry.png")));
 
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaine");
             ui->tableKhollo->setItem(i, 1, right);
@@ -153,7 +153,7 @@ void GeneratePage::display(int *errors, int *warnings) {
             (*errors)++;
         }
         else {
-            left->setIcon(QIcon(QPixmap(":/images/warning.png")));
+            left->setIcon(QIcon(QPixmap(":/images/medium.png")));
 
             QTableWidgetItem *right = new QTableWidgetItem(kholleur->getName() + ", " + QString::number(weeks) + " semaines");
             ui->tableKhollo->setItem(i, 1, right);
