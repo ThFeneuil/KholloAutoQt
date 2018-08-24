@@ -8,6 +8,7 @@ LPMethod::LPMethod(QSqlDatabase *db, QDate date, int week) : GenerationMethod(db
 void LPMethod::start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) {
     log("GENERATION DU " + date().toString("dd/MM/yyyy"), true);
     log("\n\nDébut de la génération...\n", true);
+
     bool success = generate(selected_subjects, input);
     saveInSql();
     setKhollesStatus();
@@ -73,7 +74,6 @@ bool LPMethod::generate(QList<Subject*> *selected_subjects, QMap<int, QList<Stud
                     glp_set_col_kind(P, numcols, GLP_BV); //the variable is binary (either timeslot is selected (1) or not (0))
                     p_map.insert(ts->getId(), proba(s, ts, date())); //add proba to (student, timeslot)
                     glp_set_obj_coef(P, numcols, p_map.value(ts->getId())); //the coef is the probability
-                    qDebug() << p_map.value(ts->getId());
 
                     vect.append(numcols); //add the variable to (student, subject)
 
@@ -135,20 +135,19 @@ bool LPMethod::generate(QList<Subject*> *selected_subjects, QMap<int, QList<Stud
         glp_intopt(P, NULL);
     }
     else {
-        qDebug() << "Error";
+        glp_error_hook(NULL, NULL);
+
         foreach(Kholle *k, map_vars_kholles)
             delete k;
 
-        glp_error_hook(NULL, NULL);
+        //No need => already delete'd by glp_free_env()
         //glp_delete_prob(P);
         return false;
     }
 
     glp_error_hook(NULL, NULL);
-    qDebug() << glp_get_obj_val(P);
 
     if(glp_mip_status(P) != GLP_OPT) {
-        qDebug() << "exit";
         foreach(Kholle *k, map_vars_kholles)
             delete k;
 
@@ -178,15 +177,19 @@ void LPMethod::set_constraint_row(glp_prob *P, int i, QVector<int> vect) {
     glp_set_mat_row(P, i, vect.length(), ind.data(), vals.data());
 }
 
-bool LPMethod::aborted() {
-    return m_abort;
+bool LPMethod::abortCompleted() {
+    return m_abortComplete;
+}
+
+void LPMethod::setAbortComplete() {
+    m_abortComplete = true;
 }
 
 int lpMethodsaveLog(void *info, const char *s) {
     LPMethod* m = (LPMethod*) info;
 
-    if(m->aborted() && !m->m_abortComplete) {
-        m->m_abortComplete = true;
+    if(m->isCancelled() && !m->abortCompleted()) {
+        m->setAbortComplete();
         glp_error("");
     }
 
@@ -202,7 +205,7 @@ void lpMethodErrorHook(void *info) {
 }
 
 void LPMethod::treatCollision(int index, int score_limit) {
-    /** Exchange timeslots between people in the kholloscope solve collisions **/
+    /** Exchange timeslots between people in the kholloscope to solve collisions **/
 
     while(index < kholloscope()->length() &&
           Utilities::sum_day(m_db, kholloscope()->at(index)->getId_students(), kholloscope()->at(index)->timeslot()->getDate()) <= MaxWeightSubject)

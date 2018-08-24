@@ -222,6 +222,14 @@ void GeneratePage::displayCollision(int *collisions) {
             }
         }
     }
+
+    QList<int> keys = map.keys();
+    for(int i = 0; i < keys.length(); i++) {
+        QList<QList<Kholle*>*> *list = map.take(keys[i]);
+        while(!list->empty())
+            delete list->takeFirst();
+        delete list;
+    }
 }
 
 void GeneratePage::displayConclusion(int errors, int warnings, int collisions) {

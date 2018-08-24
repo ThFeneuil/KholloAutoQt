@@ -10,19 +10,18 @@ class LPMethod : public GenerationMethod
 public:
     LPMethod(QSqlDatabase *db, QDate date, int week);
     virtual void start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
-    bool aborted();
+    bool abortCompleted();
+    void setAbortComplete();
 
 private:
     bool generate(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
     void set_constraint_row(glp_prob *P, int i, QVector<int> vect);
     void treatCollision(int index, int score_limit);
 
-public:
-    bool m_abortComplete;
-
 private:
     QMap<int, QMap<int, float>> m_probabilities;
     QMap<int, bool> m_downgraded;
+    bool m_abortComplete;
 };
 
 int lpMethodsaveLog(void *info, const char *s);

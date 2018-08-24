@@ -26,6 +26,7 @@ public:
     virtual ~GenerationMethod();
     virtual void launch(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input);
     virtual void start(QList<Subject*> *selected_subjects, QMap<int, QList<Student*> > *input) = 0;
+    bool isCancelled();
     void commit();
     void rollback();
     void log(QString text, bool canBeDisplayed);

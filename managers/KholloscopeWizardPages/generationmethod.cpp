@@ -63,6 +63,10 @@ void GenerationMethod::abort() {
     m_future.waitForFinished();
 }
 
+bool GenerationMethod::isCancelled() {
+    return m_abort;
+}
+
 void GenerationMethod::commit() {
     m_future.waitForFinished();
     m_db->commit();
