@@ -1,6 +1,6 @@
 # SPARK Kholloscope
 
-SPARK Kholloscope est un logiciel de colloscope adapté pour les fonctionnements de certains établissements de classes préparatoires, pour lesquels les colloscopes ne peuvent être réalisé que semaine par semaine.
+SPARK Kholloscope est un logiciel de colloscope adapté pour le fonctionnement de certains établissements de classes préparatoires, pour lesquels les colloscopes ne peuvent être réalisés que semaine par semaine.
 
 ## Installation et usage
 
