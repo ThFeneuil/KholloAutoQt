@@ -14,4 +14,4 @@ Pour télécharger le logiciel, accédez à la page suivante : [projet SPARK](ht
  - Contact : [spark@aprilas.fr](mailto:spark@aprilas.fr)
 
 ## Licence
-Cet oeuvre est mise à disposition selon les termes de la [Licence Creative Commons Attribution - Pas d’Utilisation Commerciale 4.0 International](http://creativecommons.org/licenses/by-nc/4.0/).
+Cette oeuvre est mise à disposition selon les termes de la [Licence Creative Commons Attribution - Pas d’Utilisation Commerciale 4.0 International](http://creativecommons.org/licenses/by-nc/4.0/).
