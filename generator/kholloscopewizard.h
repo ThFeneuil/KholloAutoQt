@@ -10,12 +10,12 @@
 #include <QListWidgetItem>
 #include <QDate>
 #include <QAction>
-#include "managers/KholloscopeWizardPages/subjectspage.h"
-#include "managers/KholloscopeWizardPages/userspage.h"
-#include "managers/KholloscopeWizardPages/generatepage.h"
+#include "subjectspage.h"
+#include "userspage.h"
+#include "generatepage.h"
 #include "storedData/subject.h"
 #include "storedData/student.h"
-#include "notepad.h"
+#include "tools/notepad.h"
 
 namespace Ui {
 class KholloscopeWizard;

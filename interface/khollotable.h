@@ -27,7 +27,7 @@
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
 #include "storedData/course.h"
-#include "database.h"
+#include "tools/database.h"
 #include "interface/interfacedialog.h"
 #include "interface/interfacetab.h"
 

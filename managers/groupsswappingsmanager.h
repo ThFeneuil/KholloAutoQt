@@ -5,7 +5,7 @@
 #include <QSqlQuery>
 #include <QMessageBox>
 #include "storedData/group.h"
-#include "notepad.h"
+#include "tools/notepad.h"
 
 namespace Ui {
 class GroupsSwappingsManager;

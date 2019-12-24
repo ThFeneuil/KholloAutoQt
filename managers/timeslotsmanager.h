@@ -13,8 +13,8 @@
 #include "storedData/timeslot.h"
 #include "managers/copytimeslots.h"
 #include "managers/mergekholleursmanager.h"
-#include "notepad.h"
-#include "onlinedatabase.h"
+#include "tools/notepad.h"
+#include "tools/onlinedatabase.h"
 #include "settingsdialog.h"
 
 namespace Ui {

@@ -8,9 +8,9 @@
 #include <QSqlDatabase>
 #include <QFutureWatcher>
 
-#include "managers/KholloscopeWizardPages/utilities.h"
+#include "utilities.h"
 #include "storedData/timeslot.h"
-#include "database.h"
+#include "tools/database.h"
 
 #define NAME_FILE_LOG "gen_log.txt"
 

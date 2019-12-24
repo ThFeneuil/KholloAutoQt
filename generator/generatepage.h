@@ -21,16 +21,16 @@
 #include "storedData/timeslot.h"
 #include "storedData/kholleur.h"
 #include "storedData/kholle.h"
-#include "database.h"
-#include "notepad.h"
-#include "managers/kholloscopewizard.h"
+#include "tools/database.h"
+#include "tools/notepad.h"
+#include "kholloscopewizard.h"
 #include "mainwindow.h"
-#include "printpdf.h"
+#include "tools/printpdf.h"
 #include "utilities.h"
 #include "GLPK/glpk.h"
 #include "lpmethod.h"
 #include "fivewavesmethod.h"
-#include "managers/KholloscopeWizardPages/generationwaitingdialog.h"
+#include "generationwaitingdialog.h"
 
 namespace Ui {
 class GeneratePage;

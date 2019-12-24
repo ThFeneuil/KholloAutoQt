@@ -15,7 +15,7 @@
 #include "storedData/student.h"
 #include "interface/khollotable.h"
 #include "interface/interfacedialog.h"
-#include "database.h"
+#include "tools/database.h"
 
 class InterfaceDialog;
 

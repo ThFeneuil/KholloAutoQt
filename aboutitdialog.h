@@ -2,7 +2,7 @@
 #define ABOUTITDIALOG_H
 
 #include <QDialog>
-#include "notepad.h"
+#include "tools/notepad.h"
 
 namespace Ui {
 class AboutItDialog;

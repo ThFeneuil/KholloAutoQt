@@ -7,7 +7,7 @@
 #include <QLineEdit>
 #include "storedData/subject.h"
 #include "storedData/student.h"
-#include "notepad.h"
+#include "tools/notepad.h"
 
 namespace Ui {
 class TribesManager;

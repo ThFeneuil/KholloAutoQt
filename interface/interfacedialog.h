@@ -20,10 +20,10 @@
 #include "interface/interfacetab.h"
 #include "interface/introinterface.h"
 #include "interface/interfaceactionsrecord.h"
-#include "database.h"
-#include "printpdf.h"
-#include "reviewdialog.h"
-#include "notepad.h"
+#include "tools/database.h"
+#include "tools/printpdf.h"
+#include "tools/reviewdialog.h"
+#include "tools/notepad.h"
 
 class InterfaceTab;
 

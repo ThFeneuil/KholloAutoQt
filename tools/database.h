@@ -44,7 +44,7 @@ public:
 
 
 public slots:
-    bool load(QProgressBar* progressBar = NULL);
+    bool load(QProgressBar* progressBar = nullptr);
 private:
     QSqlDatabase* m_db;
     QMap<int, Student*>* m_listStudents;

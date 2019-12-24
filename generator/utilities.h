@@ -8,7 +8,7 @@
 #include "storedData/timeslot.h"
 #include "storedData/student.h"
 #include "storedData/kholle.h"
-#include "database.h"
+#include "tools/database.h"
 
 class Timeslot;
 class Student;

@@ -10,7 +10,7 @@
 #include <QListWidgetItem>
 #include <QCheckBox>
 #include "storedData/subject.h"
-#include "managers/kholloscopewizard.h"
+#include "kholloscopewizard.h"
 
 namespace Ui {
 class SubjectsPage;

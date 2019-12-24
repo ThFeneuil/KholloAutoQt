@@ -74,7 +74,7 @@ ODBRequest::ODBRequest(QNetworkReply* r, const QObject *receiver, const char *me
 {
     m_reply = r;
     m_lastError = "";
-    m_result = NULL;
+    m_result = nullptr;
 
     connect(this, SIGNAL(executed(ODBRequest*)), receiver, method);
     connect(r, SIGNAL(finished()), this, SLOT(getResult()));
@@ -84,7 +84,7 @@ ODBRequest::ODBRequest(QNetworkReply* r, const QObject *receiver, const char *me
 ODBRequest::~ODBRequest() {
     m_lastError = "";
     delete m_reply;
-    if(m_result != NULL)
+    if(m_result != nullptr)
         for(int i=0; i<m_result->count(); i++)
             delete m_result->at(i);
     delete m_result;

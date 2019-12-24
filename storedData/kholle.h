@@ -5,8 +5,8 @@
 #include "storedData/storeddata.h"
 #include "storedData/student.h"
 #include "storedData/timeslot.h"
-#include "managers/KholloscopeWizardPages/utilities.h"
-#include "database.h"
+#include "generator/utilities.h"
+#include "tools/database.h"
 
 class Student;
 class Timeslot;

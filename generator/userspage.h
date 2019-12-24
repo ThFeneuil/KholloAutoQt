@@ -11,7 +11,7 @@
 #include <QVBoxLayout>
 #include "storedData/subject.h"
 #include "storedData/student.h"
-#include "managers/kholloscopewizard.h"
+#include "kholloscopewizard.h"
 
 namespace Ui {
 class UsersPage;

@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QMap>
 #include <QDateTime>
+#include <QAction>
 
 namespace Ui {
 class NotepadDialog;
@@ -14,7 +15,7 @@ class NotepadDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit NotepadDialog(QString text = "", QString label = "", QWidget *parent = 0);
+    explicit NotepadDialog(QString text = "", QString label = "", QWidget *parent = nullptr);
     ~NotepadDialog();
     void addTextAtTheEnd(QString text);
     void setText(QString text);

@@ -12,10 +12,10 @@ FORMS += \
     managers/eventsmanager.ui \
     managers/updateeventdialog.ui \
     managers/selectgroupsdialog.ui \
-	managers/kholloscopewizard.ui \
-    managers/KholloscopeWizardPages/subjectspage.ui \
-    managers/KholloscopeWizardPages/userspage.ui \
-    managers/KholloscopeWizardPages/generatepage.ui \
+    generator/kholloscopewizard.ui \
+    generator/subjectspage.ui \
+    generator/userspage.ui \
+    generator/generatepage.ui \
     interface/interfacedialog.ui \
     interface/interfacetab.ui \
     interface/introinterface.ui \
@@ -23,11 +23,11 @@ FORMS += \
     managers/introtimeslots.ui \
     managers/copytimeslots.ui \
     aboutitdialog.ui \
-    reviewdialog.ui \
+    tools/reviewdialog.ui \
     managers/lastchanges.ui \
     managers/updatetimeslotdialog.ui \
     managers/groupsswappingsmanager.ui \
-    notepad.ui \
+    tools/notepad.ui \
     settingsdialog.ui \
     managers/updatesubjectdialog.ui \
     interface/interfacedialog_mac.ui \
@@ -35,7 +35,7 @@ FORMS += \
     managers/timetablemanager.ui \
     managers/mergekholleursmanager.ui \
     managers/tribesmanager.ui \
-    managers/KholloscopeWizardPages/generationwaitingdialog.ui
+    generator/generationwaitingdialog.ui
 
 HEADERS += \
     mainwindow.h \
@@ -55,10 +55,10 @@ HEADERS += \
     storedData/event.h \
     managers/updateeventdialog.h \
     managers/selectgroupsdialog.h \
-	managers/kholloscopewizard.h \
-    managers/KholloscopeWizardPages/subjectspage.h \
-    managers/KholloscopeWizardPages/userspage.h \
-    managers/KholloscopeWizardPages/generatepage.h \
+    generator/kholloscopewizard.h \
+    generator/subjectspage.h \
+    generator/userspage.h \
+    generator/generatepage.h \
     storedData/timeslot.h \
     storedData/kholle.h \
     interface/interfacedialog.h \
@@ -68,29 +68,29 @@ HEADERS += \
     managers/timeslotsmanager.h \
     managers/introtimeslots.h \
     managers/copytimeslots.h \
-    database.h \
+    tools/database.h \
     aboutitdialog.h \
-    reviewdialog.h \
-    printpdf.h \
+    tools/reviewdialog.h \
+    tools/printpdf.h \
     managers/lastchanges.h \
     managers/updatetimeslotdialog.h \
-    kscopemanager.h \
+    tools/kscopemanager.h \
     managers/groupsswappingsmanager.h \
-    notepad.h \
+    tools/notepad.h \
     settingsdialog.h \
-    managers/KholloscopeWizardPages/utilities.h \
+    generator/utilities.h \
     interface/interfaceactionsrecord.h \
     managers/updatesubjectdialog.h \
     managers/timetablemanager.h \
     managers/timetable.h \
-    onlinedatabase.h \
+    tools/onlinedatabase.h \
     managers/mergekholleursmanager.h \
     managers/tribesmanager.h \
     managers/studentsimportmanager.h \
-    managers/KholloscopeWizardPages/generationmethod.h \
-    managers/KholloscopeWizardPages/fivewavesmethod.h \
-    managers/KholloscopeWizardPages/lpmethod.h \
-    managers/KholloscopeWizardPages/generationwaitingdialog.h \
+    generator/generationmethod.h \
+    generator/fivewavesmethod.h \
+    generator/lpmethod.h \
+    generator/generationwaitingdialog.h \
     storedData/storeddata.h
 
 
@@ -113,10 +113,10 @@ SOURCES += \
     storedData/event.cpp \
     managers/updateeventdialog.cpp \
     managers/selectgroupsdialog.cpp \
-	managers/kholloscopewizard.cpp \
-    managers/KholloscopeWizardPages/subjectspage.cpp \
-    managers/KholloscopeWizardPages/userspage.cpp \
-    managers/KholloscopeWizardPages/generatepage.cpp \
+    generator/kholloscopewizard.cpp \
+    generator/subjectspage.cpp \
+    generator/userspage.cpp \
+    generator/generatepage.cpp \
     storedData/timeslot.cpp \
     storedData/kholle.cpp \
     interface/interfacedialog.cpp \
@@ -126,29 +126,29 @@ SOURCES += \
 	managers/timeslotsmanager.cpp \
     managers/introtimeslots.cpp \
     managers/copytimeslots.cpp \
-    database.cpp \
+    tools/database.cpp \
     aboutitdialog.cpp \
-    reviewdialog.cpp \
-    printpdf.cpp \
+    tools/reviewdialog.cpp \
+    tools/printpdf.cpp \
     managers/lastchanges.cpp \
     managers/updatetimeslotdialog.cpp \
-    kscopemanager.cpp \
+    tools/kscopemanager.cpp \
     managers/groupsswappingsmanager.cpp \
-    notepad.cpp \
+    tools/notepad.cpp \
     settingsdialog.cpp \
-    managers/KholloscopeWizardPages/utilities.cpp \
+    generator/utilities.cpp \
     interface/interfaceactionsrecord.cpp \
     managers/updatesubjectdialog.cpp \
     managers/timetablemanager.cpp \
     managers/timetable.cpp \
-    onlinedatabase.cpp \
+    tools/onlinedatabase.cpp \
     managers/mergekholleursmanager.cpp \
     managers/tribesmanager.cpp \
     managers/studentsimportmanager.cpp \
-    managers/KholloscopeWizardPages/generationmethod.cpp \
-    managers/KholloscopeWizardPages/fivewavesmethod.cpp \
-    managers/KholloscopeWizardPages/lpmethod.cpp \
-    managers/KholloscopeWizardPages/generationwaitingdialog.cpp \
+    generator/generationmethod.cpp \
+    generator/fivewavesmethod.cpp \
+    generator/lpmethod.cpp \
+    generator/generationwaitingdialog.cpp \
     storedData/storeddata.cpp
 	
 DISTFILES +=

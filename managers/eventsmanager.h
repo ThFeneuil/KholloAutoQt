@@ -8,7 +8,7 @@
 #include <QListWidget>
 #include "managers/updateeventdialog.h"
 #include "storedData/event.h"
-#include "notepad.h"
+#include "tools/notepad.h"
 
 namespace Ui {
 class EventsManager;
