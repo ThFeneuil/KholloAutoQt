@@ -8,7 +8,7 @@ Pour télécharger le logiciel, accédez à la page suivante : [projet SPARK](ht
 
 ## Caractéristiques
 
- - Développeurs : Olivér FACKLAM & Thibauld FENEUIL
+ - Développeurs : [Olivér FACKLAM](https://www.linkedin.com/in/oliver-facklam/) & [Thibauld FENEUIL](https://www.linkedin.com/in/thibauld-feneuil/)
  - Langage de programmation : *C++*, avec la librairie *Qt* (LGPLv3)
  - Site : [https://projects.aprilas.fr/spark](https://projects.aprilas.fr/spark)
  - Contact : [spark@aprilas.fr](mailto:spark@aprilas.fr)
